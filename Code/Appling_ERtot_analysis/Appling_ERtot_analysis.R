@@ -29,11 +29,11 @@ write.csv(mean_daily_predictions_by_site, "C:/Users/fult771/OneDrive - PNNL/Docu
 streampulse_synthesis_statset <- read.csv("C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/streampulse_synthesis_statset.csv")
 colnames(streampulse_synthesis_statset)
 # 2) Subset sites from mean_daily_predictions_by_site by matching sites where mean_daily_predictions_by_site$SiteID = 20210902_streampulse_synthesis_statset$sitecode
-Best_mean_daily_predictions_by_site <- subset(mean_daily_predictions_by_site, subset =  mean_daily_predictions_by_site$SiteID %in% streampulse_synthesis_statset$sitecode)
-colnames(Best_mean_daily_predictions_by_site)
+mean_ERvolumetric_best_streamPULSEsites <- subset(mean_daily_predictions_by_site, subset =  mean_daily_predictions_by_site$SiteID %in% streampulse_synthesis_statset$sitecode)
+colnames(mean_ERvolumetric_best_streamPULSEsites)
 # 3) Count the number of sites where ERvolumetric > 0
-numBestSitesGtrThan <- sum(Best_mean_daily_predictions_by_site$ERvolumetric > 0) 
+numBestSitesGtrThan <- sum(mean_ERvolumetric_best_streamPULSEsites$ERvolumetric > 0) 
 numBestSitesGtrThan  # Number of sites where ERvolumetric > 0 = 1 (SiteID = nwis_12100490)
 # 4) Export data file to csv for kernel density plots, etc. by Xinming
-write.csv(Best_mean_daily_predictions_by_site, "C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/Best_mean_daily_predictions_by_site.csv")
+write.csv(mean_ERvolumetric_best_streamPULSEsites, "C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/mean_ERvolumetric_best_streamPULSEsites.csv")
 
