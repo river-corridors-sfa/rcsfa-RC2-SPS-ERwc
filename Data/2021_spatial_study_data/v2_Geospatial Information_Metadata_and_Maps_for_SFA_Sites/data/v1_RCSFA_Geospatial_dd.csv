@@ -1,0 +1,31 @@
+Column_or_Row_Name,Unit,Definition,Data_Type,Term_Type
+Column_or_Row_Name,N/A,Column or row headers from each csv file in the dataset.,text,column_header
+COMID,N/A,NHDPlus version 2 common identifier (COMID). The COMID can be used to extract geospatial variables from various sources. ,numeric,column_header
+Country,N/A,Country where sample was collected.,text,column_header
+Data_Type,N/A,Type of data (numeric; text; date; time; datetime).,text,column_header
+Definition,N/A,Description of the information in a given column or row in the dataset.,text,column_header
+Description,N/A,"Description of location. This column contains the information submitted during International Geo Sample Number (IGSN) registration under the name ""Physiographic Feature."" ",text,column_header
+End_Date,YYYY-MM-DD,The latest date in the file.,date,column_header
+File_Description,N/A,A brief description of the files in the data package.,text,column_header
+File_Name,N/A,Name of files in the data package.,text,column_header
+File_Path,N/A,File path within the data package.,text,column_header
+IGSN,N/A,International Geo Sample Numbers (IGSNs) registered with System for Earth Sample Registration (SESAR; https://www.geosamples.org/about/services#igsnregistration).,text,column_header
+Latitude,decimal_degrees_WGS1984,Geographic location (latitude) of site.,numeric,column_header
+Longitude,decimal_degrees_WGS1984,Geographic location (longitude) of site.,numeric,column_header
+Method_Description,N/A,Description of method code.,text,column_header
+Method_ID,N/A,Alphanumeric ID associated with method code.,text,column_header
+Method_Instrument,N/A,Instrument used in method code.,text,column_header
+Method_Lab,N/A,Laboratory in which methods were completed.,text,column_header
+Method_Name,N/A,Name of method code category.,text,column_header
+Method_Type,N/A,Type of method.,text,column_header
+Methods_and_Flags,N/A,Alphanumeric codes indicating the methods used or a data flag. ,text,column_header
+Missing_Value_Codes,N/A,Missing value codes.,text,column_header
+Physiographic_Feature_Name,N/A,Name of the physiographic feature (stream).,text,column_header
+RawCOMID_Used,N/A,"Indication of whether the raw COMID was correct and used (with a TRUE flag) or if the raw COMID was incorrect and manually rectified (with a FALSE flag). The raw COMID refers to the COMID assigned by the nearest-neighbor spatial join. If the raw COMID was not used and had to be rectified; a flag with the raw COMID was added to the ""Methods_and_Flags"" column.",text,column_header
+Site_ID,N/A,Site ID.,text,column_header
+Standard,N/A,ESS-DIVE Reporting Format or other standard applied to the data file.,text,column_header
+Start_Date,YYYY-MM-DD,The earliest date in the file.,date,column_header
+Submission_Contact_Email,N/A,Email of submission contact.,text,column_header
+Submission_Contact_Name,N/A,Name of submission contact.,text,column_header
+Term_Type,N/A,Indicates whether the header is a column header or row header.,text,column_header
+Unit,N/A,Unit of measurement that applies to a given column in the data package.,text,column_header
