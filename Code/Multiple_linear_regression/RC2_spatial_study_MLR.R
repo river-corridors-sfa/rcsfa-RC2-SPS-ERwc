@@ -21,6 +21,7 @@ library(gtable)
 library(grid)
 library(ggbreak)
 library("PerformanceAnalytics")
+
 # read in DO_slope(ERwater),"T_mean","StreamOrde","TOT_BASIN_AREA"data
 data<- read.csv(file.path('./Data/spatial_data.csv'))
 names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','DO_slope')
@@ -44,8 +45,7 @@ chemdata[c('DIC','NPOC','TN','TSS')] <- sapply(chemdata[c('DIC','NPOC','TN','TSS
 
 # merge all data
 data <-merge(data,chemdata,by=c("Parent_ID"))
-# remove data point with NA
-cdata <- na.omit(data)
+
 ###############################################################
 ## plot correlation matrix
 vars <- c('DIC','NPOC', 'TN','TSS','T_mean','TOT_BASIN_AREA','StreamOrde','Normalized_Transformations')
@@ -68,6 +68,8 @@ print(DotPlotFin)
 
 ################################################
 # Stepwise Regression
+# remove data point with NA
+cdata <- na.omit(data)
 
 #define intercept-only model
 intercept_only <- lm(DO_slope ~ 1, data=cdata)
@@ -129,10 +131,10 @@ dev.off()
 # remove TN due to the missing value
 ################################################
 #define intercept-only model
-intercept_only <- lm(DO_slope ~ 1, data=na.omit(data))
+intercept_only <- lm(DO_slope ~ 1, data=data)
 
 #define model with all predictors
-all <- lm(DO_slope ~ DIC + NPOC + TSS+T_mean+TOT_BASIN_AREA+StreamOrde+Transformations, data = na.omit(data))
+all <- lm(DO_slope ~ DIC + NPOC + TSS+T_mean+TOT_BASIN_AREA+StreamOrde+Transformations, data = data)
 
 ###################################
 #perform forward stepwise regression
