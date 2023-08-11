@@ -23,6 +23,7 @@ library(sf) # tidy spatial
 library(spData)
 library(cowplot)
 library(rstudioapi)
+library(viridis)
 
 rm(list=ls(all=T))
 
@@ -33,7 +34,7 @@ setwd("./..")
 
 # ================================= User inputs ================================
 
-metadata_file <- './Data/v2_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv'
+metadata_file <- './Data/2021_spatial_study_data/v2_SFA_SpatialStudy_2021_Sample_Based_Surface_Water_DataPackage/data/SPS_Sample_Field_Metadata.csv'
 
 data_file <- './Data/spatial_data.csv'
 
@@ -103,11 +104,12 @@ ER_wc_map <- ggplot()+
   scale_fill_gradient(low = 'white', high = 'black')+
   geom_sf(data = YRB_flowlines, color = "royalblue", alpha = 0.6)+
   new_scale_fill()+
-  geom_sf(data = sites, size = 1.5, aes(color = ER_wc), show.legend = T) +
-  scale_fill_viridis(option = 'A')+
-  scale_color_viridis(option = 'A')+
+  geom_sf(data = sites, aes(color = ER_wc, size = ER_wc), show.legend = T) +
+  scale_fill_viridis(option = 'B', begin = 0.3)+
+  scale_color_viridis(option = 'B', begin = 0.3)+
+  scale_size(range = c(2, 6.5), trans = 'reverse')+
   theme_map() + 
-  labs(x = "", y = "", color = "Total Water Column\nRespiration\n(mg O2 L-1 day-1)") + 
+  labs(x = "", y = "", color = "Water Column\nRespiration\n(mg O2 L-1 day-1)") + 
   ggspatial::annotation_scale(
     location = "br",
     pad_x = unit(0.5, "in"), 
@@ -126,7 +128,7 @@ full <- ggdraw() +
 
 ggsave('./Data/Map/SPS_ER_Water_Column_Map.pdf',
        full,
-       width = 6,
+       width = 8,
        height = 5
 )
 
