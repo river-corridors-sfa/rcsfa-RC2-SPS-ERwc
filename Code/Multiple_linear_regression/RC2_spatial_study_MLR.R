@@ -23,19 +23,19 @@ library(ggbreak)
 library("PerformanceAnalytics")
 
 # read in DO_slope(ERwater),"T_mean","StreamOrde","TOT_BASIN_AREA"data
-data<- read.csv(file.path('./Data/spatial_data.csv'))
+data<- read.csv(file.path('./Data/Multiple_linear_regression/spatial_data.csv'))
 names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','DO_slope')
 data<-data[c(1,2,7:10)]
 # set positive ERwater to 0
 data$DO_slope[data$DO_slope>0]<-0
 
 ## Transformatio data
-sdata<- read.csv(file.path('./Data','SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
+sdata<- read.csv(file.path('./Data/Multiple_linear_regression','SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
 names(sdata)<-c('Parent_ID','Transformations','Peaks','Normalized_Transformations')
 data <- merge(data,sdata,by=c("Parent_ID"))
 
 ## chemical data from 'v2_SFA_SpatialStudy_2021_Sample_Based_Surface_Water_DataPackage'
-chemdata <- read.csv(file.path('./Data/2021_spatial_study_data/v2_SFA_SpatialStudy_2021_Sample_Based_Surface_Water_DataPackage/data','v2_SPS_NPOC_TN_DIC_TSS_Ions_Summary.csv'),skip=2)
+chemdata <- read.csv(file.path('./Data/Multiple_linear_regression','v2_SPS_NPOC_TN_DIC_TSS_Ions_Summary.csv'),skip=2)
 chemdata <-chemdata[grep('SPS',chemdata$Sample_Name),]
 names(chemdata)
 chemdata <-chemdata[,c(2,4,18:20)]; 
