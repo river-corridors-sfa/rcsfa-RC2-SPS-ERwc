@@ -34,11 +34,13 @@ setwd("./..")
 
 # ================================= User inputs ================================
 
-metadata_file <- './Data/2021_spatial_study_data/v2_SFA_SpatialStudy_2021_Sample_Based_Surface_Water_DataPackage/data/SPS_Sample_Field_Metadata.csv'
+metadata_file <- 'C:/Users/forb086/Downloads/v2_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv'
 
-data_file <- './Data/spatial_data.csv'
+data_file <- './Data/Multiple_linear_regression/spatial_data.csv'
 
-shp_dir <- './Data/Map/YakimaRiverBasin_Boundary'
+yrb_shp_dir <- './Data/Map/YakimaRiverBasin_Boundary'
+
+cluster_shp_dir <- './Data/Map'
 
 common_crs = 4326
 
@@ -58,7 +60,7 @@ merge <- data %>%
   
 # ============================ read in YRB shp file ============================
 
-YRB_shp <- list.files(shp_dir, 'shp', full.names = T)
+YRB_shp <- list.files(yrb_shp_dir, 'shp', full.names = T)
 
 YRB_boundary <- read_sf(YRB_shp) %>%
   st_transform(common_crs)
@@ -71,19 +73,26 @@ sites <- st_as_sf(merge, coords = c('Longitude','Latitude'), crs = common_crs)
 
 YRB_flowlines <- get_nhdplus(AOI = YRB_boundary$geometry, streamorder = 3)
 
-elevation_raw <- get_elev_raster(YRB_boundary$geometry, z = 10)
+# elevation_raw <- get_elev_raster(YRB_boundary$geometry, z = 10)
+# 
+# elevation_crop <- mask(elevation_raw, YRB_boundary)
+# 
+# elevation <- as.data.frame(elevation_crop, xy = T) %>% 
+#   as_tibble() %>% 
+#   rename("long" = x, 
+#          "lat" = y, 
+#          "elevation" = 3) %>% #column index > name (changing resolution changes colname)
+#   filter(!is.na(elevation))
 
-elevation_crop <- mask(elevation_raw, YRB_boundary)
+# ============================ read in cluster shp file ========================
 
-elevation <- as.data.frame(elevation_crop, xy = T) %>% 
-  as_tibble() %>% 
-  rename("long" = x, 
-         "lat" = y, 
-         "elevation" = 3) %>% #column index > name (changing resolution changes colname)
-  filter(!is.na(elevation))
+cluster_shp <- list.files(cluster_shp_dir, 'shp', full.names = T)
+
+cluster <- read_sf(cluster_shp) %>%
+  st_transform(common_crs)
 
 
-# ========================= create map of ER water column ======================
+# ========================= create insert map ======================
 
 data("us_states", package = "spData")
 us_states_4326 = st_transform(us_states, crs = 4326)
@@ -97,13 +106,52 @@ insert <- ggplot() +
   labs(x = "", y = "")+
   theme_map()
 
+# ========================= create map of ER water column (elevation) ======================
 
-ER_wc_map <- ggplot()+
+# ER_wc_map <- ggplot()+
+#   geom_sf(data = YRB_boundary)+
+#   geom_raster(data = elevation, aes(long, lat, fill = elevation), show.legend = F, alpha = 0.4)+
+#   scale_fill_gradient(low = 'white', high = 'black')+
+#   geom_sf(data = YRB_flowlines, color = "royalblue", alpha = 0.6)+
+#   new_scale_fill()+
+#   geom_sf(data = sites, aes(color = ER_wc, size = ER_wc), show.legend = T) +
+#   scale_fill_viridis(option = 'B', begin = 0.3)+
+#   scale_color_viridis(option = 'B', begin = 0.3)+
+#   scale_size(range = c(2, 6.5), trans = 'reverse')+
+#   theme_map() + 
+#   labs(x = "", y = "", color = "Water Column\nRespiration\n(mg O2 L-1 day-1)") + 
+#   ggspatial::annotation_scale(
+#     location = "br",
+#     pad_x = unit(0.5, "in"), 
+#     bar_cols = c("black", "white")) +
+#   ggspatial::annotation_north_arrow(
+#     location = "tl", which_north = "true",
+#     pad_x = unit(1.5, "in"), 
+#     # pad_y = unit(0.5, "in"),
+#     style = ggspatial::north_arrow_nautical(
+#       fill = c("black", "white"),
+#       line_col = "grey20"))
+# 
+# full <- ggdraw() +
+#   draw_plot(ER_wc_map) +
+#   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
+# 
+# ggsave('./Data/Map/SPS_ER_Water_Column_Map.pdf',
+#        full,
+#        width = 8,
+#        height = 5
+# )
+
+# ========================= create map of ER water column (cluster) ======================
+
+ER_wc_map_cluster <- ggplot()+
   geom_sf(data = YRB_boundary)+
-  geom_raster(data = elevation, aes(long, lat, fill = elevation), show.legend = F, alpha = 0.4)+
-  scale_fill_gradient(low = 'white', high = 'black')+
+  geom_sf(data = cluster, aes(fill = as.factor(ClusterNum), color = as.factor(ClusterNum)), show.legend = T)+
+  scale_fill_manual(values = alpha(c('forestgreen', 'steelblue1', 'green4', 'tan', 'palegreen', 'peachpuff'), 0.3))+
+  scale_color_manual(values = alpha(c('forestgreen', 'steelblue1', 'green4', 'tan', 'palegreen', 'peachpuff'), 0.2))+
   geom_sf(data = YRB_flowlines, color = "royalblue", alpha = 0.6)+
   new_scale_fill()+
+  new_scale_color()+
   geom_sf(data = sites, aes(color = ER_wc, size = ER_wc), show.legend = T) +
   scale_fill_viridis(option = 'B', begin = 0.3)+
   scale_color_viridis(option = 'B', begin = 0.3)+
@@ -122,17 +170,15 @@ ER_wc_map <- ggplot()+
       fill = c("black", "white"),
       line_col = "grey20"))
 
-full <- ggdraw() +
-  draw_plot(ER_wc_map) +
+full_cluster <- ggdraw() +
+  draw_plot(ER_wc_map_cluster) +
   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
 
-ggsave('./Data/Map/SPS_ER_Water_Column_Map.pdf',
-       full,
+ggsave('./Data/Map/SPS_ER_Water_Column_Map_Cluster.pdf',
+       full_cluster,
        width = 8,
        height = 5
 )
-
-
 
 
 
