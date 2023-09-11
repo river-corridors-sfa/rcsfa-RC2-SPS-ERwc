@@ -1,0 +1,3 @@
+Bagging-Date: 2023-07-18
+Payload-Oxum: 11043235.2
+Bag-Size: 10.5 MB
