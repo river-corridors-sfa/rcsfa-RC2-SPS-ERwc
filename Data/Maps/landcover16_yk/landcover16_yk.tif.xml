@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20210804</CreaDate><CreaTime>10382100</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.7\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractByMask" Date="20210804" Time="103821">ExtractByMask lc_CR2016.tif Yakima C:\Project\Columbia_SPARROW\gis\landcover\landcover16_yk.tif</Process></lineage></DataProperties></Esri></metadata>
