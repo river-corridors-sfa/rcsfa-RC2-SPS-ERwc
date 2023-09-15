@@ -52,29 +52,12 @@ data <-merge(data,chemdata,by=c("Parent_ID"))
 sapply(data, function(x) sum(is.na(x)))
 ###############################################################
 ## plot correlation matrix
-vars <- c('DIC','NPOC', 'NO3','TN','TSS','T_mean','TOT_BASIN_AREA','StreamOrde','Normalized_Transformations')
-png(file.path("./Plots",paste0('exploratory_variables_correlation_matrix',".png")),
-    width = 10, height = 10, units = 'in', res = 600)
+vars <- c('DO_slope','DIC','NPOC', 'NO3','TN','TSS','T_mean','TOT_BASIN_AREA','StreamOrde','Normalized_Transformations')
+png(file.path(".",paste0('exploratory_variables_correlation_matrix',".png")),
+    width = 6, height = 6, units = 'in', res = 600)
 #par(mfrow=c(2,2)) 
 chart.Correlation(data[vars], histogram=TRUE, pch=19)
 dev.off()
-
-###############################################################
-# plot to visualize the value of ERwater in each Site
-odata=data[c('Site_ID','DO_slope')]
-odata <- odata%>%arrange(DO_slope)%>%
-          mutate(Site_ID = factor(Site_ID, levels = Site_ID))
-DotPlot <- ggplot(odata, aes(x=Site_ID, y=DO_slope)) + 
-  stat_summary(fun=mean, geom="point", shape=18,size=3, color="red") +
-  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))
-DotPlotFin <- DotPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                              panel.background = element_blank(), axis.line = element_line(colour = "black"))
-print(DotPlotFin)
-ggsave(file.path("./Plots",paste0('ERwc_dotplot',".png")), 
-       plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
 ################################################
 # Stepwise Regression
@@ -283,5 +266,74 @@ rdata2 <- rdata %>%
     )
 rdata2$DO_slope<- rdata2$DO_slope*60*24
 
+## within-sample variation
+wsummary<-rdata2%>%group_by(Site_ID) %>%
+  summarise(mean = mean(DO_slope),
+            sd = sd(DO_slope),
+            var = var(DO_slope))
+mean(wsummary$sd)
+mean(wsummary$var)
+## lme4 fitting
+
 lfit <- lmer( DO_slope ~  (1 | Site_ID), data=rdata2)  
 summary(lfit)
+
+
+###############################################################
+# plot to visualize the value of ERwater in each Site
+#odata=data[c('Site_ID','DO_slope')]
+odata=rdata2
+odata <- odata %>%
+  group_by(Site_ID) %>%
+  mutate(mean = mean(DO_slope),median =median(DO_slope) )
+
+##
+#order by mean values
+odata <- odata[order(odata$mean),]
+sites<-unique(odata$Site_ID)
+odata['mean_rank'] <-'rank1'
+for (i in 1:length(sites)){
+  odata$mean_rank[odata$Site_ID==sites[i]] = paste0('rank',sprintf("%02d", i))
+}
+
+# odata <- odata%>%arrange(median(DO_slope))%>%
+#   mutate(Site_ID = factor(Site_ID, levels = unique(Site_ID)))
+
+DotPlot <- ggplot(odata, aes(x=mean_rank, y=DO_slope)) + 
+  geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
+  stat_summary(fun=mean, geom="point", shape=18,size=3, color="red") +
+  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))+
+  scale_x_discrete(labels=sites)
+DotPlotFin <- DotPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                              panel.background = element_blank(), axis.line = element_line(colour = "black"))
+print(DotPlotFin)
+ggsave(file.path("./Plots",paste0('ERwc_dotplot_mean_rank',".png")), 
+       plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
+
+##
+#order by median values
+odata <- odata[order(odata$median),]
+sites<-unique(odata$Site_ID)
+odata['median_rank'] <-'rank1'
+for (i in 1:length(sites)){
+  odata$median_rank[odata$Site_ID==sites[i]] = paste0('rank',sprintf("%02d", i))
+}
+
+# odata <- odata%>%arrange(median(DO_slope))%>%
+#   mutate(Site_ID = factor(Site_ID, levels = unique(Site_ID)))
+
+DotPlot <- ggplot(odata, aes(x=median_rank, y=DO_slope)) + 
+  geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
+  stat_summary(fun=median, geom="point", shape=18,size=3, color="red") +
+  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))+
+  scale_x_discrete(labels=sites)
+DotPlotFin <- DotPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                              panel.background = element_blank(), axis.line = element_line(colour = "black"))
+print(DotPlotFin)
+ggsave(file.path("./Plots",paste0('ERwc_dotplot_median_rank',".png")), 
+       plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
+
