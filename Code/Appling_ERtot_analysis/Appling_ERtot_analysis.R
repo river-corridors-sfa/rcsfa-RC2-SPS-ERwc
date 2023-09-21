@@ -1,7 +1,6 @@
 # Input data files:
-# 1) daily_predictions_ERtot_depth.csv (Source: Appling et al. (2018b, c). GPP and ER units in g O2 m^-2 d^-1. Depth in m.
-# NOTE: The data file (156 MB) is available from the online data repository associated with the manuscript. See the "Code and data availability" statement in the manuscript for information about accessing the data repository. The data file can also be downloaded directly here: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389.
-# 2) StreamPULSE_bestSiteIDs.csv (StreamPULSE sites) (Source: B. Hall, Jr)
+# 1) daily_predictions_ERtot_depth.csv. This reduced dataset contains the site ID, reach-averaged daily predicted ecosystem respiration (ERtot; g O2 m^-2 d^-1), and depth (m) data for the 356 streams and rivers across the conterminlous United States from Appling et al. (2018b, c). The complete data file can also be downloaded directly here: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389.
+# 2) StreamPULSE_bestSiteIDs.csv (StreamPULSE sites). This reduced dataset contains the site ID, site name, and data source for the 222 sites in the StreamPULSE dataset from Bernhardt et al. (2018). The complete dataset can be downloaded directly here: https://data.streampulse.org/download_bulk.
 
 # Read data
 library(readr)
@@ -18,7 +17,7 @@ mean_ERtot_depth_by_site
 
 # Remove Appling et al. (2018) sites potentially affected by process or observation error by matching site ID codes in the Appling dataset ("Site_ID") with StreamPULSE site ID codes ("Site_ID")
 
-# 1) read streamPULSE data (Source: B. Hall)
+# 1) read streamPULSE data 
 StreamPULSE_bestSiteIDs <- read.csv(file.path('./Data/Appling_ERtot_analysis/StreamPULSE_bestSiteIDs.csv'))
 colnames(StreamPULSE_bestSiteIDs)
 # 2) Subset sites from Appling dataset by matching site IDs (i.e., mean_ERtot_depth_by_site$Site_ID = StreamPULSE_bestSiteIDs$Site_ID) and remove unnecessary data (columns 1 and 3)
