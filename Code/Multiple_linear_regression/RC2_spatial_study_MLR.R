@@ -96,16 +96,16 @@ par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 avPlots(bfit, ~ NO3,id=FALSE,main='',xlab='', #xlab=expression("Residuals - TDN (mg L"^-1*" )"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 #mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
-mtext(TeX("Residuals - $NO_{3}^{+}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
 avPlots(bfit, ~ TOT_BASIN_AREA,id=FALSE,main='',xlab='', #xlab=expression("Residuals - Drainage Area (km"^2*")"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Residuals - Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
+mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (Â°C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Residuals - Temperature (°C)"),side=1, line=2.5,cex =0.7)
+mtext(expression("Temperature (°C)"),side=1, line=2.5,cex =0.7)
 avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (Â°C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Residuals - Normalized Transformations"),side=1, line=2.5,cex =0.7)
+mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
 dev.off()
 # 
 
@@ -117,7 +117,7 @@ par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 crPlots(bfit, ~ NO3,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 #mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
-mtext(TeX("Residuals - $NO_{3}^{+}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+mtext(TeX("Residuals - $NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ TOT_BASIN_AREA,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
@@ -205,9 +205,9 @@ ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend.png"),
 #   annotation_custom(grob = leg1, xmin = -0.075, xmax = -0.045, ymin = 20, ymax = 30)
 
 # density plot for ERtotal 
-p2 <- ggplot(ERriv, aes(x=ERtot,color='tot',fill="tot")) + 
+p2 <- ggplot(ERriv, aes(x=ERvolumetric,color='tot',fill="tot")) + 
   geom_density()+ 
-  geom_vline(aes(xintercept=median(ERtot)), color='black', size=1)+ 
+  geom_vline(aes(xintercept=median(ERvolumetric)), color='black', size=1)+ 
   # xlab(expression("ER"[tot]*"")) +
   # ylab('Density') + scale_fill_grey() + 
   theme_classic()+
@@ -233,9 +233,9 @@ ggsave(file.path('./Plots',"hist_density_plot_ERtot_legend.png"),
 
 
 # density plot for ERtotal with legend
-p3 <- ggplot(ERriv, aes(x=ERtot,color='tot',fill="tot")) + 
+p3 <- ggplot(ERriv, aes(x=ERvolumetric,color='tot',fill="tot")) + 
   geom_density()+ 
-  geom_vline(aes(xintercept=median(ERtot)), color='black', size=0.8)+ 
+  geom_vline(aes(xintercept=median(ERvolumetric)), color='black', size=0.8)+ 
   # xlab(expression("ER"[tot]*"")) +
   # ylab('Density') + scale_fill_grey() + 
   theme_classic()+
