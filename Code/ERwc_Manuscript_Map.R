@@ -40,7 +40,7 @@ data_file <- './Data/Multiple_linear_regression/spatial_data.csv'
 
 yrb_shp_dir <- './Data/Maps/YakimaRiverBasin_Boundary'
 
-cluster_shp_dir <- './Data/Maps'
+cluster_shp_dir <- './Data/Maps/YRB_Cluster'
 
 common_crs = 4326
 
@@ -89,10 +89,10 @@ elevation <- as.data.frame(elevation_crop, xy = T) %>%
 
 # ============================ read in cluster shp file ========================
 
-# cluster_shp <- list.files(cluster_shp_dir, 'shp', full.names = T)
-# 
-# cluster <- read_sf(cluster_shp) %>%
-#   st_transform(common_crs)
+cluster_shp <- list.files(cluster_shp_dir, 'shp', full.names = T)
+
+cluster <- read_sf(cluster_shp) %>%
+  st_transform(common_crs)
 
 
 # ========================= create insert map ======================
@@ -147,41 +147,47 @@ ggsave('./Data/Maps/SPS_ER_Water_Column_Map.pdf',
 
 # ========================= create map of ER water column (cluster) ======================
 
-# ER_wc_map_cluster <- ggplot()+
-#   geom_sf(data = YRB_boundary)+
-#   geom_sf(data = cluster, aes(fill = as.factor(ClusterNum), color = as.factor(ClusterNum)), show.legend = T)+
-#   scale_fill_manual(values = alpha(c('forestgreen', 'steelblue1', 'green4', 'tan', 'palegreen', 'peachpuff'), 0.3))+
-#   scale_color_manual(values = alpha(c('forestgreen', 'steelblue1', 'green4', 'tan', 'palegreen', 'peachpuff'), 0.2))+
-#   geom_sf(data = YRB_flowlines, color = "royalblue", alpha = 0.6)+
-#   new_scale_fill()+
-#   new_scale_color()+
-#   geom_sf(data = sites, aes(color = ER_wc, size = ER_wc), show.legend = T) +
-#   scale_fill_viridis(option = 'B', begin = 0.3)+
-#   scale_color_viridis(option = 'B', begin = 0.3)+
-#   scale_size(range = c(2, 6.5), trans = 'reverse')+
-#   theme_map() + 
-#   labs(x = "", y = "", color = "Water Column\nRespiration\n(mg O2 L-1 day-1)") + 
-#   ggspatial::annotation_scale(
-#     location = "br",
-#     pad_x = unit(0.5, "in"), 
-#     bar_cols = c("black", "white")) +
-#   ggspatial::annotation_north_arrow(
-#     location = "tl", which_north = "true",
-#     pad_x = unit(1.5, "in"), 
-#     # pad_y = unit(0.5, "in"),
-#     style = ggspatial::north_arrow_nautical(
-#       fill = c("black", "white"),
-#       line_col = "grey20"))
-# 
-# full_cluster <- ggdraw() +
-#   draw_plot(ER_wc_map_cluster) +
-#   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
-# 
-# ggsave('./Data/Map/SPS_ER_Water_Column_Map_Cluster.pdf',
-#        full_cluster,
-#        width = 8,
-#        height = 5
-# )
+ER_wc_map_cluster <- ggplot()+
+  geom_sf(data = YRB_boundary)+
+  geom_sf(data = cluster, aes(fill = as.factor(ClusterNum), color = as.factor(ClusterNum)), show.legend = T)+
+  # scale_fill_manual(values = alpha(c('#1a9850', 'steelblue1', '#91cf60', '#8c510a', '#d9ef8b', '#f6e8c3'), 0.3))+
+  # scale_color_manual(values = alpha(c('#1a9850', 'steelblue1', '#91cf60', '#8c510a', '#d9ef8b', '#f6e8c3'), 0.2))+
+  scale_fill_manual(values = c('#1a9850', 'steelblue1', '#91cf60', '#8c510a', '#d9ef8b', '#f6e8c3'))+
+  scale_color_manual(values = c('#1a9850', 'steelblue1', '#91cf60', '#8c510a', '#d9ef8b', '#f6e8c3'))+
+  geom_sf(data = YRB_flowlines, color = "royalblue")+
+  new_scale_fill()+
+  new_scale_color()+
+  # geom_sf(data = sites, aes(color = ER_wc, size = ER_wc), show.legend = T) +
+  # geom_sf(data = sites, aes(size = ER_wc), show.legend = T, shape = 18, fill = 'white', color = 'black') +
+  geom_sf(data = sites, show.legend = T, size = 3) +
+  # scale_fill_viridis(option = 'B', begin = 0.3)+
+  # scale_color_viridis(option = 'B', begin = 0.3)+
+  # scale_fill_gradient(low = 'white', high = 'black')+
+  # scale_color_gradient(low = 'white', high = 'black')+
+  # scale_size(range = c(0.1, 10), trans = 'reverse')+
+  theme_map() +
+  # labs(x = "", y = "", color = "Water Column\nRespiration\n(mg O2 L-1 day-1)") +
+  ggspatial::annotation_scale(
+    location = "br",
+    pad_x = unit(0.5, "in"),
+    bar_cols = c("black", "white")) +
+  ggspatial::annotation_north_arrow(
+    location = "tl", which_north = "true",
+    pad_x = unit(1.5, "in"),
+    # pad_y = unit(0.5, "in"),
+    style = ggspatial::north_arrow_nautical(
+      fill = c("black", "white"),
+      line_col = "grey20"))
+
+full_cluster <- ggdraw() +
+  draw_plot(ER_wc_map_cluster) +
+  draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
+
+ggsave('./Data/Maps/SPS_ER_Water_Column_Map_Cluster.pdf',
+       full_cluster,
+       width = 8,
+       height = 5
+)
 
 
 
