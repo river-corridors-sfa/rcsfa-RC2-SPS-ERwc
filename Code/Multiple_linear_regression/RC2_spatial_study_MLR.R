@@ -25,12 +25,12 @@ library(latex2exp)
 library(lme4)
 library("PerformanceAnalytics")
 
-# read in DO_slope(ERwater),"T_mean","StreamOrde","TOT_BASIN_AREA"data
+# read in ERwc(ERwater),"T_mean","StreamOrde","Total_Drainage_Area"data
 data<- read.csv(file.path('./Data/Multiple_linear_regression/spatial_data.csv'))
-names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','DO_slope')
-data<-data[c(1,2,7:10)]
+#names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','ERwc')
+names(data) <-c('Site_ID','Parent_ID','ERwc',"T_mean","StreamOrde","Total_Drainage_Area")
 # set positive ERwater to 0
-# data$DO_slope[data$DO_slope>0]<-0
+# data$ERwc[data$ERwc>0]<-0
 
 ## Transformatio data
 sdata<- read.csv(file.path('./Data/Multiple_linear_regression','SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
@@ -41,84 +41,97 @@ data <- merge(data,sdata,by=c("Parent_ID"))
 chemdata <- read.csv(file.path('./Data/Multiple_linear_regression','v2_SPS_NPOC_TN_DIC_TSS_Ions_Summary.csv'),skip=2)
 chemdata <-chemdata[grep('SPS',chemdata$Sample_Name),]
 names(chemdata)
-chemdata <-chemdata[,c(2,4,12,18:20)]; 
-names(chemdata)<-c('Parent_ID','DIC','NO3','NPOC','TN','TSS')
+chemdata <-chemdata[,c(2,4:7)]; 
+names(chemdata)<-c('Parent_ID','DIC','NO3','NPOC','TSS')
 chemdata[chemdata=='-9999'] =NA
-chemdata[c('DIC','NO3','NPOC','TN','TSS')] <- sapply(chemdata[c('DIC','NO3','NPOC','TN','TSS')],as.numeric)
+chemdata[c('DIC','NO3','NPOC','TSS')] <- sapply(chemdata[c('DIC','NO3','NPOC','TSS')],as.numeric)
 
 # merge all data
 data <-merge(data,chemdata,by=c("Parent_ID"))
 # check missingvalues in data
 sapply(data, function(x) sum(is.na(x)))
+#data <- data[data$NO3<max(data$NO3),]
 ###############################################################
 ## plot correlation matrix
-vars <- c('DO_slope','DIC','NPOC', 'NO3','TN','TSS','T_mean','TOT_BASIN_AREA','StreamOrde','Normalized_Transformations')
+vars <- c('ERwc','DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','StreamOrde','Transformations','Normalized_Transformations')
 png(file.path(".",paste0('exploratory_variables_correlation_matrix',".png")),
-    width = 6, height = 6, units = 'in', res = 600)
+    width = 8, height = 6, units = 'in', res = 600)
 #par(mfrow=c(2,2)) 
 chart.Correlation(data[vars], histogram=TRUE, pch=19)
 dev.off()
 
+########################
+#log transform all variables
+lvars<- vars[-c(8)]
+ldata<- data[lvars]
+#log transform variables
+for ( v in lvars[-1]){
+  ldata[,v] <- log10(ldata[,v])
+}
+# correlation matrix
+png(file.path("./Plots",paste0('exploratory_variables_correlation_matrix_log',".png")),
+    width = 8, height = 6, units = 'in', res = 600)
+#par(mfrow=c(2,2)) 
+chart.Correlation(ldata[lvars[-1]], histogram=TRUE, pch=19)
+dev.off()
+
+
 ################################################
 # Stepwise Regression
 # remove data point with NA
-invars <- c('DIC','NPOC', 'NO3','TSS','T_mean','TOT_BASIN_AREA','StreamOrde','Transformations','Normalized_Transformations')
-
-cdata <- na.omit(data[c(invars,'DO_slope')])
-
+invars <- c('DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','StreamOrde','Transformations','Normalized_Transformations')
+#cdata$NO3 <- log10(cdata$NO3)
+cdata <- na.omit(data[c(invars,'ERwc')])
+#cdata <-cdata[cdata$NO3<max(cdata$NO3),]
 #define intercept-only model
-intercept_only <- lm(DO_slope ~ 1, data=cdata)
+intercept_only <- lm(ERwc ~ 1, data=cdata)
 
 #define model with all predictors
-all <- lm(DO_slope ~ DIC + NPOC + NO3+TSS+T_mean+TOT_BASIN_AREA+StreamOrde+Transformations+Normalized_Transformations, data = cdata)
+all <- lm(ERwc ~ DIC + NPOC + NO3+TSS+T_mean+Total_Drainage_Area+StreamOrde+Transformations+Normalized_Transformations, data = cdata)
 
 ###################################
 #perform forward stepwise regression
-forward <- step(intercept_only, direction='forward', scope=formula(all), trace=1)
+forward <- step(intercept_only, direction='forward', scope=formula(all),steps = 2000, trace=1)
 forward$anova
 forward$coefficients
+summary(forward)
 ###################################
 #perform forward stepwise regression
-# backward <- step(all, direction='backward', scope=formula(all), trace=1)
-# backward$anova
-# backward$coefficients
-#############
-#  lm fitting using selected variables from forward stepwise selection
-bfit<- lm(DO_slope ~NO3 +TOT_BASIN_AREA+ T_mean+Normalized_Transformations , data = data)
-#bfit<- lm(DO_slope ~NO3 +TOT_BASIN_AREA+ T_mean+StreamOrde+Normalized_Transformations, data = data)
+backward <- step(all, direction='backward', scope=formula(all),steps = 2000, trace=1)
+backward$anova
+backward$coefficients
+summary(backward)
+bfit<- lm(ERwc ~ DIC + NPOC + NO3 +  T_mean + Total_Drainage_Area + 
+            StreamOrde  + Normalized_Transformations, data=cdata)
 summary(bfit)
 
-## partial-regression plot
-png(file.path('./Plots',paste0('partial_regression_avPlots',".png")),
-    width = 7, height = 6, units = 'in', res = 600)
-par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
-#
-avPlots(bfit, ~ NO3,id=FALSE,main='',xlab='', #xlab=expression("Residuals - TDN (mg L"^-1*" )"),
-        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-#mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
-mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
-avPlots(bfit, ~ TOT_BASIN_AREA,id=FALSE,main='',xlab='', #xlab=expression("Residuals - Drainage Area (km"^2*")"),
-        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
-avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
-        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
-avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
-        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
+png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_subset_remove_outlier',".png")),
+    width = 4, height = 3, units = 'in', res = 600)
+par(mfrow=c(1,1),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+plot(c(0,1,2),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
+     xlab ='number of variables',ylab='AIC' )
+points(c(9,8,7,6,5,4,3,2),backward$anova$AIC,type = "b",col=2,pch=1)
+legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
 dev.off()
-# 
+#############
+#  lm fitting using selected variables from forward stepwise selection
+#bfit<- lm(ERwc ~log(NO3) +Total_Drainage_Area+ T_mean+Transformations , data = data[data$NO3<max(data$NO3),]) #data = data[data$NO3<4,]
+#bfit<- lm(ERwc ~T_mean+NPOC, data=data[data$NO3<max(data$NO3),])
+bfit<- lm(ERwc ~T_mean+NPOC, data=cdata)
+summary(bfit)
 
-# partial-residual plots
-png(file.path('./Plots',paste0('partial_residual_crPlots',".png")),
+#bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations, data = data) #data = data[data$NO3<4,]
+#bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations, data = data) #data = data[data$NO3<4,]
+
+png(file.path('./Plots',paste0('partial_residual_crPlots_fulldata_forward',".png")),
     width = 7, height = 6, units = 'in', res = 600)
 par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 #par(mfrow=c(1,3))
 crPlots(bfit, ~ NO3,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 #mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
-mtext(TeX("Residuals - $NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ TOT_BASIN_AREA,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
+mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
@@ -127,10 +140,215 @@ mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
+dev.off()
+######################
+bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations+DIC+NPOC, data = data) #data = data[data$NO3<4,]
+# partial-residual plots
+png(file.path('./Plots',paste0('partial_residual_crPlots_fulldata_backward',".png")),
+    width = 6, height = 8, units = 'in', res = 600)
+par(mfrow=c(3,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#par(mfrow=c(1,3))
+crPlots(bfit, ~ NO3,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+#mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
+mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ DIC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("DIC"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
 #par(mfrow=c(1,3))
 dev.off()
 
 
+
+# partial-residual plots
+png(file.path('./Plots',paste0('partial_residual_crPlots_subset_no_transform_for_backward',".png")),
+    width = 7, height = 3.5, units = 'in', res = 600)
+par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#par(mfrow=c(1,3))
+crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
+# crPlots(bfit, ~ NO3,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
+#         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+#par(mfrow=c(1,3))
+dev.off()
+
+# 
+# ## partial-regression plot
+# png(file.path('./Plots',paste0('partial_regression_avPlots_tp',".png")),
+#     width = 8, height = 4, units = 'in', res = 600)
+# par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+# #
+# avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+# avPlots(bfit, ~ NPOC,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Residuals - NPOC"),side=1, line=2.5,cex =0.7)
+# dev.off()
+
+# 
+# ## partial-regression plot
+# png(file.path('./Plots',paste0('partial_regression_avPlots',".png")),
+#     width = 7, height = 6, units = 'in', res = 600)
+# par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+# #
+# avPlots(bfit, ~ NO3,id=FALSE,main='',xlab='', #xlab=expression("Residuals - TDN (mg L"^-1*" )"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# #mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
+# mtext(TeX("Residuals - $NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
+# avPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',xlab='', #xlab=expression("Residuals - Drainage Area (km"^2*")"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Residuals - Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
+# avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+# avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Residuals - Normalized Transformations"),side=1, line=2.5,cex =0.7)
+# dev.off()
+# # 
+
+################################################
+# Stepwise Regression : log transform  of NO3 and Total_Drainage_Area
+# remove data point with NA
+
+invars <- c('DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','Transformations','Normalized_Transformations')
+cdata <- na.omit(data[c(invars,'ERwc')])
+#cdata <-cdata[cdata$NO3<max(cdata$NO3),]
+#ldata <-na.omit(ldata)
+#define intercept-only model
+intercept_only <- lm(ERwc ~ 1, data=cdata)
+
+#define model with all predictors
+#+StreamOrde
+#all <- lm(ERwc ~ DIC + NPOC + log10(NO3)+TSS+T_mean+log10(Total_Drainage_Area)+Transformations+Normalized_Transformations, data = ldata)
+all <- lm(ERwc ~ log10(DIC) + log10(NPOC) + log10(NO3)+log10(TSS)+
+            log10(T_mean)+log10(Total_Drainage_Area)+log10(Transformations)+log10(Normalized_Transformations), data = cdata)
+
+###################################
+#perform forward stepwise regression
+forward <- step(intercept_only, direction='forward', scope=formula(all),steps = 2000, trace=1)
+forward$anova
+forward$coefficients
+summary(forward)
+#bfit<- lm(ERwc ~  log10(NO3)  , data = cdata)
+bfit<- lm(ERwc ~  log10(NO3) + log10(Transformations) + log10(T_mean)   , data = cdata)
+summary(bfit)
+
+# partial-residual plots
+png(file.path('./Plots',paste0('partial_residual_crPlots_log_vars_forward',".png")),
+    width = 7, height = 6, units = 'in', res = 600)
+par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#par(mfrow=c(1,3))
+crPlots(bfit, ~ log10(NO3),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(TeX("log($NO_{3}^{-}$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log10(Transformations),id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("log(Transformations)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log10(T_mean),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("log(Temperature (캜))"),side=1, line=2.5,cex =0.7)
+# crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
+
+#par(mfrow=c(1,3))
+dev.off()
+###################################
+#perform forward stepwise regression
+backward <- step(all, direction='backward', scope=formula(all),steps = 2000, trace=1)
+backward$anova
+backward$coefficients
+summary(backward)
+#bfit<- lm(ERwc ~   log10(NPOC) + log10(NO3) + log10(T_mean), data = cdata)
+bfit<- lm(ERwc ~  log10(NPOC) + log10(NO3) + log10(T_mean) , data = cdata)
+summary(bfit)
+
+png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_full_dataset_log_transform_vars',".png")),
+    width = 4, height = 3, units = 'in', res = 600)
+par(mfrow=c(1,1),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+# plot(c(0,1,2,3,4),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
+#      xlab ='number of variables',ylab='AIC' )
+# points(c(9,8,7,6,5,4),backward$anova$AIC,type = "b",col=2,pch=1)
+plot(c(0,1,2,3),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
+     xlab ='number of variables',ylab='AIC' )
+points(c(8,7,6,5,4,3),backward$anova$AIC,type = "b",col=2,pch=1)
+legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
+dev.off()
+#############
+#  lm fitting using selected variables from forward stepwise selection
+
+#bfit<- lm(ERwc ~log10(NO3) +Total_Drainage_Area+ T_mean+Transformations , data = cdata)
+#bfit<- lm(ERwc ~ T_mean+NPOC+log(NO3), data=data[data$NO3<max(data$NO3),])
+bfit<- lm(ERwc ~   log10(NO3)+T_mean+Transformations, data = cdata)
+#bfit<- lm(ERwc ~ T_mean+NPOC, data=data[data$NO3<max(data$NO3),])
+summary(bfit)
+
+# partial-residual plots
+png(file.path('./Plots',paste0('partial_residual_crPlots_log_vars_backward',".png")),
+    width = 7, height = 6, units = 'in', res = 600)
+par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#par(mfrow=c(1,3))
+crPlots(bfit, ~ log10(NO3),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+#mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
+mtext(TeX("log($NO_{3}^{-}$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
+# crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
+#         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log10(T_mean),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("log(Temperature (캜))"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log10(NPOC),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+        ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("log(NPOC)"),side=1, line=2.5,cex =0.7)
+# crPlots(bfit, ~ Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+# mtext(expression("Transformations"),side=1, line=2.5,cex =0.7)
+#par(mfrow=c(1,3))
+dev.off()
+
+
+
+
+## partial-regression plot
+png(file.path('./Plots',paste0('partial_regression_avPlots_full_data_log_NO3',".png")),
+    width = 7, height = 6, units = 'in', res = 600)
+par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#
+avPlots(bfit, ~ NO3,id=FALSE,main='',xlab='', #xlab=expression("Residuals - TDN (mg L"^-1*" )"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+#mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
+mtext(TeX("Residuals - log($NO_{3}^{-}$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
+avPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',xlab='', #xlab=expression("Residuals - Drainage Area (km"^2*")"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Residuals - Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
+avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Residuals - Normalized Transformations"),side=1, line=2.5,cex =0.7)
+dev.off()
+# 
 ################################################
 # read in  ERtotal data
 ERriv <- read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteIDs.csv'))
@@ -140,18 +358,19 @@ ERriv <- read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSite
 ERwc<-data
 
 # ERwater data from literture
-ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
+#ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
+ERwc2 <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
 
 ## calculate the skewness for ERtotal and ER water in this study
 sk1= round(skewness(ERriv$ERvolumetric),2)
-sk2= round(skewness(ERwc$DO_slope),2)
+sk2= round(skewness(ERwc$ERwc),2)
 
 ################################################
 # make the density plots
 ## density plot for ERwater in this study
 p0 <- ggplot() + 
-  geom_density(data=ERwc, aes(x=DO_slope,fill='wc'),color='blue',adjust = 6)+
-  geom_vline(aes(xintercept=median(ERwc$DO_slope)),color="blue",  size=1)+
+  geom_density(data=ERwc, aes(x=ERwc,fill='wc'),color='blue',adjust = 6)+
+  geom_vline(aes(xintercept=median(ERwc$ERwc)),color="blue",  size=1)+
   geom_vline(data=ERwc2, aes(xintercept=ERwc1,color='lit'),linetype="dashed")+
   scale_x_cut(breaks=c(-0.12), which=c(1), scales=c(0.25, 1),space = 0.2)+ theme_bw()+ 
   # xlab(expression("ER"[wc]*"")) +
@@ -173,8 +392,8 @@ ggsave(file.path('./Plots',"hist_density_plot_ERwater.png"),
 
 ## density plot for ERwater with legend
 p1 <- ggplot() + 
-  geom_density(data=ERwc, aes(x=DO_slope,fill='wc'),color='blue',adjust = 4)+
-  geom_vline(aes(xintercept=median(ERwc$DO_slope)),color="blue",  size=1)+
+  geom_density(data=ERwc, aes(x=ERwc,fill='wc'),color='blue',adjust = 4)+
+  geom_vline(aes(xintercept=median(ERwc$ERwc)),color="blue",  size=1)+
   geom_vline(data=ERwc2, aes(xintercept=ERwc1,color='lit'),linetype="dashed")+
   scale_x_cut(breaks=c(-0.12), which=c(1), scales=c(0.25, 1),space = 0.2)+ theme_bw()+ 
   # xlab(expression("ER"[wc]*"")) +
@@ -262,30 +481,30 @@ rdata2 <- rdata %>%
     pivot_longer(
       cols = names(rdata)[2:4], 
       names_to = "replicates",
-      values_to = "DO_slope"
+      values_to = "ERwc"
     )
-rdata2$DO_slope<- rdata2$DO_slope*60*24
+rdata2$ERwc<- rdata2$ERwc*60*24
 
 ## within-sample variation
 wsummary<-rdata2%>%group_by(Site_ID) %>%
-  summarise(mean = mean(DO_slope),
-            sd = sd(DO_slope),
-            var = var(DO_slope))
+  summarise(mean = mean(ERwc),
+            sd = sd(ERwc),
+            var = var(ERwc))
 mean(wsummary$sd)
 mean(wsummary$var)
 ## lme4 fitting
 
-lfit <- lmer( DO_slope ~  (1 | Site_ID), data=rdata2)  
+lfit <- lmer( ERwc ~  (1 | Site_ID), data=rdata2)  
 summary(lfit)
 
 
 ###############################################################
 # plot to visualize the value of ERwater in each Site
-#odata=data[c('Site_ID','DO_slope')]
+#odata=data[c('Site_ID','ERwc')]
 odata=rdata2
 odata <- odata %>%
   group_by(Site_ID) %>%
-  mutate(mean = mean(DO_slope),median =median(DO_slope) )
+  mutate(mean = mean(ERwc),median =median(ERwc) )
 
 ##
 #order by mean values
@@ -296,10 +515,10 @@ for (i in 1:length(sites)){
   odata$mean_rank[odata$Site_ID==sites[i]] = paste0('rank',sprintf("%02d", i))
 }
 
-# odata <- odata%>%arrange(median(DO_slope))%>%
+# odata <- odata%>%arrange(median(ERwc))%>%
 #   mutate(Site_ID = factor(Site_ID, levels = unique(Site_ID)))
 
-DotPlot <- ggplot(odata, aes(x=mean_rank, y=DO_slope)) + 
+DotPlot <- ggplot(odata, aes(x=mean_rank, y=ERwc)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
   stat_summary(fun=mean, geom="point", shape=18,size=3, color="red") +
   geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
@@ -321,10 +540,10 @@ for (i in 1:length(sites)){
   odata$median_rank[odata$Site_ID==sites[i]] = paste0('rank',sprintf("%02d", i))
 }
 
-# odata <- odata%>%arrange(median(DO_slope))%>%
+# odata <- odata%>%arrange(median(ERwc))%>%
 #   mutate(Site_ID = factor(Site_ID, levels = unique(Site_ID)))
 
-DotPlot <- ggplot(odata, aes(x=median_rank, y=DO_slope)) + 
+DotPlot <- ggplot(odata, aes(x=median_rank, y=ERwc)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
   stat_summary(fun=median, geom="point", shape=18,size=3, color="red") +
   geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
