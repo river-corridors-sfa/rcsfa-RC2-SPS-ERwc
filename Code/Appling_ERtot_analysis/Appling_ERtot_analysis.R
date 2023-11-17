@@ -8,8 +8,8 @@ daily_predictions_ERtot_depth <- read.csv(file.path('./Data/Appling_ERtot_analys
 colnames(daily_predictions_ERtot_depth)
 
 # Convert daily areal respiration rates (ER; g O2 m^-2 d^-1) to volumetric rates (mg O2 L^-1 d^-1) by multiplying ER by 1/depth (m)
-daily_predictions_ERtot_depth$ERvolumetric <- daily_predictions_ERtot_depth$ER * 1/daily_predictions_ERtot_depth$depth
-daily_predictions_ERtot_depth$ERvolumetric
+daily_predictions_ERtot_depth$Total_Ecosystem_Respiration_Volumetric <- daily_predictions_ERtot_depth$Total_Ecosystem_Respiration_Areal * 1/daily_predictions_ERtot_depth$Depth
+daily_predictions_ERtot_depth$Total_Ecosystem_Respiration_Volumetric
 
 # Calculate mean ERtot and depth by site
 mean_ERtot_depth_by_site <- aggregate.data.frame(daily_predictions_ERtot_depth, list(Site_ID = daily_predictions_ERtot_depth$Site_ID), mean)
@@ -24,9 +24,9 @@ colnames(StreamPULSE_bestSiteIDs)
 mean_ERtot_bestSiteIDs <- subset(mean_ERtot_depth_by_site, subset =  mean_ERtot_depth_by_site$Site_ID %in% StreamPULSE_bestSiteIDs$Site_ID)
 mean_ERtot_bestSiteIDs[,-c(1,3)]
 colnames(mean_ERtot_bestSiteIDs)
-# 3) Check how many sites still have positive respiration rates (i.e., ERvolumetric > 0)
-numBestSitesGtrThan <- sum(mean_ERtot_bestSiteIDs$ERvolumetric > 0) 
-numBestSitesGtrThan  # Number of sites where ERvolumetric > 0 = 1 (Site_ID = nwis_12100490)
+# 3) Check how many sites still have positive respiration rates (i.e., Total_Ecosystem_Respiration_Volumetric > 0)
+numBestSitesGtrThan <- sum(mean_ERtot_bestSiteIDs$Total_Ecosystem_Respiration_Volumetric > 0) 
+numBestSitesGtrThan  # Number of sites where Total_Ecosystem_Respiration_Volumetric > 0 = 1 (Site_ID = nwis_12100490)
 # 4) Export data file to csv to create kernel density plots (Fig. 6) using "RC2_spatial_study_MLR_v3.R" 
 write.csv(mean_ERtot_bestSiteIDs)
 
@@ -37,8 +37,8 @@ daily_predictions_ERtot_depth <- read.csv("C:/Users/fult771/OneDrive - PNNL/Docu
 colnames(daily_predictions_ERtot_depth)
 
 # Convert daily areal respiration rates (ER; g O2 m^-2 d^-1) to volumetric rates (mg O2 L^-1 d^-1) by multiplying ER by 1/depth (m)
-daily_predictions_ERtot_depth$ERvolumetric <- daily_predictions_ERtot_depth$ER * 1/daily_predictions_ERtot_depth$depth
-daily_predictions_ERtot_depth$ERvolumetric
+daily_predictions_ERtot_depth$Total_Ecosystem_Respiration_Volumetric <- daily_predictions_ERtot_depth$ER * 1/daily_predictions_ERtot_depth$Depth
+daily_predictions_ERtot_depth$Total_Ecosystem_Respiration_Volumetric
 
 # Calculate mean ERtot and depth by site
 mean_ERtot_depth_by_site <- aggregate.data.frame(daily_predictions_ERtot_depth, list(Site_ID = daily_predictions_ERtot_depth$Site_ID), mean)
@@ -52,9 +52,9 @@ colnames(StreamPULSE_bestSiteIDs)
 mean_ERtot_bestSiteIDs <- subset(mean_ERtot_depth_by_site, subset =  mean_ERtot_depth_by_site$Site_ID %in% StreamPULSE_bestSiteIDs$Site_ID)
 mean_ERtot_bestSiteIDs[,-c(1,3)]
 colnames(mean_ERtot_bestSiteIDs)
-# 3) Check how many sites still have positive respiration rates (i.e., ERvolumetric > 0)
-numBestSitesGtrThan <- sum(mean_ERtot_bestSiteIDs$ERvolumetric > 0) 
-numBestSitesGtrThan  # Number of sites where ERvolumetric > 0 = 1 (Site_ID = nwis_12100490)
+# 3) Check how many sites still have positive respiration rates (i.e., Total_Ecosystem_Respiration_Volumetric > 0)
+numBestSitesGtrThan <- sum(mean_ERtot_bestSiteIDs$Total_Ecosystem_Respiration_Volumetric > 0) 
+numBestSitesGtrThan  # Number of sites where Total_Ecosystem_Respiration_Volumetric > 0 = 1 (Site_ID = nwis_12100490)
 # 4) Export data file to csv for kernel density plots, etc.
 write.csv(mean_ERtot_bestSiteIDs, "C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/mean_ERtot_bestSiteIDs.csv")
 
