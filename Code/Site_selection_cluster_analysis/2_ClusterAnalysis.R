@@ -1,3 +1,19 @@
+# ------------------------------------------------------------------
+#
+# Script name: 2_ClusterAnalysis.R
+#
+# Author: Erin L McCann
+#
+# Date Created: 2020-02-04
+#
+# Description: Run the kmeans cluster analysis
+#              Create Sum of Squares file, Clusters file, and shapefile
+#              with clusters results joined to it
+#
+# Notes: Change input_path to file directory where input shapefile is located
+#        Change output_path to file directory where results will be written
+#
+# -------------------------------------------------------------------------
 
 
 # Load Packages:
@@ -5,28 +21,28 @@ library(sf)
 
 
 # Define Input and output Paths:
-input_path = "//pnl/projects/ColumbiaGIS/Tables/zonal/_R_/ClusterAnalysis_Files_Scripts/R_Inputs/"
-output_path = "//pnl/projects/ColumbiaGIS/Tables/zonal/_R_/ClusterAnalysis_Files_Scripts/R_Outputs/"
+input_path = "//R_Inputs/"  # Directory where input files are located
+output_path = "//R_Outputs/"  # Directory where results will be written
 
 
 
 # Define Data Used in Analysis -------------------------------------------
 n_clusters = 6
-Data = Data_norm_8
-Centers = centers_8
+Data = Data_norm_8  # Data_norm subset created by 1_DataPreparation.R script
+Centers = centers_8  # centers subset created by 1_DataPreparation.R script
 
 
 
 # Run Cluster Analysis ---------------------------------------------------
-x = Data[,2:ncol(Data)]
+x = Data[,2:ncol(Data)]  # Removes first column of Data to prep dataset for analysis
 set.seed(1234)
-kpres = kmeans(x, Centers, nstart = 10, iter.max = 150)
+kpres = kmeans(x, Centers, nstart = 10, iter.max = 150) # Run kmeans cluster analysis
 
 
 
 # Extract Results --------------------------------------------------------
 
-# Sum of Squares:
+# Sum of Squares - Create sum of squares results from kpres opject
 R = matrix(NA, 1, 4 + n_clusters)
 
 R[1,1] = kpres$totss
@@ -52,8 +68,6 @@ shape_cluster = left_join(shapefile, cluster_data, by = c("GRIDCODE" = "catchmen
 
 
 
-
-
 # Save Results in Outputs Directory --------------------------------------
 
 # Create new directory and export results:
@@ -67,30 +81,6 @@ new_output_path = paste0(output_path, "Kmeans_Results_", n_clusters, "Clusters_"
 write.csv(R, paste0(new_output_path, "Kmeans_SSResults_", Sys.Date(), ".csv"), row.names = FALSE)
 write.csv(P, paste0(new_output_path, "Kmeans_Clusters_", Sys.Date(), ".csv"), row.names = FALSE)
 st_write(shape_cluster, paste0(new_output_path, "CB_catchments_clean_joined_with_Kmeans_Results_", Sys.Date(), ".shp"))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,3 +1,18 @@
+# ------------------------------------------------------------------
+#
+# Script name: 1_DataPreparation.R
+#
+# Author: Erin L McCann
+#
+# Date Created: 2020-02-04
+#
+# Description: Read in AllDataNormalized_zonal.csv and cluster_centers.csv files 
+#              Create subsets to be used for cluster analysis.
+#              Set descriptions are commented below and can be found in the README
+#
+# Notes: Change input_path to file directory where "AllDataNormalized_zonal.csv" and "6clusters_centers.csv" input files are located
+#
+# -------------------------------------------------------------------------
 
 
 # Load Packages:
@@ -5,12 +20,11 @@ library(tidyverse)
 
 
 # Define Input Data Path:
-input_path = "//pnl/projects/ColumbiaGIS/Tables/zonal/_R_/ClusterAnalysis_Files_Scripts/R_Inputs/"
+input_path = "//R_Inputs/" # Directory where input files are located
 
 
 # Read in Normalized Data and Centers:
 Data_norm = read.csv(paste0(input_path, "AllDataNormalized_zonal.csv"))
-#centers = read.csv(paste0(input_path, "5clusters_centers.csv"))
 centers = read.csv(paste0(input_path, "6clusters_centers.csv"))
 
 
@@ -23,7 +37,7 @@ centers = read.csv(paste0(input_path, "6clusters_centers.csv"))
 
 # SET 0 --------------------------------------------------------------
 
-## Set 0: All statistical moments for all variables
+## Set 0 Description: All statistical moments for all variables
 Data_norm_0 = Data_norm %>% 
   select(-AreaSqKM)
 centers_0 = centers
@@ -32,7 +46,7 @@ centers_0 = centers
 
 # SET 1 --------------------------------------------------------------
 
-## Set 1: Using only MEAN moments for all variables
+## Set 1 Description: Using only MEAN moments for all variables
 Data_norm_1 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"))
 centers_1 = centers %>% 
@@ -42,7 +56,7 @@ centers_1 = centers %>%
 
 # SET 2 --------------------------------------------------------------
 
-## Set 2: Using only MEAN moments for all variables, 
+## Set 2 Description: Using only MEAN moments for all variables, 
 # but only months 3, 7, and 11 for FPAR, LAI, ET, and PPT
 Data_norm_2 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("_1_MEAN"), contains("_01_MEAN"), contains("2_MEAN"), 
@@ -61,7 +75,7 @@ centers_2 = centers %>%
 
 # SET 3 --------------------------------------------------------------
 
-## Set 3: Using only MEAN moments for all variables,
+## Set 3 Description: Using only MEAN moments for all variables,
 # but only the annual median for FPAR, LAI, ET, and PPT
 Data_norm_3 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("1_MEAN"), contains("2_MEAN"), contains("3_MEAN"), 
@@ -78,7 +92,7 @@ centers_3 = centers %>%
 
 # SET 4 --------------------------------------------------------------
 
-## Set 4: Using only MEAN moments for all variables,
+## Set 4 Description: Using only MEAN moments for all variables,
 # but only the annual median for FPAR and PPT
 Data_norm_4 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("1_MEAN"), contains("2_MEAN"), contains("3_MEAN"), 
@@ -99,7 +113,7 @@ centers_4 = centers %>%
 
 # SET 5 --------------------------------------------------------------
 
-## Set 5: Using only MEAN moments for all variables,
+## Set 5 Description: Using only MEAN moments for all variables,
 # but only the annual median for LAI and PPT
 Data_norm_5 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("1_MEAN"), contains("2_MEAN"), contains("3_MEAN"), 
@@ -120,7 +134,7 @@ centers_5 = centers %>%
 
 # SET 6 --------------------------------------------------------------
 
-## Set 6: Using only MEAN moments for all variables,
+## Set 6 Description: Using only MEAN moments for all variables,
 # but only the annual median for ET and PPT
 Data_norm_6 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("1_MEAN"), contains("2_MEAN"), contains("3_MEAN"), 
@@ -141,7 +155,7 @@ centers_6 = centers %>%
 
 # SET 7 --------------------------------------------------------------
 
-## Set 7: Using only STD moments for all variables
+## Set 7 Description: Using only STD moments for all variables
 Data_norm_7 = Data_norm %>% 
   select(catchment_ID, ends_with("STD"))
 centers_7 = centers %>% 
@@ -151,7 +165,7 @@ centers_7 = centers %>%
 
 # SET 8 --------------------------------------------------------------
 
-## Set 8: Using only MEAN and STD moments for all variables
+## Set 8 Description: Using only MEAN and STD moments for all variables
 Data_norm_8 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), ends_with("STD"))
 centers_8 = centers %>% 
@@ -161,7 +175,7 @@ centers_8 = centers %>%
 
 # SET 9 --------------------------------------------------------------
 
-## Set 9: Using only MEAN moments for all variables, 
+## Set 9 Description: Using only MEAN moments for all variables, 
 # but only months 3, 7, and 11 for FPAR and PPT
 Data_norm_9 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("_1_MEAN"), contains("_01_MEAN"), contains("2_MEAN"),
@@ -184,7 +198,7 @@ centers_9 = centers %>%
 
 # SET 10 --------------------------------------------------------------
 
-## Set 10: Using only MEAN moments for all variables, 
+## Set 10 Description: Using only MEAN moments for all variables, 
 # but only months 3, 7, and 11 for LAI and PPT
 Data_norm_10 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("_1_MEAN"), contains("_01_MEAN"), contains("2_MEAN"),
@@ -207,7 +221,7 @@ centers_10 = centers %>%
 
 # SET 11 --------------------------------------------------------------
 
-## Set 11: Using only MEAN moments for all variables, 
+## Set 11 Description: Using only MEAN moments for all variables, 
 # but only months 3, 7, and 11 for ET and PPT
 Data_norm_11 = Data_norm %>% 
   select(catchment_ID, ends_with("MEAN"), -c(contains("_1_MEAN"), contains("_01_MEAN"), contains("2_MEAN"),
