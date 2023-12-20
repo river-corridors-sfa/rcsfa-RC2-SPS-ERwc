@@ -1,12 +1,12 @@
 # ==============================================================================
 #
-# Make map for ERswc manuscript 
+# Make map of Ecosystem respiration from water column and cluster analysis
 #
 # Status: Complete
 #
 # ==============================================================================
 #
-# Author: Brieanne Forbes 
+# Author: Brieanne Forbes (brieanne.forbes@pnnlgov)
 # 4 August 2023
 #
 # ==============================================================================
@@ -139,7 +139,7 @@ full <- ggdraw() +
   draw_plot(ER_wc_map) +
   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
 
-ggsave('./Data/Maps/SPS_ER_Water_Column_Map.pdf',
+ggsave('./Data/Maps/Archive_Intermediate_Files/SPS_ER_Water_Column_Map.pdf',
        full,
        width = 8,
        height = 5
@@ -183,7 +183,7 @@ full_cluster <- ggdraw() +
   draw_plot(ER_wc_map_cluster) +
   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
 
-ggsave('./Data/Maps/SPS_ER_Water_Column_Map_Cluster.pdf',
+ggsave('./Data/Maps/Archive_Intermediate_Files/SPS_ER_Water_Column_Map_Cluster.pdf',
        full_cluster,
        width = 8,
        height = 5
