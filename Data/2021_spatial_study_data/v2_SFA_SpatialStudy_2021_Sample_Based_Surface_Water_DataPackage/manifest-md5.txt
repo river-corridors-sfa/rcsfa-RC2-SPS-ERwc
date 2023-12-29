@@ -1,1 +1,0 @@
-90de2396535618eb6ffda72cb5b626fe data/v2_SFA_SpatialStudy_2021_SampleData.zip
