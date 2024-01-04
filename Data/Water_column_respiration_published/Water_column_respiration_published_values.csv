@@ -1,4 +1,4 @@
-River,Site ID,Description,ERwc,Source,Year
+Site_Name,Site_ID,Description,Water_Column_Respiration_Literature,Reference,Year
 Amazon River,AM1995,"Amazon River mainstem near Manaus, Brazil",-0.27,Devol et al.,1995
 Rivers in the Amazon basin,AM2012,"Amazon River mainstem near Vargem Grande, Xibeco, Tupe, Jutica, Itapeua, Anori, Manacapuru, Sao Jose do Amatari, Paura, and Obidos during three cruises of the CAMREX project",-0.32,Quay et al.,1995
 "Barro Branco River, southwestern Amazon Basin",BB,Clear water river at the falling water stage,-0.02,Ellis et al.,2012
