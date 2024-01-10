@@ -1,4 +1,4 @@
-### Determing carbon transformations ###
+### Determining carbon transformations ###
 rm(list=ls(all=T))
 library(dplyr)
 library(tidyr); library (reshape2)
