@@ -1,25 +1,25 @@
 Site_Name,Site_ID,Description,Water_Column_Respiration_Literature,Reference,Year
-Amazon River,AM1995,"Amazon River mainstem near Manaus, Brazil",-0.27,Devol et al.,1995
-Rivers in the Amazon basin,AM2012,"Amazon River mainstem near Vargem Grande, Xibeco, Tupe, Jutica, Itapeua, Anori, Manacapuru, Sao Jose do Amatari, Paura, and Obidos during three cruises of the CAMREX project",-0.32,Quay et al.,1995
-"Barro Branco River, southwestern Amazon Basin",BB,Clear water river at the falling water stage,-0.02,Ellis et al.,2012
-"Acre River, State of Amazonas, southwestern Amazon Basin",AC,Whitewater river at low water stage,-0.96,Ellis et al.,2012
+Amazon River,AM1995,Amazon River mainstem near Manaus; Brazil,-0.27,Devol et al.,1995
+Rivers in the Amazon basin,AM2012,Amazon River mainstem near Vargem Grande; Xibeco; Tupe; Jutica; Itapeua; Anori; Manacapuru; Sao Jose do Amatari; Paura; and Obidos during three cruises of the CAMREX project,-0.32,Quay et al.,1995
+Barro Branco River; southwestern Amazon Basin,BB,Clear water river at the falling water stage,-0.02,Ellis et al.,2012
+Acre River; State of Amazonas; southwestern Amazon Basin,AC,Whitewater river at low water stage,-0.96,Ellis et al.,2012
 Klamath River,KAT,Turwar study reach,-0.38,Genzoli and Hall,2016
 Klamath River,SV,Seiad study reach,-0.58,Genzoli and Hall,2016
 Klamath River,WE,Weitchpec study reach,-0.92,Genzoli and Hall,2016
 Amazon River mainstem,AMHW,Average water column respiration rate measured across five sites on the mainstem Amazon River at high water,-0.95,Gagne-Maynard et al.,2017
 Amazon River mainstem,AMLW,Average water column respiration rate measured across five sites on the mainstem Amazon River at low water,-1.52,Gagne-Maynard et al.,2017
-"Amazon River, Tapajós River, and Xingu River",AMhigh,Varying mixtures of turbid Amazon River water and two lowland tributaries—the Tapajós and Xingu rivers spun at 0.66 m s-1,-4.2,Ward et al.,2018
-"Amazon River, Tapajós River, and Xingu River",AMmed,Varying mixtures of turbid Amazon River water and two lowland tributaries—the Tapajós and Xingu rivers spun at 0.22 m s-1,-2,Ward et al.,2018
-"Amazon River, Tapajós River, and Xingu River",AMSta,Varying mixtures of turbid Amazon River water and two lowland tributaries—the Tapajós and Xingu rivers spun at 0 m s-1,-2,Ward et al.,2018
-"East Fork, White River",WHT,Midwest CONUS,-2.06,Reisinger et al.,2021
+Amazon River; Tapajos River; and Xingu River,AMhigh,Varying mixtures of turbid Amazon River water and two lowland tributaries - the Tapajos and Xingu rivers spun at 0.66 m s-1,-4.2,Ward et al.,2018
+Amazon River; Tapajos River; and Xingu River,AMmed,Varying mixtures of turbid Amazon River water and two lowland tributaries - the Tapajos and Xingu rivers spun at 0.22 m s-1,-2,Ward et al.,2018
+Amazon River; Tapajos River; and Xingu River,AMSta,Varying mixtures of turbid Amazon River water and two lowland tributaries - the Tapajos and Xingu rivers spun at 0 m s-1,-2,Ward et al.,2018
+East Fork; White River,WHT,Midwest CONUS,-2.06,Reisinger et al.,2021
 Manistee River,MAN,Midwest CONUS,-0.5,Reisinger et al.,2021
 Muskegon River,MUSK,Midwest CONUS,-0.67,Reisinger et al.,2021
 St. Joe,STJ,Midwest CONUS,-0.52,Reisinger et al.,2021
 Tippecanoe River,TIP,Midwest CONUS,-0.57,Reisinger et al.,2021
 Buffalo Fork,BUF,Clear water in western CONUS,-4.63,Reisinger et al.,2021
 Snake River,SNK,Clear water in western CONUS,-0.6,Reisinger et al.,2021
-"Green River, WY",GRS,Clear water in western CONUS,-0.1,Reisinger et al.,2021
-Henry’s Fork,HF,Clear water in western CONUS,-0.26,Reisinger et al.,2021
+Green River; WY,GRS,Clear water in western CONUS,-0.1,Reisinger et al.,2021
+Henry's Fork,HF,Clear water in western CONUS,-0.26,Reisinger et al.,2021
 North Platte River,PLA,Turbid water in western CONUS,-0.1,Reisinger et al.,2021
 Bear River,BEAR,Turbid water in western CONUS,-0.76,Reisinger et al.,2021
 Green River at Ouray,OUR,Turbid water in western CONUS,-1.19,Reisinger et al.,2021

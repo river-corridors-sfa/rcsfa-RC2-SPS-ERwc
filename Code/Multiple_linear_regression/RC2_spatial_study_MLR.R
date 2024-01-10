@@ -32,7 +32,7 @@ names(data) <-c('Site_ID','Parent_ID','ERwc',"T_mean","StreamOrde","Total_Draina
 # set positive ERwater to 0
 # data$ERwc[data$ERwc>0]<-0
 
-## Transformatio data
+## Transformation data
 sdata<- read.csv(file.path('./Data/Multiple_linear_regression','SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
 names(sdata)<-c('Parent_ID','Transformations','Peaks','Normalized_Transformations')
 data <- merge(data,sdata,by=c("Parent_ID"))
@@ -136,7 +136,7 @@ crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab
 mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
+mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
@@ -157,7 +157,7 @@ crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab
 mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
+mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
@@ -179,7 +179,7 @@ par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 #par(mfrow=c(1,3))
 crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Temperature (캜)"),side=1, line=2.5,cex =0.7)
+mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
@@ -197,7 +197,7 @@ dev.off()
 # #
 # avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-# mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+# mtext(expression("Residuals - Temperature (?C)"),side=1, line=2.5,cex =0.7)
 # avPlots(bfit, ~ NPOC,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 # mtext(expression("Residuals - NPOC"),side=1, line=2.5,cex =0.7)
@@ -218,7 +218,7 @@ dev.off()
 # mtext(expression("Residuals - Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 # avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-# mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+# mtext(expression("Residuals - Temperature (?C)"),side=1, line=2.5,cex =0.7)
 # avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 # mtext(expression("Residuals - Normalized Transformations"),side=1, line=2.5,cex =0.7)
@@ -265,7 +265,7 @@ crPlots(bfit, ~ log10(Transformations),id=FALSE,main='',smooth=FALSE, xlab='',#x
 mtext(expression("log(Transformations)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ log10(T_mean),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("log(Temperature (캜))"),side=1, line=2.5,cex =0.7)
+mtext(expression("log(Temperature (?C))"),side=1, line=2.5,cex =0.7)
 # crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (째C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 # mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
@@ -316,7 +316,7 @@ mtext(TeX("log($NO_{3}^{-}$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
 # mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ log10(T_mean),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("log(Temperature (캜))"),side=1, line=2.5,cex =0.7)
+mtext(expression("log(Temperature (?C))"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ log10(NPOC),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("log(NPOC)"),side=1, line=2.5,cex =0.7)
@@ -343,7 +343,7 @@ avPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',xlab='', #xlab=expression("
 mtext(expression("Residuals - Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
 avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("Residuals - Temperature (캜)"),side=1, line=2.5,cex =0.7)
+mtext(expression("Residuals - Temperature (?C)"),side=1, line=2.5,cex =0.7)
 avPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (째C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Residuals - Normalized Transformations"),side=1, line=2.5,cex =0.7)
