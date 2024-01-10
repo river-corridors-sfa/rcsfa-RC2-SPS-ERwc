@@ -1,5 +1,7 @@
 # RC2 spatial study - Multiple linear regression for manual_chamber_data
-# X Lin Nov 22 2022
+# Xinming Lin Nov 22 2022
+# xinming.lin@pnnl.gov
+
 ################################################
 # Read in data 
 ################################################

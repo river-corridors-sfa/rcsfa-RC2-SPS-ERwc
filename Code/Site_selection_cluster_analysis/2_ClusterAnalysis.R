@@ -4,6 +4,8 @@
 #
 # Author: Erin L McCann
 #
+# Contact: erin.mccann@pnnl.gov
+#
 # Date Created: 2020-02-04
 #
 # Description: Run the kmeans cluster analysis

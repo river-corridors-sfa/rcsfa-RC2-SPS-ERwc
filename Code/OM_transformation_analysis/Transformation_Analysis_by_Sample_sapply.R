@@ -1,4 +1,7 @@
 ### Determining carbon transformations ###
+# Vanessa Garayburu-Caruso
+# vanessa.garayburu-caruso@pnnl.gov
+
 rm(list=ls(all=T))
 library(dplyr)
 library(tidyr); library (reshape2)

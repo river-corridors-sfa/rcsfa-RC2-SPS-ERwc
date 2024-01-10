@@ -4,6 +4,8 @@
 #
 # Author: Erin L McCann
 #
+# Contact: erin.mccann@pnnl.gov
+#
 # Date Created: 2020-02-04
 #
 # Description: Read in AllDataNormalized_zonal.csv and cluster_centers.csv files 
