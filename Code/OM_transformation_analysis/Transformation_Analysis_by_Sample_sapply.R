@@ -15,10 +15,14 @@ Sample_Name = "SPS"
 ### Loading in data ###
 #######################
 
+# Set working directory
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
+
 # Loading in ICR data
-input.path = "C:/Users/gara009/PNNL/RC-2, River Corridor SFA - Manuscripts/VGC-Bob paper/Script and Necessary Files"
-setwd(input.path)
-data = read.csv(list.files(pattern = "Data_Clean_VGC"), row.names = 1) 
+data = read.csv(list.files(pattern = "Data_Clean_VGC", recursive = T), row.names = 1) 
 df = data # save original file
 # Need to get the dataset into a format that the transformations code receive
 
@@ -33,7 +37,7 @@ rownames(data) = as.numeric(rownames(data))
 colnames(data) = gsub("S19S.","S19S-",colnames(data))
 
 # Loading in transformations
-trans.full =  read.csv("Transformation_Database_07-2020.csv")
+trans.full =  read.csv("./Data/OM_transformation_analysis/Transformation_Database_07-2020.csv")
 trans.full$Name = as.character(trans.full$Name)
 
 # ############# #

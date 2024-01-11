@@ -6,6 +6,12 @@
 # 1) daily_predictions_ERtot_depth.csv. This reduced dataset contains the site ID, reach-averaged daily predicted ecosystem respiration (ERtot; g O2 m^-2 d^-1), and depth (m) data for the 356 streams and rivers across the conterminous United States from Appling et al. (2018b, c). The complete data file can also be downloaded directly here: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389.
 # 2) StreamPULSE_bestSiteIDs.csv (StreamPULSE sites). This reduced dataset contains the site ID, site name, and data source for the 222 sites in the StreamPULSE dataset from Bernhardt et al. (2018). The complete dataset can be downloaded directly here: https://data.streampulse.org/download_bulk.
 
+# Set working directory
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
+
 # Read data
 library(readr)
 daily_predictions_ERtot_depth <- read.csv(file.path('./Data/Appling_ERtot_analysis/daily_predictions_ERtot_depth.csv'))
@@ -37,7 +43,7 @@ write.csv(mean_ERtot_bestSiteIDs)
 
 # Read data
 library(readr)
-daily_predictions_ERtot_depth <- read.csv("C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/daily_predictions_ERtot_depth.csv")
+daily_predictions_ERtot_depth <- read.csv("./Data/Appling_ERtot_analysis/daily_predictions_ERtot_depth.csv")
 colnames(daily_predictions_ERtot_depth)
 
 # Convert daily areal respiration rates (ER; g O2 m^-2 d^-1) to volumetric rates (mg O2 L^-1 d^-1) by multiplying ER by 1/depth (m)
@@ -50,7 +56,7 @@ mean_ERtot_depth_by_site
 
 # Remove Appling et al. (2018) sites potentially affected by process or observation error by matching site ID codes in the Appling dataset ("Site_ID") with StreamPULSE site ID codes ("Site_ID")
 # 1) read streamPULSE data (Source: B. Hall)
-StreamPULSE_bestSiteIDs <- read.csv("C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/StreamPULSE_bestSiteIDs.csv")
+StreamPULSE_bestSiteIDs <- read.csv("./Data/Appling_ERtot_analysis/StreamPULSE_bestSiteIDs.csv")
 colnames(StreamPULSE_bestSiteIDs)
 # 2) Subset sites from Appling dataset by matching site IDs (i.e., mean_ERtot_depth_by_site$Site_ID = StreamPULSE_bestSiteIDs$Site_ID) and remove unnecessary data (columns 1 and 3)
 mean_ERtot_bestSiteIDs <- subset(mean_ERtot_depth_by_site, subset =  mean_ERtot_depth_by_site$Site_ID %in% StreamPULSE_bestSiteIDs$Site_ID)
@@ -60,5 +66,5 @@ colnames(mean_ERtot_bestSiteIDs)
 numBestSitesGtrThan <- sum(mean_ERtot_bestSiteIDs$Total_Ecosystem_Respiration_Volumetric > 0) 
 numBestSitesGtrThan  # Number of sites where Total_Ecosystem_Respiration_Volumetric > 0 = 1 (Site_ID = nwis_12100490)
 # 4) Export data file to csv for kernel density plots, etc.
-write.csv(mean_ERtot_bestSiteIDs, "C:/Users/fult771/OneDrive - PNNL/Documents/GitHub/YRB_Water_Column_Respiration/Data/Appling_ERtot_analysis/mean_ERtot_bestSiteIDs.csv")
+write.csv(mean_ERtot_bestSiteIDs, "./Data/Appling_ERtot_analysis/mean_ERtot_bestSiteIDs.csv")
 

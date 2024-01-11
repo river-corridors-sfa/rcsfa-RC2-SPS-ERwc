@@ -27,6 +27,12 @@ library(latex2exp)
 library(lme4)
 library("PerformanceAnalytics")
 
+# Set working directory
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
+
 # read in ERwc(ERwater),"T_mean","StreamOrde","Total_Drainage_Area"data
 data<- read.csv(file.path('./Data/Multiple_linear_regression/spatial_data.csv'))
 #names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','ERwc')
@@ -35,7 +41,7 @@ names(data) <-c('Site_ID','Parent_ID','ERwc',"T_mean","StreamOrde","Total_Draina
 # data$ERwc[data$ERwc>0]<-0
 
 ## Transformation data
-sdata<- read.csv(file.path('./Data/Multiple_linear_regression','SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
+sdata<- read.csv(file.path('./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
 names(sdata)<-c('Parent_ID','Transformations','Peaks','Normalized_Transformations')
 data <- merge(data,sdata,by=c("Parent_ID"))
 
@@ -477,7 +483,7 @@ ggsave(file.path('./Plots',"hist_density_plot_bottom_ERtot_nolegend.png"),
 
 ##############################################################
 # use lme4 to estimate the means among the sites
-rdata <- read.csv(file.path('./Data/2021_spatial_study_data/SFA_SpatialStudy_2021_SensorData_v2/MinidotManualChamber/Plots_and_Summary_Statistics/Minidot_Summary_Statistics_v2.csv'),skip=48)
+rdata <- read.csv(file.path('./Data/Multiple_linear_regression/Minidot_Summary_Statistics_v2.csv'),skip=48)
 rdata <- rdata[c('Site_ID','Dissolved_Oxygen_1_Slope','Dissolved_Oxygen_2_Slope','Dissolved_Oxygen_3_Slope')]
 rdata2 <- rdata %>% 
     pivot_longer(

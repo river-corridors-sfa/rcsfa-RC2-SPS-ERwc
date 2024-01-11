@@ -28,19 +28,21 @@ library(viridis)
 rm(list=ls(all=T))
 
 # Setting wd to parent folder
-current_path <- rstudioapi::getActiveDocumentContext()$path 
+current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
-setwd("./..")
+setwd("../..")
+getwd()
 
 # ================================= User inputs ================================
 
-metadata_file <- 'C:/Users/forb086/Downloads/v2_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv'
+# download the metadata from https://data.ess-dive.lbl.gov/view/doi:10.15485/1898914 and use the file `v2_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv`
+metadata_file <- './SPS_Sample_Field_Metadata.csv' # replace this path with the path of the file you downloaded
 
 data_file <- './Data/Multiple_linear_regression/spatial_data.csv'
 
-yrb_shp_dir <- './Data/Maps/YakimaRiverBasin_Boundary'
+yrb_shp_dir <- './Data/Map_Layers/Yakima_River_Basin'
 
-cluster_shp_dir <- './Data/Maps/YRB_Cluster'
+cluster_shp_dir <- './Data/Map_Layers/YRB_Cluster'
 
 common_crs = 4326
 
@@ -50,16 +52,12 @@ metadata <- read_csv(metadata_file) %>%
   dplyr::select(Site_ID, Latitude, Longitude)
 
 data <- read_csv(data_file) %>%
-  dplyr::select(IDmapping.Site_ID, DO.slope.mgday)
+  dplyr::select(Site_ID, Water_Column_Respiration)
 
 merge <- data %>%
-  left_join(metadata, by = c('IDmapping.Site_ID' = 'Site_ID')) %>%
-  rename(Site_ID = IDmapping.Site_ID,
-         ER_wc = DO.slope.mgday) %>%
+  left_join(metadata, by = 'Site_ID') %>%
+  rename(ER_wc = Water_Column_Respiration) %>%
   arrange(ER_wc)
-
-# %>%
-#   mutate(ER_wc = if_else(ER_wc > 0, 0, ER_wc))
   
 # ============================ read in YRB shp file ============================
 
@@ -139,7 +137,7 @@ full <- ggdraw() +
   draw_plot(ER_wc_map) +
   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
 
-ggsave('./Data/Maps/Archive_Intermediate_Files/SPS_ER_Water_Column_Map.pdf',
+ggsave('./Data/Map_Layers/Archive_Intermediate_Files/SPS_ER_Water_Column_Map.pdf',
        full,
        width = 8,
        height = 5
@@ -183,7 +181,7 @@ full_cluster <- ggdraw() +
   draw_plot(ER_wc_map_cluster) +
   draw_plot(insert, x = 0.4, y = 0.4, width = 0.3, height = 0.3)
 
-ggsave('./Data/Maps/Archive_Intermediate_Files/SPS_ER_Water_Column_Map_Cluster.pdf',
+ggsave('./Data/Map_Layers/Archive_Intermediate_Files/SPS_ER_Water_Column_Map_Cluster.pdf',
        full_cluster,
        width = 8,
        height = 5

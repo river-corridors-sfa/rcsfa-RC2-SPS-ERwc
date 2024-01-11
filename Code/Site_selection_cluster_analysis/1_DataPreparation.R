@@ -12,21 +12,24 @@
 #              Create subsets to be used for cluster analysis.
 #              Set descriptions are commented below and can be found in the README
 #
-# Notes: Change input_path to file directory where "AllDataNormalized_zonal.csv" and "6clusters_centers.csv" input files are located
-#
 # -------------------------------------------------------------------------
 
 
 # Load Packages:
 library(tidyverse)
 
+# Set working directory
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
 
 # Define Input Data Path:
-input_path = "//R_Inputs/" # Directory where input files are located
+input_path = "./Data/Site_selection_cluster_analysis/" # Directory where input files are located
 
 
 # Read in Normalized Data and Centers:
-Data_norm = read.csv(paste0(input_path, "AllDataNormalized_zonal.csv"))
+Data_norm = read.csv(paste0(input_path, "AllDataNormalized_zonal.csv")) # due to the file size, this file is not included in the GitHub repository. it can be located in the ESS-DIVE Data Package
 centers = read.csv(paste0(input_path, "6clusters_centers.csv"))
 
 
