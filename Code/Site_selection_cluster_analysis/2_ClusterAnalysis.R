@@ -23,7 +23,7 @@ library(sf)
 
 
 # Define Input and output Paths:
-input_path = "//R_Inputs/"  # Directory where input files are located
+input_path = "//R_Inputs/"  # Directory where input files are located - The input shapefile for this script can be located and downloaded at https://nhdplus.com/NHDPlus/NHDPlusV2_home.php Horizon Systems Corporation, 2017. National Hydrography Dataset Plus.
 output_path = "//R_Outputs/"  # Directory where results will be written
 
 
@@ -64,7 +64,7 @@ P = as.data.frame(cbind(catchment_ID, clusters))
 
 
 # Join clusters to shape file:
-shapefile = st_read(paste0(input_path, "CB_catchments_clean_UTM11.shp"))
+shapefile = st_read(paste0(input_path, "CB_catchments_clean_UTM11.shp")) # the shape file can be located and downloaded publically - see above for citation
 cluster_data = P
 shape_cluster = left_join(shapefile, cluster_data, by = c("GRIDCODE" = "catchment_ID"))
 

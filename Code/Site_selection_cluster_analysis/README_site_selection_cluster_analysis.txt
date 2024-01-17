@@ -15,11 +15,13 @@ sf
 
 
 Required Data Files:
-SEE "R_Inputs" FOLDER
+- AllDataNormalized_zonal.csv
+- cluster_centers.csv
+- CB_catchments_clean_UTM11.shp - this file can be located and downloaded at https://nhdplus.com/NHDPlus/NHDPlusV2_home.php Horizon Systems Corporation, 2017. National Hydrography Dataset Plus.
 
 
 User Instructions:
-1) Open the "1_DataPreparation.R" script and update the input_path (Line 8) to correspond with the directory where all "R_Inputs" files are located on your machine
+1) Open the "1_DataPreparation.R" script and update the input_path (Line 8) to correspond with the directory where the required data files are located on your local machine.
 
 2) Run Lines 3 through 14 - This will read data into R and load the necessary packages
 	>> NOTE: The 'centers' data that is read in correspond to the K-means centers that were used for the previous runs of this analysis. Therefore, if you would like to reproduce these results, you can use the data from 'centers'. If you would like R to re-generate new centers, or run the analysis with a different number of clusters, then the 'centers' data will not be necessary. This will be explained further in Step 7. 
@@ -40,7 +42,7 @@ User Instructions:
 
 4) Run the script for the chosen subset
 
-5) Open the "2_ClusterAnalysis.R" script and update the input_path (Line 8) to correspond with the directory where all "R_Inputs" files are located on your machine. Update the output_path (Line 9) to correspond with the directory where analysis results will be stored on your machine. 
+5) Open the "2_ClusterAnalysis.R" script and update the input_path (Line 8) to correspond with the directory where the CB_catchments_clean_UTM11.shp file is located on your machine. Update the output_path (Line 9) to correspond with the directory where analysis results will be stored on your machine. 
 
 6) Define the model parameters and data (Lines 13 through 16): 
 	>> "n_clusters" is the number of clusters you would like to use (NOTE: If using the pre-defined centers file, this should be 6)
