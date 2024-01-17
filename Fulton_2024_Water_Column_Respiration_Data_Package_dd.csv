@@ -1,0 +1,390 @@
+Column_or_Row_Name,Unit,Definition,Data_Type,Term_Type
+Analysis_DetectionLimit,milligrams_per_liter,Analytical detection limit.,numeric,row_header
+Analysis_Precision,N/A,Precision of the data values.,numeric,row_header
+AreaSqKM,square_kilometers,Area of catchment (z-score).,numeric,column_header
+catchment_ID,N/A,NHDPlusV2.1 GridCode.,numeric,row_header
+Cluster_num,N/A,Cluster number from 1 through 6. All NHDPlusV2.1 catchments in the Columbia River basin or Yakima River basin were grouped into classes sharing similar biophysical and hydrological characteristics and categorized according to (1) tree height (2) precipitation and (3) elevation. See Table 1 and Table S1 in the publication for more information on the number of sites in each cluster.,text,column_header
+Column_or_Row_Name,N/A,Column or row headers from each csv file in the dataset.,text,column_header
+Data_Orientation,N/A,"Indicates how the data are organized within the data matrix (""horizontal"" indicates data are organized in rows with row headers; ""vertical"" indicates data are organized in columns with column headers).",text,column_header
+Data_Status,N/A,State of data readiness for publication and use.,text,row_header
+Data_Type,N/A,Type of data (numeric; text; date; time; datetime).,text,column_header
+Date,YYYY-MM-DD,Data collection date.,date,column_header
+Date_End,YYYY-MM-DD,The latest date in the file.,date,column_header
+Date_Start,YYYY-MM-DD,The earliest date in the file.,date,column_header
+Definition,N/A,Description of the information in a given column or row in the dataset.,text,column_header
+Depth,meters,Average upstream depth of stream. Stream depth was averaged on a daily basis over the width and length of the upstream reach as described in Appling et al. (2018b). The dataset is from the Appling et al. (2018c) data release and can be downloaded directly at https://www.sciencebase.gov/catalog/item/59bff507e4b091459a5e0982.,numeric,column_header
+Description,N/A,Detailed description of sampling locations included in the referenced study. See References section in the manuscript for the full citation for the referenced study.,text,column_header
+Dissolved_Oxygen_1_Mean,milligrams_per_liter,Mean dissolved oxygen from miniDOT 1.,numeric,column_header
+Dissolved_Oxygen_1_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 1 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_1_Range,milligrams_per_liter,The range of dissolved oxygen from miniDOT 1 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_1_RMSE,milligrams_per_liter,The root mean square error (RMSE) for the linear regression of miniDOT 1 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_1_Rsquared,N/A,R-squared value for the linear regression of miniDOT 1 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_1_Slope,milligrams_per_liter_per_minute,Slope of the line for the linear regression of miniDOT 1 dissolved oxygen sample data against time.,numeric,column_header
+Dissolved_Oxygen_2_Mean,milligrams_per_liter,Mean dissolved oxygen from miniDOT 2.,numeric,column_header
+Dissolved_Oxygen_2_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 2 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_2_Range,milligrams_per_liter,The range of dissolved oxygen from miniDOT 2 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_2_RMSE,milligrams_per_liter,The root mean square error (RMSE) for the linear regression of miniDOT 2 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_2_Rsquared,N/A,R-squared value for the linear regression of miniDOT 2 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_2_Slope,milligrams_per_liter_per_minute,Slope of the line for the linear regression of miniDOT 2 dissolved oxygen sample data against time.,numeric,column_header
+Dissolved_Oxygen_3_Mean,milligrams_per_liter,Mean dissolved oxygen from miniDOT 3.,numeric,column_header
+Dissolved_Oxygen_3_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 3 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_3_Range,milligrams_per_liter,The range of dissolved oxygen from miniDOT 3 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_3_RMSE,milligrams_per_liter,The root mean square error (RMSE) for the linear regression of miniDOT 3 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_3_Rsquared,N/A,R-squared value for the linear regression of miniDOT 3 dissolved oxygen data against time.,numeric,column_header
+Dissolved_Oxygen_3_Slope,milligrams_per_liter_per_minute,Slope of the line for the linear regression of miniDOT 3 dissolved oxygen sample data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_1_Mean,percent_saturation,Mean dissolved oxygen saturation from miniDOT 1.,numeric,column_header
+Dissolved_Oxygen_Saturation_1_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 1 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_1_Range,percent_saturation,The range of dissolved oxygen saturation from miniDOT 1 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_Saturation_1_RMSE,percent_saturation,The root mean square error (RMSE) for the linear regression of miniDOT 1 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_1_Rsquared,N/A,R-squared value for the linear regression of miniDOT 1 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_1_Slope,percent_saturation_per_minute,Slope of the line for the linear regression of miniDOT 1 dissolved oxygen saturation sample data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_2_Mean,percent_saturation,Mean dissolved oxygen saturation from miniDOT 2.,numeric,column_header
+Dissolved_Oxygen_Saturation_2_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 2 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_2_Range,percent_saturation,The range of dissolved oxygen saturation from miniDOT 2 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_Saturation_2_RMSE,percent_saturation,The root mean square error (RMSE) for the linear regression of miniDOT 2 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_2_Rsquared,N/A,R-squared value for the linear regression of miniDOT 2 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_2_Slope,percent_saturation_per_minute,Slope of the line for the linear regression of miniDOT 2 dissolved oxygen saturation sample data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_3_Mean,percent_saturation,Mean dissolved oxygen saturation from miniDOT 3.,numeric,column_header
+Dissolved_Oxygen_Saturation_3_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 3 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_3_Range,percent_saturation,The range of dissolved oxygen saturation from miniDOT 3 of 3 (maximum value minus the minimum value).,numeric,column_header
+Dissolved_Oxygen_Saturation_3_RMSE,percent_saturation,The root mean square error (RMSE) for the linear regression of miniDOT 3 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_3_Rsquared,N/A,R-squared value for the linear regression of miniDOT 3 dissolved oxygen saturation data against time.,numeric,column_header
+Dissolved_Oxygen_Saturation_3_Slope,percent_saturation_per_minute,Slope of the line for the linear regression of miniDOT 3 dissolved oxygen saturation sample data against time.,numeric,column_header
+Field_Name,N/A,Name of field of header rows before data.,text,column_header
+File_Description,N/A,A brief description of the files in the data package.,text,column_header
+File_Name,N/A,Name of files in the data package.,text,column_header
+File_Path,N/A,File path within the data package.,text,column_header
+herb_cov_evc_MAX,N/A,Maximum of herbaceous cover in catchment (z-score).,numeric,column_header
+herb_cov_evc_MEAN,N/A,Mean of herbaceous cover in catchment (z-score).,numeric,column_header
+herb_cov_evc_MIN,N/A,Minimum of herbaceous cover in catchment (z-score).,numeric,column_header
+herb_cov_evc_STD,N/A,Standard deviation of herbaceous cover in catchment (z-score).,numeric,column_header
+herb_hgt_evh_MAX,N/A,Maximum of herbaceous height in catchment (z-score).,numeric,column_header
+herb_hgt_evh_MEAN,N/A,Mean of herbaceous height in catchment (z-score).,numeric,column_header
+herb_hgt_evh_MIN,N/A,Minimum of herbaceous height in catchment (z-score).,numeric,column_header
+herb_hgt_evh_STD,N/A,Standard deviation of herbaceous height in catchment (z-score).,numeric,column_header
+Mass,mass_to_charge_ratio,Measured ionic mass. The units of mass to charge ration is commonly denoted as m/z.,numeric,column_header
+Material,N/A,Type of sample (e.g. Liquid>aqueous; sediment; etc). Uses a controlled vocabulary from the International Generic Sample Number (IGSN) System for Earth Sample Registration (SESAR) (https://www.geosamples.org/).,text,column_header
+MCD15A3H_FPAR_1_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_1_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_1_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_1_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_10_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_10_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_10_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_10_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_11_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_11_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_11_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_11_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_12_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_12_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_12_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_12_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2009_2019_median_MAX,N/A,Median of the annual maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of  photosynthetically active radiation in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2009_2019_median_MEAN,N/A,Median of the annual mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of  photosynthetically active radiation in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2009_2019_median_MIN,N/A,Median of the annual minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of  photosynthetically active radiation in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_2009_2019_median_STD,N/A,Median of the annual Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of  photosynthetically active radiation in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_3_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_3_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_3_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_3_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_4_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_4_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_4_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_4_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_5_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_5_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_5_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_5_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_6_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_6_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_6_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_6_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_7_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_7_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_7_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_7_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_8_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_8_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_8_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_8_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_9_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_9_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_9_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_FPAR_9_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived fraction of photosynthetically active radiation in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_1_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_1_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_1_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_1_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_10_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_10_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_10_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_10_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_11_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_11_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_11_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_11_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_12_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_12_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_12_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_12_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2009_2019_median_MAX,N/A,Median of the annual maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2009_2019_median_MEAN,N/A,Median of the annual mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2009_2019_median_MIN,N/A,Median of the annual minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_2009_2019_median_STD,N/A,Median of the annual Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_3_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_3_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_3_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_3_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_4_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_4_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_4_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_4_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_5_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_5_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_5_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_5_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_6_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_6_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_6_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_6_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_7_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_7_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_7_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_7_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_8_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_8_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_8_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_8_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_9_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_9_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_9_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MCD15A3H_LAI_9_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived leaf area index in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+Mean_00530_TSS_mg_per_L,milligrams_per_liter,"Mean total suspended solids. 5-digit prefix refers to a US Geological Survey parameter code. For each sampling event (e.g. SPS_005_TSS) the NPOC values of each of the three biological replicates (e.g. SPS_005_TSS-1; SPS_005_TSS-2; SPS_005_TSS-3) are averaged. Any replicate values that were identified as an outlier or were above/below the limit of detection are not included in the mean. Outliers were identified using distance based outlier detection. If the set of replicates had a coefficient of variation of 30 percent or higher the outlier was identified by calculating the distance between each of the replicates. The replicate with the highest distance to the other two replicates was flagged as an outlier. The ""Mean_Missing_Reps"" column indicates if a mean does not include all three replicates using a TRUE/FALSE flag where TRUE indicates one or more replicates are missing from the mean.",numeric,column_header
+Mean_00681_NPOC_mg_per_L_as_C,milligrams_per_liter,"Mean dissolved organic carbon data measured as non-purgeable organic carbon (NPOC) and reported as carbon. 5-digit prefix refers to a US Geological Survey parameter code. For each sampling event (e.g. CM_005_Water); the NPOC values of each of the three biological replicates (e.g. CM_005_OCN-1; CM_005_OCN-2; CM_005_OCN-3) are averaged. Any replicate values that were identified as an outlier or were above/below the limit of detection are not included in the mean. Outliers were identified using distance based outlier detection. If the set of replicates had a coefficient of variation of 30 percent or higher; the outlier was identified by calculating the distance between each of the replicates. The replicate with the highest distance to the other two replicates was flagged as an outlier. The ""Mean_Missing_Reps"" column indicates if a mean does not include all three replicates using a TRUE/FALSE flag where TRUE indicates one or more replicates are missing from the mean.",numeric,column_header
+Mean_00691_DIC_mg_per_L_as_C,milligrams_per_liter,"Mean dissolved inorganic carbon reported as carbon. 5-digit prefix refers to a US Geological Survey parameter code. For each sampling event (e.g. SPS_005_DIC) the NPOC values of each of the three biological replicates (e.g. SPS_005_DIC-1; SPS_005_DIC-2; SPS_005_DIC-3) are averaged. Any replicate values that were identified as an outlier or were above/below the limit of detection are not included in the mean. Outliers were identified using distance based outlier detection. If the set of replicates had a coefficient of variation of 30 percent or higher the outlier was identified by calculating the distance between each of the replicates. The replicate with the highest distance to the other two replicates was flagged as an outlier. The ""Mean_Missing_Reps"" column indicates if a mean does not include all three replicates using a TRUE/FALSE flag where TRUE indicates one or more replicates are missing from the mean.",numeric,column_header
+Mean_71851_NO3_mg_per_L_as_NO3,milligrams_per_liter,"Mean nitrate reported as nitrate (rather than as nitrogen). 5-digit prefix refers to a US Geological Survey parameter code. For each sampling event (e.g. SPS_005_ION) the NPOC values of each of the three biological replicates (e.g. SPS_005_ION-1; SPS_005_ION-2; SPS_005_ION-3) are averaged. Any replicate values that were identified as an outlier or were above/below the limit of detection are not included in the mean. Outliers were identified using distance based outlier detection. If the set of replicates had a coefficient of variation of 30 percent or higher the outlier was identified by calculating the distance between each of the replicates. The replicate with the highest distance to the other two replicates was flagged as an outlier. The ""Mean_Missing_Reps"" column indicates if a mean does not include all three replicates using a TRUE/FALSE flag where TRUE indicates one or more replicates are missing from the mean.",numeric,column_header
+Mean_Missing_Reps,N/A,Indication of whether all replicates (reps) are included in the calculation of the mean (with a FALSE flag) or all replicates are not included (with a TRUE flag).,text,column_header
+MethodID_Analysis,N/A,Method code defining information about analysis of the samples that led to the data presented in the column.,text,row_header
+MethodID_DataProcessing,N/A,Method code defining information about data processing that led to the data presented in the column.,text,row_header
+MethodID_Inspection,N/A,Method code defining information about inspection of the samples that led to the data presented in the column.,text,row_header
+MethodID_Preparation,N/A,Method code defining information about preparation of the samples that led to the data presented in the column.,text,row_header
+MethodID_Preservation,N/A,Method code defining information about preservation of the samples that led to the data presented in the column.,text,row_header
+MethodID_Storage,N/A,Method code defining information about storage of the samples that led to the data presented in the column.,text,row_header
+Missing_Value_Codes,N/A,Missing value codes.,text,column_header
+MOD16A2_ET_10_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_10_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_10_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_10_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for October from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_11_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_11_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_11_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_11_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for November from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_12_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_12_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_12_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_12_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for December from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_2009_2019_median_MAX,N/A,Median of the annual maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_2009_2019_median_MEAN,N/A,Median of the annual mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_2009_2019_median_MIN,N/A,Median of the annual minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment from 2009-2019 (z-score).,numeric,column_header
+MOD16A2_ET_2009_2019_median_STD,N/A,Median of the annual Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_1_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_1_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_1_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_1_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for January from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_2_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_2_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_2_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_2_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for February from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_3_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_3_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_3_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_3_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for March from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_4_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_4_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_4_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_4_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for April from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_5_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_5_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_5_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_5_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for May from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_6_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_6_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_6_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_6_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for June from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_7_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_7_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_7_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_7_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for July from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_8_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_8_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_8_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_8_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for August from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_9_MAX,N/A,Maximum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_9_MEAN,N/A,Mean Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_9_MIN,N/A,Minimum Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MOD16A2ET_9_STD,N/A,Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived evapotranspiration in the catchment for September from 2009-2019 (z-score).,numeric,column_header
+MOD17A3H_NPP_2004_2014_median_MAX,N/A,Median of the annual maximum of Moderate Resolution Imaging Spectroradiometer (MODIS) derived net primary production for 2004-2014 (z-score).,numeric,column_header
+MOD17A3H_NPP_2004_2014_median_MEAN,N/A,Median of the annual mean of Moderate Resolution Imaging Spectroradiometer (MODIS) derived net primary production for 2004-2014 (z-score).,numeric,column_header
+MOD17A3H_NPP_2004_2014_median_MIN,N/A,Median of the annual minimum of Moderate Resolution Imaging Spectroradiometer (MODIS) derived net primary production for 2004-2014 (z-score).,numeric,column_header
+MOD17A3H_NPP_2004_2014_median_STD,N/A,Median of the annual Standard deviation of Moderate Resolution Imaging Spectroradiometer (MODIS) derived net primary production for 2004-2014 (z-score).,numeric,column_header
+Name,N/A,Name or molecular formula for commonly observed biochemical transformations.,text,column_header
+ned17_MAX,N/A,Mean elevation within the catchment from USGS National Elevation Dataset (z-score).,numeric,column_header
+ned17_MEAN,N/A,Minimum elevation within the catchment from USGS National Elevation Dataset (z-score).,numeric,column_header
+ned17_MIN,N/A,Standard deviation of elevation within the catchment from USGS National Elevation Dataset (z-score).,numeric,column_header
+ned17_STD,N/A,Maximum elevation within the catchment from USGS National Elevation Dataset (z-score).,numeric,column_header
+ned17shadedrelief_MAX,N/A,Maximum of shaded relief within the catchment (an analog for topographic solar exposure) (z-score).,numeric,column_header
+ned17shadedrelief_MEAN,N/A,Mean of shaded relief within the catchment (an analog for topographic solar exposure) (z-score).,numeric,column_header
+ned17shadedrelief_MIN,N/A,Minimum of shaded relief within the catchment  (an analog for topographic solar exposure) (z-score).,numeric,column_header
+ned17shadedrelief_STD,N/A,Standard deviation of shaded relief within the catchment (an analog for topographic solar exposure) (z-score).,numeric,column_header
+Normalized_Transformations,N/A,Normalized number of OM transformations. Total number of OM transformations divided by the total number of FTICR-MS peaks present in each sample.,numeric,column_header
+Number_of_Peaks,N/A,Total number of Fourier-transform ion cyclotron resonance mass spectrometry (FTICR-MS) peaks present in each sample.,numeric,column_header
+pheno_AMP_ltmean_MAX,N/A,Maximum of the long term mean amplitude of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_AMP_ltmean_MEAN,N/A,Mean of the long term mean amplitude of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_AMP_ltmean_MIN,N/A,Minimum of the long term mean amplitude of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_AMP_ltmean_STD,N/A,Standard deviation of the long term mean amplitude of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_DUR_ltmean_MAX,N/A,Maximum of the long term mean duration of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_DUR_ltmean_MEAN,N/A,Mean of the long term mean duration of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_DUR_ltmean_MIN,N/A,Minimum of the long term mean duration of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_DUR_ltmean_STD,N/A,Standard deviation of the long term mean duration of normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOSN_ltmean_MAX,N/A,Maximum of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOSN_ltmean_MEAN,N/A,Mean of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOSN_ltmean_MIN,N/A,Minimum of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOSN_ltmean_STD,N/A,Standard deviation of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOST_ltmean_MAX,N/A,Maximum time of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOST_ltmean_MEAN,N/A,Mean time of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOST_ltmean_MIN,N/A,Minimum time of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_EOST_ltmean_STD,N/A,Standard deviation time of the end of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_MAXN_ltmean_MAX,N/A,Maximum of the season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_MAXN_ltmean_MEAN,N/A,Mean of the season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_MAXN_ltmean_MIN,N/A,Minimum of the season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_MAXN_ltmean_STD,N/A,Standard deviation of the season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOSN_ltmean_MAX,N/A,Maximum of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOSN_ltmean_MEAN,N/A,Mean of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOSN_ltmean_MIN,N/A,Minimum of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOSN_ltmean_STD,N/A,Standard deviation of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOST_ltmean_MAX,N/A,Maximum time of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOST_ltmean_MEAN,N/A,Mean time of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOST_ltmean_MIN,N/A,Minimum time of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_SOST_ltmean_STD,N/A,Standard deviation time of the start of season normalized vegetation index (NDVI) within the catchment  (z-score).,numeric,column_header
+pheno_TIN_ltmean_MAX,N/A,Maximum of the time integrated normalized vegetation index (NDVI) within the catchment (z-score).,numeric,column_header
+pheno_TIN_ltmean_MEAN,N/A,Mean of the time integrated normalized vegetation index (NDVI) within the catchment (z-score).,numeric,column_header
+pheno_TIN_ltmean_MIN,N/A,Minimum of the time integrated normalized vegetation index (NDVI) within the catchment (z-score).,numeric,column_header
+pheno_TIN_ltmean_STD,N/A,Standard deviation of the time integrated normalized vegetation index (NDVI) within the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_01_MAX,N/A,Maximum January 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_01_MEAN,N/A,Mean January 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_01_MIN,N/A,Minimum January 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_01_STD,N/A,Standard deviation January 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_02_MAX,N/A,Maximum February 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_02_MEAN,N/A,Mean February 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_02_MIN,N/A,Minimum February 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_02_STD,N/A,Standard deviation February 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_03_MAX,N/A,Maximum March 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_03_MEAN,N/A,Mean March 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_03_MIN,N/A,Minimum March 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_03_STD,N/A,Standard deviation March 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_04_MAX,N/A,Maximum April 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_04_MEAN,N/A,Mean April 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_04_MIN,N/A,Minimum April 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_04_STD,N/A,Standard deviation April 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_05_MAX,N/A,Maximum May 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_05_MEAN,N/A,Mean May 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_05_MIN,N/A,Minimum May 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_05_STD,N/A,Standard deviation May 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_06_MAX,N/A,Maximum June 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_06_MEAN,N/A,Mean June 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_06_MIN,N/A,Minimum June 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_06_STD,N/A,Standard deviation June 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_07_MAX,N/A,Maximum July 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_07_MEAN,N/A,Mean July 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_07_MIN,N/A,Minimum July 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_07_STD,N/A,Standard deviation July 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_08_MAX,N/A,Maximum August 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_08_MEAN,N/A,Mean August 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_08_MIN,N/A,Minimum August 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_08_STD,N/A,Standard deviation August 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_09_MAX,N/A,Maximum September 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_09_MEAN,N/A,Mean September 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_09_MIN,N/A,Minimum September 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_09_STD,N/A,Standard deviation September 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_10_MAX,N/A,Maximum October 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_10_MEAN,N/A,Mean October 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_10_MIN,N/A,Minimum October 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_10_STD,N/A,Standard deviation October 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_11_MAX,N/A,Maximum November 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_11_MEAN,N/A,Mean November 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_11_MIN,N/A,Minimum November 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_11_STD,N/A,Standard deviation November 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_12_MAX,N/A,Maximum December 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_12_MEAN,N/A,Mean December 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_12_MIN,N/A,Minimum December 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_12_STD,N/A,Standard deviation December 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_annual_MAX,N/A,Maximum Annual 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_annual_MEAN,N/A,Mean Annual 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_annual_MIN,N/A,Minimum Annual 30 year average precipitation in the catchment (z-score).,numeric,column_header
+ppt_30yr_norm_annual_STD,N/A,Standard deviation Annual 30 year average precipitation in the catchment (z-score).,numeric,column_header
+Reference,N/A,Author(s) cited as the source of published literature values of water column respiration rates (ERwc) provided in Table 2 and described in more detail in the manuscript. See References section in the manuscript for full citations.,text,column_header
+Sample_Name,N/A,Name of sample.,text,column_header
+shrub_cov_evc_MAX,N/A,Maximum shrub cover in the catchment (z-score).,numeric,column_header
+shrub_cov_evc_MEAN,N/A,Mean shrub cover in the catchment (z-score).,numeric,column_header
+shrub_cov_evc_MIN,N/A,Minimum shrub cover in the catchment (z-score).,numeric,column_header
+shrub_cov_evc_STD,N/A,Standard deviation shrub cover in the catchment (z-score).,numeric,column_header
+shrub_hgt_evh_MAX,N/A,Maximum shrub height in the catchment (z-score).,numeric,column_header
+shrub_hgt_evh_MEAN,N/A,Mean shrub height in the catchment (z-score).,numeric,column_header
+shrub_hgt_evh_MIN,N/A,Minimum shrub height in the catchment (z-score).,numeric,column_header
+shrub_hgt_evh_STD,N/A,Standard deviation shrub height in the catchment (z-score).,numeric,column_header
+Site_ID,N/A,Site ID.,text,column_header
+Site_Name,N/A,Name of site.,text,column_header
+Source,N/A,Site data source for StreamPULSE sites. The data are from the StreamPULSE dataset as described in Bernhardt et al. (2022) and can be downloaded directly at  https://data.streampulse.org/download_bulk.,text,column_header
+SPS_*,N/A,Merged sample name (corresponds to one site with three biological reps that have been merged) with rows representing peak intensities reflected as presence absence.,text,row_header
+Standard,N/A,ESS-DIVE Reporting Format or other standard applied to the data file.,text,column_header
+Stream_Order,N/A,Modified Strahler stream order. Stream order in the NHDPlusV2 stream database is a modified version of Strahler stream order that is calculated using an algorithm that takes flow splits in the network into consideration.,numeric,column_header
+Temperature_1_Mean,degree_celsius,Mean temperature from miniDOT 1.,numeric,column_header
+Temperature_1_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 1 temperature data against time.,numeric,column_header
+Temperature_1_Range,degree_celsius,The range of temperature from miniDOT 1 of 3 (maximum value minus the minimum value).,numeric,column_header
+Temperature_1_RMSE,degree_celsius,The root mean square error (RMSE) for the linear regression of miniDOT 1 temperature data against time.,numeric,column_header
+Temperature_1_Rsquared,N/A,R-squared value for the linear regression of miniDOT 1 temperature data against time.,numeric,column_header
+Temperature_1_Slope,degree_celsius_per_minute,Slope of the line for the linear regression of miniDOT 1 temperature sample data against time.,numeric,column_header
+Temperature_2_Mean,degree_celsius,Mean temperature from miniDOT 2.,numeric,column_header
+Temperature_2_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 2 temperature data against time.,numeric,column_header
+Temperature_2_Range,degree_celsius,The range of temperature from miniDOT 2 of 3 (maximum value minus the minimum value).,numeric,column_header
+Temperature_2_RMSE,degree_celsius,The root mean square error (RMSE) for the linear regression of miniDOT 2 temperature data against time.,numeric,column_header
+Temperature_2_Rsquared,N/A,R-squared value for the linear regression of miniDOT 2 temperature data against time.,numeric,column_header
+Temperature_2_Slope,degree_celsius_per_minute,Slope of the line for the linear regression of miniDOT 2 temperature sample data against time.,numeric,column_header
+Temperature_3_Mean,degree_celsius,Mean temperature from miniDOT 3.,numeric,column_header
+Temperature_3_NRMSE,N/A,Normalized root mean square error (NRMSE) for the linear regression of miniDOT 3 temperature data against time.,numeric,column_header
+Temperature_3_Range,degree_celsius,The range of temperature from miniDOT 3 of 3 (maximum value minus the minimum value).,numeric,column_header
+Temperature_3_RMSE,degree_celsius,The root mean square error (RMSE) for the linear regression of miniDOT 3 temperature data against time.,numeric,column_header
+Temperature_3_Rsquared,N/A,R-squared value for the linear regression of miniDOT 3 temperature data against time.,numeric,column_header
+Temperature_3_Slope,degree_celsius_per_minute,Slope of the line for the linear regression of miniDOT 3 temperature sample data against time.,numeric,column_header
+Temperature_Mean,degree_celcius,Water temperature. Mean of MiniDOT sensor time series temperature data for individual incubation replicates and averaged over three miniDOTs.,numeric,column_header
+Term_Type,N/A,Indicates whether the header is a column header or row header.,text,column_header
+Total_Drainage_Area,square_kilometers,Total drainage area upstream from site.,numeric,column_header
+Total_Ecosystem_Respiration_Areal,grams_dissolved oxygen_per_square_meter_per_day,Daily reach-averaged ecosystem respiration rate (ERtot) data in original areal units predicted using streamMetabolizer as described in Appling et al. (2018b; 2018c). The dataset is from the Appling et al. (2018c) data release and can be downloaded directly at https://www.sciencebase.gov/catalog/item/59bff507e4b091459a5e0982.,numeric,column_header
+Total_Ecosystem_Respiration_Volumetric,milligrams_dissolved oxygen_per_liter_per_day,Mean daily reach-averaged ecosystem respiration rate (ERtot) in volumetric units. Mean ERtot in volumetric units were calculated for the 356 rivers and streams in the Appling et al. (2018b; 2018c) dataset by multiplying predicted ERtot (in original areal units) by river depth for each daily observation; summing new ERtot daily values (in volumetric units) for each site; and dividing the sum by the number of observations for each site.,numeric,column_header
+Total_Number_of_Transformations,count,Total number of organic matter (OM) biochemical transformations in each sample.,numeric,column_header
+tree_cov_evc_MAX,N/A,Maximum tree cover in the catchment (z-score).,numeric,column_header
+tree_cov_evc_MEAN,N/A,Mean tree cover in the catchment (z-score).,numeric,column_header
+tree_cov_evc_MIN,N/A,Minimum tree cover in the catchment (z-score).,numeric,column_header
+tree_cov_evc_STD,N/A,Standard deviation tree cover in the catchment (z-score).,numeric,column_header
+tree_hgt_evh_MAX,N/A,Maximum tree height in the catchment (z-score).,numeric,column_header
+tree_hgt_evh_MEAN,N/A,Mean tree height in the catchment (z-score).,numeric,column_header
+tree_hgt_evh_MIN,N/A,Minimum tree height in the catchment (z-score).,numeric,column_header
+tree_hgt_evh_STD,N/A,Standard deviation tree height in the catchment (z-score).,numeric,column_header
+Unit,N/A,Unit of measurement that applies to a given column or row in the data package.,text,column_header
+Unit_Basis,N/A,Basis of the units listed in the column.,text,row_header
+Water_Column_Respiration,milligrams_dissolved oxygen_per_liter_per_day,Water column respiration (ERwc; this study). Slope of the line for the linear regression of miniDOT dissolved oxygen sample data against time and averaged for three miniDOTs.,numeric,column_header
+Water_Column_Respiration_Literature,milligrams_dissolved oxygen_per_liter_per_day,Published literature values of water column respiration rates (ERwc) for 25 rivers and streams across the conterminous United States and the Amazon River Basin. The data and detailed methods for calculating ERwc for each site are provided in Table 2 and further described in the manuscript.,numeric,column_header
+WHP_MAX,N/A,Maximum wildfire hazard potential in the catchment (z-score).,numeric,column_header
+WHP_MEAN,N/A,Mean wildfire hazard potential in the catchment (z-score).,numeric,column_header
+WHP_MIN,N/A,Minimum wildfire hazard potential in the catchment (z-score).,numeric,column_header
+WHP_STD,N/A,Standard deviation wildfire hazard potential in the catchment (z-score).,numeric,column_header
+Year,YYYY,Year of the cited reference for the source of published literature values of water column respiration rates (ERwc) provided in Table 2 and described in more detail in the manuscript. See References section in the manuscript for full citations.,numeric,column_header
