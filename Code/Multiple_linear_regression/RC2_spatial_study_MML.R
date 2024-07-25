@@ -12,7 +12,7 @@ rm(list=ls(all=TRUE))
 # library(ggstatsplot)
 # library(caret)
 # library(leaps)
-# library(car)
+library(car)
 # library(patchwork)
 # library(scales)
 # library(moments)
@@ -22,10 +22,10 @@ rm(list=ls(all=TRUE))
 # library(gtable)
 # library(grid)
 # library(ggbreak)
-# library(tidyverse)
-# library(latex2exp)
+library(tidyverse)
+library(latex2exp)
 # library(lme4)
-# library("PerformanceAnalytics")
+library("PerformanceAnalytics") # used for correlation matrix
 
 # Set working directory
 current_path <- rstudioapi::getActiveDocumentContext()$path
@@ -34,103 +34,185 @@ setwd("../..")
 getwd()
 
 # read in ERwc(ERwater),"T_mean","StreamOrde","Total_Drainage_Area"data
+data_ml = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv'))
+
 data<- read.csv(file.path('./Data/Multiple_linear_regression/spatial_data.csv'))
-#names(data)[c(1,2,7)]<-c('Site_ID','Parent_ID','ERwc')
-names(data) <-c('Site_ID','Parent_ID','ERwc',"T_mean","StreamOrde","Total_Drainage_Area")
-# set positive ERwater to 0
-# data$ERwc[data$ERwc>0]<-0
+
+merged_data = full_join(data_ml, data, by = "Site_ID") %>% 
+  select(c(Site_ID, Sample_Name, Mean_ERwc, Mean_Temp, Water_Column_Respiration, Temperature_Mean, Stream_Order, Total_Drainage_Area)) %>% 
+  mutate(positive_ERwc = if_else(Mean_ERwc > 0 , 0, Mean_ERwc)) %>% 
+  mutate(positive_ERwc_OG = if_else(Water_Column_Respiration > 0 , 0, Water_Column_Respiration)) %>% 
+  relocate(positive_ERwc, .after = Mean_ERwc)
 
 ## Transformation data
-sdata<- read.csv(file.path('./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv'))
-names(sdata)<-c('Parent_ID','Transformations','Peaks','Normalized_Transformations')
-data <- merge(data,sdata,by=c("Parent_ID"))
+sdata<- read.csv(file.path('./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv')) 
 
-## chemical data from 'v2_SFA_SpatialStudy_2021_Sample_Based_Surface_Water_DataPackage'
-chemdata <- read.csv(file.path('./Data/Multiple_linear_regression','v2_SPS_NPOC_TN_DIC_TSS_Ions_Summary.csv'),skip=2)
-chemdata <-chemdata[grep('SPS',chemdata$Sample_Name),]
-names(chemdata)
-chemdata <-chemdata[,c(2,4:7)]; 
-names(chemdata)<-c('Parent_ID','DIC','NO3','NPOC','TSS')
-chemdata[chemdata=='-9999'] =NA
-chemdata[c('DIC','NO3','NPOC','TSS')] <- sapply(chemdata[c('DIC','NO3','NPOC','TSS')],as.numeric)
+merged_data_OM <- merge(merged_data, sdata,by=c("Sample_Name"))
+
+## chemical data from calculated summary file
+chemdata <- read.csv(file.path('./Data/Multiple_linear_regression','Summary_Not_Cleaned.csv')) %>% 
+  relocate(DIC_mean, .after = TSS_mg_per_L) %>%
+  mutate(Sample_Name = str_remove(Parent, "_MEAN")) %>% 
+  relocate(Sample_Name, .before = Parent) %>% 
+  select(-c(X, X00000_NH4_mg_per_L_as_NH4_mean, X01130_Li_mg_per_L_mean, X00653_PO4_mg_per_L_as_PO4_mean, Parent)) %>% 
+  rename_with(~ str_sub(., 8), starts_with("X")) %>% 
+  mutate(across(everything(), ~if_else(. == -9999, NA, .)))
 
 # merge all data
-data <-merge(data,chemdata,by=c("Parent_ID"))
+all_data <-merge(merged_data_OM,chemdata,by=c("Sample_Name"))
 # check missingvalues in data
-sapply(data, function(x) sum(is.na(x)))
-#data <- data[data$NO3<max(data$NO3),]
+sapply(all_data, function(x) sum(is.na(x)))
+
 ###############################################################
 ## plot correlation matrix
-vars <- c('ERwc','DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','StreamOrde','Transformations','Normalized_Transformations')
-png(file.path(".",paste0('exploratory_variables_correlation_matrix',".png")),
+
+# function for pearson corr matrix
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r = (cor(x, y, method = c("pearson")))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)} else {cex = cex.cor}
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + r)/1)
+  
+  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
+  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
+  
+  test <- cor.test(x,y)
+  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
+  #text(0.5, 0.5, txt, cex = cex * r)
+  text(.5, .8, Signif, cex=cex, col=2)
+  
+}
+
+new_names = c(ERwc = "Mean_ERwc", PosERwc = "positive_ERwc", Temp = "Mean_Temp", StrOrd = "Stream_Order", TotDrain = "Total_Drainage_Area", Trans = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations", TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean", TN = "TN_mg_per_L_as_N_mean", Br = "Br_mg_per_L_mean", Ca = "Ca_mg_per_L_mean", Cl = "Cl_mg_per_L_mean", Fl = "F_mg_per_L_mean", Mg = "Mg_mg_per_L_mean", NO3 = "NO3_mg_per_L_as_NO3_mean", NO2 = "NO2_mg_per_L_as_NO2_mean", K = "K_mg_per_L_mean", Na = "Na_mg_per_L_mean", SO4 = "SO4_mg_per_L_as_SO4_mean")
+
+new_data <- all_data %>% 
+  select(-c(Water_Column_Respiration, Temperature_Mean, positive_ERwc_OG, Sample_Name)) %>% 
+  rename(!!!new_names) %>% 
+  column_to_rownames("Site_ID")
+
+## look at histograms of all data 
+
+pivot_data = new_data %>% 
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
+
+png(file.path("./Plots/",paste0('all_histograms_ml',".png")),
     width = 8, height = 6, units = 'in', res = 600)
-#par(mfrow=c(2,2)) 
-chart.Correlation(data[vars], histogram=TRUE, pch=19)
+
+ggplot() + 
+  geom_histogram(pivot_data, mapping = aes(x = value)) + 
+  facet_wrap(~ variable, scales = "free") +
+  theme_minimal()
+
 dev.off()
 
-########################
-#log transform all variables
-lvars<- vars[-c(8)]
-ldata<- data[lvars]
-#log transform variables
-for ( v in lvars[-1]){
-  ldata[,v] <- log10(ldata[,v])
-}
-# correlation matrix
-png(file.path("./Plots",paste0('exploratory_variables_correlation_matrix_log',".png")),
+# remove NAs? from NO2, Br
+na_data = new_data %>%
+  na.omit() 
+
+## Pearson without transformations
+png(file.path("./Plots/",paste0('exploratory_variables_correlation_matrix_ml',".png")),
     width = 8, height = 6, units = 'in', res = 600)
-#par(mfrow=c(2,2)) 
-chart.Correlation(ldata[lvars[-1]], histogram=TRUE, pch=19)
+
+pairs(na_data, lower.panel = panel.smooth,upper.panel = panel.cor, gap = 0, cex.labels = 0.75, cex = 0.75)
+
+dev.off()
+
+
+########################
+# log transform all variables
+# stream order being transformed here, but not in OG script, and not sure if it needs to be
+
+#if turning positive ERwc to 0, need to add +1 to data
+log_columns = c("Temp", "TotDrain", "Trans", "Peaks", "NormTrans", "TSS", "DIC", "NPOC", "TN", "Br", "Ca", "Cl", "Fl", "Mg", "NO3", "NO2", "K", "Na", "SO4")
+
+untransformed = c("ERwc", "PosERwc", "StrOrd")
+
+log_data = new_data %>% 
+  na.omit() %>% 
+  #rename_with(~ paste0("log_", .)) %>% 
+  transmute(across(all_of(untransformed), ~.), 
+                   across(all_of(log_columns), ~log10(.), .names = "log_{col}"))
+  
+# correlation matrix
+png(file.path("./Plots",paste0('exploratory_variables_correlation_matrix_log_ml',".png")),
+    width = 8, height = 6, units = 'in', res = 600)
+
+pairs(log_data, lower.panel = panel.smooth,upper.panel = panel.cor, gap = 0, cex.labels = 0.75, cex = 0.75)
+
+dev.off()
+
+## look at histograms of log transformed data 
+
+log_pivot_data = log_data %>% 
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
+
+png(file.path("./Plots/",paste0('log_histograms_ml',".png")),
+    width = 8, height = 6, units = 'in', res = 600)
+
+ggplot() + 
+  geom_histogram(log_pivot_data, mapping = aes(x = value)) + 
+  facet_wrap(~ variable, scales = "free") +
+  theme_minimal()
+
 dev.off()
 
 
 ################################################
-# Stepwise Regression
-# remove data point with NA
-invars <- c('DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','StreamOrde','Transformations','Normalized_Transformations')
-#cdata$NO3 <- log10(cdata$NO3)
-cdata <- na.omit(data[c(invars,'ERwc')])
-#cdata <-cdata[cdata$NO3<max(cdata$NO3),]
-#define intercept-only model
-intercept_only <- lm(ERwc ~ 1, data=cdata)
+# Stepwise Regression - NON LOG TRANSFORMED
+
+## the first thing they do is non-log transformed?
+
+#define intercept-only model - what is the point of this?
+intercept_only <- lm(ERwc ~ 1, data=na_data)
 
 #define model with all predictors
-all <- lm(ERwc ~ DIC + NPOC + NO3+TSS+T_mean+Total_Drainage_Area+StreamOrde+Transformations+Normalized_Transformations, data = cdata)
+all <- lm(ERwc ~ Temp + StrOrd + TotDrain + Trans + Peaks+ NormTrans + TSS + DIC + NPOC + TN + Br + Ca + Cl + Fl + Mg + NO3 + NO2 + K + Na + SO4, data = na_data)
 
 ###################################
 #perform forward stepwise regression
 forward <- step(intercept_only, direction='forward', scope=formula(all),steps = 2000, trace=1)
 forward$anova
 forward$coefficients
-summary(forward)
+summary(forward) # keeping Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC
+
+# R2 0.87, Adj 0.832
 ###################################
 #perform forward stepwise regression
 backward <- step(all, direction='backward', scope=formula(all),steps = 2000, trace=1)
 backward$anova
 backward$coefficients
-summary(backward)
-bfit<- lm(ERwc ~ DIC + NPOC + NO3 +  T_mean + Total_Drainage_Area + 
-            StreamOrde  + Normalized_Transformations, data=cdata)
-summary(bfit)
+summary(backward) # keeps Temp, StrOrd, TotDrain, Trans, Peaks, TSS, DIC, NPOC, TN, Br, Ca, Fl, Mg, NO3, NO2, K, Na, SO4
+bfit<- lm(ERwc ~ Temp + StrOrd + TotDrain +  Trans + Peaks + TSS  + DIC + NPOC + TN + Br + Ca + Fl + Mg + NO3 + NO2 + K + Na + SO4, data=na_data) # same as backwards regression results, Xinmings not because she adds StreamOrder back in here
+summary(bfit) # R2 0.921, Adj 0.85
 
-png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_subset_remove_outlier',".png")),
-    width = 4, height = 3, units = 'in', res = 600)
-par(mfrow=c(1,1),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
-plot(c(0,1,2),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
-     xlab ='number of variables',ylab='AIC' )
-points(c(9,8,7,6,5,4,3,2),backward$anova$AIC,type = "b",col=2,pch=1)
-legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
-dev.off()
+## this not working
+# png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_subset_remove_outlier',".png")),
+#     width = 4, height = 3, units = 'in', res = 600)
+# par(mfrow=c(1,1),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+# 
+# plot(c(0,1,2),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
+#      xlab ='number of variables',ylab='AIC' )
+# 
+# points(c(9,8,7,6,5,4,3,2),backward$anova$AIC,type = "b",col=2,pch=1)
+# 
+# legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
+# dev.off()
+
 #############
-#  lm fitting using selected variables from forward stepwise selection
-#bfit<- lm(ERwc ~log(NO3) +Total_Drainage_Area+ T_mean+Transformations , data = data[data$NO3<max(data$NO3),]) #data = data[data$NO3<4,]
-#bfit<- lm(ERwc ~T_mean+NPOC, data=data[data$NO3<max(data$NO3),])
-bfit<- lm(ERwc ~T_mean+NPOC, data=cdata)
+#  lm fitting using selected variables from intercept-only forward stepwise selection (Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC)
+
+#bfit<- lm(ERwc ~ Br + Trans + TotDrain +  Temp + Fl + DIC + StrOrd + NO3 + TN + NPOC, data = na_data[na_data$NO3<max(na_data$NO3),]) # R2 = 0.6952, Adj = 0.5823 
+
+#bfit<- lm(ERwc ~Temp+NPOC, data=na_data[na_data$NO3<max(na_data$NO3),]) # not sure about this one, but same as below with NO3 outlier removed (why removing if NO3 not used?)
+
+bfit<- lm(ERwc ~Temp+NPOC, data=na_data) # not sure about this one
 summary(bfit)
 
-#bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations, data = data) #data = data[data$NO3<4,]
-#bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations, data = data) #data = data[data$NO3<4,]
-
+## Why partial residuals?
 png(file.path('./Plots',paste0('partial_residual_crPlots_fulldata_forward',".png")),
     width = 7, height = 6, units = 'in', res = 600)
 par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
@@ -148,10 +230,24 @@ mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
+
 dev.off()
+
 ######################
-bfit<- lm(ERwc ~NO3 +Total_Drainage_Area+ T_mean+Normalized_Transformations+DIC+NPOC, data = data) #data = data[data$NO3<4,]
+
+## This combining results from forward intercept only and backwards regression?
+
+# forward (Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC)
+
+# backward (Temp, StrOrd, TotDrain, Trans, Peaks, TSS, DIC, NPOC, TN, Br, Ca, Fl, Mg, NO3, NO2, K, Na, SO4)
+
+# in common: Temp, Trans, TotDrain, Br, Fl, DIC, StrOrd, NO3, TN, NPOC
+
+bfit<- lm(ERwc ~ Temp + Trans + TotDrain + Fl + DIC + StrOrd + NO3 + TN + NPOC + Peaks + TSS + Br + Ca + Fl + Mg + NO2 + K + Na + SO4 , data = na_data) #data = data[data$NO3<4,]
 # partial-residual plots
+
+summary(bfit) # R2 0.921, Adj 0.85 (same as above - everything in forward in backwards)
+
 png(file.path('./Plots',paste0('partial_residual_crPlots_fulldata_backward',".png")),
     width = 6, height = 8, units = 'in', res = 600)
 par(mfrow=c(3,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
