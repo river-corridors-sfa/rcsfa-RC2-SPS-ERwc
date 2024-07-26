@@ -1,10 +1,9 @@
 # RC2 spatial study - Multiple linear regression for manual_chamber_data
 # Xinming Lin Nov 22 2022
 # xinming.lin@pnnl.gov
+#maggi.laan@pnnl.gov
 
-################################################
-# Read in data 
-################################################
+
 rm(list=ls(all=TRUE))
 # library(MASS)
 # library(relaimpo)
@@ -26,6 +25,8 @@ library(tidyverse)
 library(latex2exp)
 # library(lme4)
 library("PerformanceAnalytics") # used for correlation matrix
+
+# Read in Data ------------------------------------------------------------
 
 # Set working directory
 current_path <- rstudioapi::getActiveDocumentContext()$path
@@ -63,8 +64,8 @@ all_data <-merge(merged_data_OM,chemdata,by=c("Sample_Name"))
 # check missingvalues in data
 sapply(all_data, function(x) sum(is.na(x)))
 
-###############################################################
-## plot correlation matrix
+
+# Function for correlation matrix -----------------------------------------
 
 # function for pearson corr matrix
 panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
@@ -111,7 +112,8 @@ dev.off()
 
 # remove NAs? from NO2, Br
 na_data = new_data %>%
-  na.omit() 
+  na.omit() %>% 
+  select(-c(PosERwc))
 
 ## Pearson without transformations
 png(file.path("./Plots/",paste0('exploratory_variables_correlation_matrix_ml',".png")),
@@ -121,10 +123,10 @@ pairs(na_data, lower.panel = panel.smooth,upper.panel = panel.cor, gap = 0, cex.
 
 dev.off()
 
-
-########################
+# Log Transform Data ------------------------------------------------------
 # log transform all variables
 # stream order being transformed here, but not in OG script, and not sure if it needs to be
+
 
 #if turning positive ERwc to 0, need to add +1 to data
 log_columns = c("Temp", "TotDrain", "Trans", "Peaks", "NormTrans", "TSS", "DIC", "NPOC", "TN", "Br", "Ca", "Cl", "Fl", "Mg", "NO3", "NO2", "K", "Na", "SO4")
@@ -161,33 +163,33 @@ ggplot() +
 dev.off()
 
 
-################################################
-# Stepwise Regression - NON LOG TRANSFORMED
+# Stepwise Regression - NON LOG TRANSFORMED -------------------------------
 
 ## the first thing they do is non-log transformed?
+## Forward ####
 
-#define intercept-only model - what is the point of this?
-intercept_only <- lm(ERwc ~ 1, data=na_data)
+# define empty model for forwards regression
+initial_model = lm(ERwc ~ 1, data=na_data)
 
 #define model with all predictors
-all <- lm(ERwc ~ Temp + StrOrd + TotDrain + Trans + Peaks+ NormTrans + TSS + DIC + NPOC + TN + Br + Ca + Cl + Fl + Mg + NO3 + NO2 + K + Na + SO4, data = na_data)
+full_model = lm(ERwc ~ ., data = na_data)
 
-###################################
 #perform forward stepwise regression
-forward <- step(intercept_only, direction='forward', scope=formula(all),steps = 2000, trace=1)
+forward <- step(initial_model, direction='forward', scope=formula(full_model),steps = 2000, trace=1)
 forward$anova
 forward$coefficients
 summary(forward) # keeping Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC
-
 # R2 0.87, Adj 0.832
-###################################
+
+## Backward ####
 #perform forward stepwise regression
-backward <- step(all, direction='backward', scope=formula(all),steps = 2000, trace=1)
+backward <- step(full_model, direction='backward', scope=formula(full_model),steps = 2000, trace=1)
 backward$anova
 backward$coefficients
 summary(backward) # keeps Temp, StrOrd, TotDrain, Trans, Peaks, TSS, DIC, NPOC, TN, Br, Ca, Fl, Mg, NO3, NO2, K, Na, SO4
-bfit<- lm(ERwc ~ Temp + StrOrd + TotDrain +  Trans + Peaks + TSS  + DIC + NPOC + TN + Br + Ca + Fl + Mg + NO3 + NO2 + K + Na + SO4, data=na_data) # same as backwards regression results, Xinmings not because she adds StreamOrder back in here
-summary(bfit) # R2 0.921, Adj 0.85
+
+backward_fit<- lm(ERwc ~ Temp + StrOrd + TotDrain +  Trans + Peaks + TSS  + DIC + NPOC + TN + Br + Ca + Fl + Mg + NO3 + NO2 + K + Na + SO4, data=na_data) 
+summary(backward_fit) # R2 0.921, Adj 0.85
 
 ## this not working
 # png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_subset_remove_outlier',".png")),
@@ -202,8 +204,8 @@ summary(bfit) # R2 0.921, Adj 0.85
 # legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
 # dev.off()
 
-#############
-#  lm fitting using selected variables from intercept-only forward stepwise selection (Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC)
+##  lm fitting ####
+#using selected variables from intercept-only forward stepwise selection (Br, Trans, TotDrain, Temp, Fl, DIC, StrOrd, NO3, TN, NPOC)
 
 #bfit<- lm(ERwc ~ Br + Trans + TotDrain +  Temp + Fl + DIC + StrOrd + NO3 + TN + NPOC, data = na_data[na_data$NO3<max(na_data$NO3),]) # R2 = 0.6952, Adj = 0.5823 
 
@@ -233,7 +235,7 @@ mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
 
 dev.off()
 
-######################
+## combined results ####
 
 ## This combining results from forward intercept only and backwards regression?
 
@@ -248,6 +250,7 @@ bfit<- lm(ERwc ~ Temp + Trans + TotDrain + Fl + DIC + StrOrd + NO3 + TN + NPOC +
 
 summary(bfit) # R2 0.921, Adj 0.85 (same as above - everything in forward in backwards)
 
+# in XL, this is all the things that are in the final model
 png(file.path('./Plots',paste0('partial_residual_crPlots_fulldata_backward',".png")),
     width = 6, height = 8, units = 'in', res = 600)
 par(mfrow=c(3,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
@@ -256,13 +259,13 @@ crPlots(bfit, ~ NO3,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN 
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 #mtext(expression("Residuals - NO"[3]*" (mg L"^-1*" )"),side=1, line=2.5,cex =0.7)
 mtext(TeX("$NO_{3}^{-}$ (mg $L^{-1}$)"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ Total_Drainage_Area,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
+crPlots(bfit, ~ TotDrain,id=FALSE,main='',smooth=FALSE,xlab='', #xlab=expression("Drainage Area (km"^2*")"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Drainage Area (km"^2*")"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+crPlots(bfit, ~ Temp,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ Normalized_Transformations,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
+crPlots(bfit, ~ NormTrans,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Normalized Transformations"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ DIC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
@@ -274,14 +277,12 @@ mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
 #par(mfrow=c(1,3))
 dev.off()
 
-
-
-# partial-residual plots
+# partial-residual plots, but not of what is imporant from above?
 png(file.path('./Plots',paste0('partial_residual_crPlots_subset_no_transform_for_backward',".png")),
     width = 7, height = 3.5, units = 'in', res = 600)
 par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 #par(mfrow=c(1,3))
-crPlots(bfit, ~ T_mean,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+crPlots(bfit, ~ Temp,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 mtext(expression("Temperature (?C)"),side=1, line=2.5,cex =0.7)
 crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
@@ -294,17 +295,17 @@ mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
 dev.off()
 
 # 
-# ## partial-regression plot
+# ## partial-regression plot what are avPlots?
 # png(file.path('./Plots',paste0('partial_regression_avPlots_tp',".png")),
 #     width = 8, height = 4, units = 'in', res = 600)
-# par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
-# #
-# avPlots(bfit, ~ T_mean,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (°C)"),
-#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-# mtext(expression("Residuals - Temperature (?C)"),side=1, line=2.5,cex =0.7)
-# avPlots(bfit, ~ NPOC,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (°C)"),
-#         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-# mtext(expression("Residuals - NPOC"),side=1, line=2.5,cex =0.7)
+par(mfrow=c(1,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
+#
+avPlots(bfit, ~ Temp,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (°C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Residuals - Temperature (?C)"),side=1, line=2.5,cex =0.7)
+avPlots(bfit, ~ NPOC,id=FALSE,main='', xlab='',#xlab=expression("Residuals - Temperature (°C)"),
+        ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
+mtext(expression("Residuals - NPOC"),side=1, line=2.5,cex =0.7)
 # dev.off()
 
 # 
@@ -329,62 +330,113 @@ dev.off()
 # dev.off()
 # # 
 
-################################################
-# Stepwise Regression : log transform  of NO3 and Total_Drainage_Area
-# remove data point with NA
 
-invars <- c('DIC','NPOC', 'NO3','TSS','T_mean','Total_Drainage_Area','Transformations','Normalized_Transformations')
-cdata <- na.omit(data[c(invars,'ERwc')])
-#cdata <-cdata[cdata$NO3<max(cdata$NO3),]
-#ldata <-na.omit(ldata)
-#define intercept-only model
-intercept_only <- lm(ERwc ~ 1, data=cdata)
+# Log Transformations -----------------------------------------------------
+# Stepwise Regression : All log transformed?
+
+log_data = log_data %>% 
+  select(-c(PosERwc))
+
+# ERwc not log transformed?
+
+# Start with empty model
+initial_log_model = lm(ERwc ~ 1, data = log_data)
 
 #define model with all predictors
-#+StreamOrde
-#all <- lm(ERwc ~ DIC + NPOC + log10(NO3)+TSS+T_mean+log10(Total_Drainage_Area)+Transformations+Normalized_Transformations, data = ldata)
-all <- lm(ERwc ~ log10(DIC) + log10(NPOC) + log10(NO3)+log10(TSS)+
-            log10(T_mean)+log10(Total_Drainage_Area)+log10(Transformations)+log10(Normalized_Transformations), data = cdata)
+full_log_model = lm(ERwc ~ ., data = log_data)
 
-###################################
+## Forward ####
 #perform forward stepwise regression
-forward <- step(intercept_only, direction='forward', scope=formula(all),steps = 2000, trace=1)
-forward$anova
-forward$coefficients
-summary(forward)
-#bfit<- lm(ERwc ~  log10(NO3)  , data = cdata)
-bfit<- lm(ERwc ~  log10(NO3) + log10(Transformations) + log10(T_mean)   , data = cdata)
-summary(bfit)
+forward_log = step(initial_log_model, direction='forward', scope=formula(full_log_model),steps = 2000, trace=1)
+forward_log$anova
+forward_log$coefficients
+summary(forward_log) # keeping log TN, Peaks, NO2
+# R2 0.55, Adj 0.51
+
+forward_log_fit = lm(ERwc ~  log_TN + log_Peaks + log_NO2, data = log_data)
+summary(forward_log_fit)
 
 # partial-residual plots
 png(file.path('./Plots',paste0('partial_residual_crPlots_log_vars_forward',".png")),
     width = 7, height = 6, units = 'in', res = 600)
 par(mfrow=c(2,2),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 #par(mfrow=c(1,3))
-crPlots(bfit, ~ log10(NO3),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
+crPlots(bfit, ~ log_TN,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("TDN (mg L"^-1*" )"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(TeX("log($NO_{3}^{-}$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ log10(Transformations),id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
+mtext(TeX("log(TN$ (mg $L^{-1}$))"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log_Peaks,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("log(Transformations)"),side=1, line=2.5,cex =0.7)
-crPlots(bfit, ~ log10(T_mean),id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
+mtext(expression("log(Peaks)"),side=1, line=2.5,cex =0.7)
+crPlots(bfit, ~ log_NO2,id=FALSE,main='',smooth=FALSE,xlab='',#xlab=expression("Temperature (?C)"),
         ylab=expression(paste("Partial Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
-mtext(expression("log(Temperature (?C))"),side=1, line=2.5,cex =0.7)
+mtext(expression("log(NO2)"),side=1, line=2.5,cex =0.7)
 # crPlots(bfit, ~ NPOC,id=FALSE,main='',smooth=FALSE, xlab='',#xlab=expression("Residuals - Temperature (°C)"),
 #         ylab=expression(paste("Residuals - ","ER"[wc]*" (mg O"[2]*" L"^-1*" day"^-1*")")))
 # mtext(expression("NPOC"),side=1, line=2.5,cex =0.7)
 
 #par(mfrow=c(1,3))
 dev.off()
-###################################
-#perform forward stepwise regression
-backward <- step(all, direction='backward', scope=formula(all),steps = 2000, trace=1)
-backward$anova
-backward$coefficients
-summary(backward)
-#bfit<- lm(ERwc ~   log10(NPOC) + log10(NO3) + log10(T_mean), data = cdata)
-bfit<- lm(ERwc ~  log10(NPOC) + log10(NO3) + log10(T_mean) , data = cdata)
-summary(bfit)
+
+## Backward ####
+backward_log = step(full_log_model, direction='backward', scope=formula(full_log_model),steps = 2000, trace=1)
+backward_log$anova
+backward_log$coefficients
+summary(backward_log) #keeps Trans, Peaks, TSS, DIC, TN, Ca, Cl, Fl, Mg, NO2, K, Na 
+#R2 0.74, Adj 0.61
+
+backward_log_fit<- lm(ERwc ~  log_Trans + log_Peaks + log_TSS + log_DIC + log_TN + log_Ca + log_Cl + log_Fl + log_Mg + log_NO2 + log_K + log_Na , data = log_data)
+summary(backward_log_fit)
+
+## Assess all models
+
+assess_model <- function(model) {
+  summary(model)
+  cat("AIC:", AIC(model), "\n")
+  cat("AICc:", AICc(model), "\n")
+  cat("BIC:", BIC(model), "\n")
+  
+  # Check assumptions
+  par(mfrow = c(2, 2))
+  plot(model)
+  
+  # Check multicollinearity
+  vif_values <- vif(model)
+  cat("VIF:\n")
+  print(vif_values)
+}
+
+cat("Forward Stepwise Regression Model:\n")
+assess_model(forward) #AIC 78.9, R2 0.88, Adj 0.83
+
+cat("Backward Stepwise Regression Model:\n")
+assess_model(backward) #AIC 77.4, R2 0.92, Adj 0.85
+
+cat("Forward Log Stepwise Regression Model:\n")
+assess_model(forward_log) #AIC 115.05, R2 0.55, Adj 0.51
+
+cat("Backward Log Stepwise Regression Model:\n")
+assess_model(backward_log) #AIC 112.5, R2 0.74, Adj 0.61
+
+
+## Look at All models fit
+
+par(mfrow = c(3, 2))
+
+# Forward stepwise regression residuals
+plot(forward$residuals, main = "Forward Residuals", ylab = "Residuals")
+
+# Backward stepwise regression residuals
+plot(backward$residuals, main = "Backward Residuals", ylab = "Residuals")
+
+# Forward log stepwise regression residuals
+plot(forward_log$residuals, main = "Forward Log Residuals", ylab = "Residuals")
+
+# Backward log stepwise regression residuals
+plot(backward_log$residuals, main = "Backward Log Residuals", ylab = "Residuals")
+
+
+# Intercept Model
+plot(initial_model$residuals, main = "Intercept Residuals", ylab = "Residuals")
 
 png(file.path("./Plots",paste0('stepwise_selection_AIC_nvars_full_dataset_log_transform_vars',".png")),
     width = 4, height = 3, units = 'in', res = 600)
@@ -392,9 +444,9 @@ par(mfrow=c(1,1),mgp=c(2,1,0),mar=c(3.4,3.4,1,1.5))
 # plot(c(0,1,2,3,4),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
 #      xlab ='number of variables',ylab='AIC' )
 # points(c(9,8,7,6,5,4),backward$anova$AIC,type = "b",col=2,pch=1)
-plot(c(0,1,2,3),forward$anova$AIC,type = "b",col=1,xlim=c(0,9),pch=0,
+plot(c(0,1,2,3),forward$anova$AIC,type = "b",col=1,xlim=c(0,11),pch=0,
      xlab ='number of variables',ylab='AIC' )
-points(c(8,7,6,5,4,3),backward$anova$AIC,type = "b",col=2,pch=1)
+points(c(11, 10, 9, 8,7,6,5,4,3),backward$anova$AIC,type = "b",col=2,pch=1)
 legend("topright", legend = c("Forward", "Backward"), col= c(1, 2),pch = c(0, 1))
 dev.off()
 #############
