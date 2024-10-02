@@ -14,8 +14,6 @@ library(glmnet)
 
 
 # Working Directory -------------------------------------------------------
-
-
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
 setwd("../..")
@@ -60,6 +58,39 @@ mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>%
 geo = read.csv("./Data/Multiple_linear_regression/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21 (1).csv") %>% 
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
+
+npoc_tn = read.csv("./Data/Multiple_linear_regression/v2_SPS_NPOC_TN.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N)) %>% 
+  rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
+  rename(TN = X00602_TN_mg_per_L_as_N) %>% 
+  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN))) %>% 
+  mutate(NPOC = as.numeric(NPOC))
+
+mean_npoc_tn = function (npoc_tn %>% 
+  separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
+  group_by(Parent) %>% 
+  mutate(mean_npoc = mean(NPOC)) %>% 
+  mutate(mean_tn = mean(TN)) %>% 
+  mutate(cv_npoc = (sd(NPOC)/mean(NPOC))*100) %>% 
+  mutate(cv_tn = (sd(TN)/mean(TN))*100) %>% 
+  mutate(z_score = ({{N}} - mean()))
+
+
+#Check LOD
+tss = read.csv("./Data/Multiple_linear_regression/SPS_TSS.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
+  rename(TSS = X00530_TSS_mg_per_L) %>% 
+  mutate(TSS = if_else(grepl("Below", TSS), as.numeric(.743), as.numeric(TSS)))
+
+dic = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Boye_Files/SPS/SPS_Water_DIC_Boye_2024-09-10.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00691_DIC_mg_per_L)) %>% 
+  rename(DIC = X00691_DIC_mg_per_L)
+
+
+
 
 # need to get DIC from VGC, check Ions from Sophia, and pull together in summary file code, add ultrameter water chemistry to this? add manta data to this? 
 sample = read.csv("./Data/Multiple_linear_regression/Summary_Not_Cleaned.csv") %>% 

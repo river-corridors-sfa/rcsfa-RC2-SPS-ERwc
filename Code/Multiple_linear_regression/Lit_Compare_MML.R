@@ -1,6 +1,13 @@
 library(tidyverse)
 library(moments)
 library(ggbreak)
+library(gtable)
+
+
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
 
 ################################################
 # read in ERwc data 
@@ -8,7 +15,7 @@ library(ggbreak)
 data = read.csv(file.path('./Data/Multiple_linear_regression/spatial_data.csv')) %>% 
   select(-c(Water_Column_Respiration, Temperature_Mean))
 
-erwc = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv')) %>% 
+erwc_sps = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv')) %>% 
   select(-c(X)) %>% 
   mutate(Mean_ERwc = round(Mean_ERwc, 3)) %>% 
   mutate(Mean_Temp = round(Mean_Temp, 3)) %>% 
@@ -20,19 +27,19 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteI
 
 # ERwater data from literture
 #ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
-ERwc2 <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
+erwc_lit <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
 
 ## calculate the skewness for ERtotal and ER water in this study
 sk1= round(skewness(ERriv$Total_Ecosystem_Respiration_Volumetric),2)
-sk2= round(skewness(erwc$Mean_ERwc),2)
+sk2= round(skewness(erwc_sps$Mean_ERwc),2)
 
 ################################################
 # make the density plots
 ## density plot for ERwater in this study
 p0 <- ggplot() + 
-  geom_density(data=erwc, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 6)+
-  geom_vline(aes(xintercept=median(erwc$Mean_ERwc)),color="blue",  size=1)+
-  geom_vline(data=ERwc2, aes(xintercept= Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
+  geom_density(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 6)+
+  geom_vline(aes(xintercept=median(erwc_sps$Mean_ERwc)),color="blue",  size=1)+
+  geom_vline(data=erwc_lit, aes(xintercept= Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
   #scale_x_cut(breaks=c(-0.12), which=c(1), scales=c(0.25, 1),space = 0.2)+ theme_bw()+ 
   # xlab(expression("ER"[wc]*"")) +
   # ylab('Density')  + theme_classic()+ #+ scale_fill_grey()
@@ -52,10 +59,11 @@ ggsave(file.path('./Plots',"hist_density_plot_ERwater_ML.png"),
 
 
 ## density plot for ERwater with legend
+# why is adjust different? what does this do?
 p1 <- ggplot() + 
-  geom_density(data=erwc, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 4)+
-  geom_vline(aes(xintercept=median(erwc$Mean_ERwc)),color="blue",  size=1)+
-  geom_vline(data=ERwc2, aes(xintercept=Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
+  geom_density(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 4)+
+  geom_vline(aes(xintercept=median(erwc_sps$Mean_ERwc)),color="blue",  size=1)+
+  geom_vline(data=erwc_lit, aes(xintercept=Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
   #scale_x_cut(breaks=c(-0.12), which=c(1), scales=c(0.25, 1),space = 0.2)+ theme_bw()+ 
   # xlab(expression("ER"[wc]*"")) +
   # ylab('Density')  + theme_classic()+ #+ scale_fill_grey()
@@ -78,27 +86,28 @@ p1 <- ggplot() +
 # Extract the colour legend - leg1
 leg1 <- gtable_filter(ggplot_gtable(ggplot_build(p1)), "guide-box") 
 
-ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend.png"),
+ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend_ML.png"),
        plot=p1, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
 # plotNew <- p0 + 
 #   annotation_custom(grob = leg1, xmin = -0.075, xmax = -0.045, ymin = 20, ymax = 30)
 
 # density plot for ERtotal 
-p2 <- ggplot(ERriv, aes(x=ERvolumetric,color='tot',fill="tot")) + 
+# figure out ymins/maxes for ERwc_sps and ERwc_lit
+p2 <- ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fill="tot")) + 
   geom_density()+ 
-  geom_vline(aes(xintercept=median(ERvolumetric)), color='black', size=1)+ 
+  geom_vline(aes(xintercept=median(Total_Ecosystem_Respiration_Volumetric)), color='black', size=1)+ 
   # xlab(expression("ER"[tot]*"")) +
   # ylab('Density') + scale_fill_grey() + 
   theme_classic()+
   labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
-  geom_rect(aes(xmin=-4.63,xmax=-0.02,ymin=0.001,ymax=0.03,colour="lit",fill='lit'))+ #ER lit
-  geom_rect(aes(xmin=-0.11,xmax=0,ymin=0.001,ymax=0.03,colour="wc",fill='wc'),alpha=0.1)+ #ER WC
+  geom_rect(aes(xmin = min(erwc_sps$Mean_ERwc), xmax = 0,ymin=0.001,ymax=0.03,colour="wc",fill='wc'),alpha=0.1)+ #ER WC
+  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax = max(erwc_lit$Water_Column_Respiration_Literature), ymin=0.001, ymax=0.03, colour="lit", fill='lit'), alpha = 0.1) + #ER lit
   scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
                       values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
   scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
-                    values = c("grey", "skyblue", "#F9847B"),guide = guide_legend(override.aes = list(alpha = .5)))+
-  xlim(-20, max(ERriv$ERtot))+
+                    values = c("grey", "skyblue", "#F9847B"), guide = guide_legend(override.aes = list(alpha = .5)))+
+  #xlim(min(ERriv$Total_Ecosystem_Respiration_Volumetric), max(ERriv$Total_Ecosystem_Respiration_Volumetric))+ # this was originally -20 to max(ERriv$ERtot), not sure what ERtot was
   theme(
     legend.position = c(.35, .95),
     legend.justification = c( "top"),
@@ -108,6 +117,8 @@ p2 <- ggplot(ERriv, aes(x=ERvolumetric,color='tot',fill="tot")) +
     legend.key = element_rect(fill = "white", color = "black", linewidth = 0.2),
     legend.box.just = "right"
   )
+
+
 ggsave(file.path('./Plots',"hist_density_plot_ERtot_legend.png"),
        plot=p2, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
