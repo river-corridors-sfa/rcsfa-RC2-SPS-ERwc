@@ -11,6 +11,7 @@ library(corrplot)
 # library(stringr)
 library(glmnet)
 # library(magick)
+library(readxl)
 
 
 # Working Directory -------------------------------------------------------
@@ -149,107 +150,13 @@ mean_npoc_tn_clean = npoc_tn_final %>%
 
 ## Try with published NO3 data
 
-ions = read.csv("./Data/Multiple_linear_regression/v2_SPS_Ions.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, X71851_NO3_mg_per_L_as_NO3)) 
+"C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Ions/03_ProcessedData/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47.csv"
 
-cv_ions = ions %>% 
-  separate(Sample_Name, c("Sample_Name", "Rep"), sep = "-") %>% 
-  rename(NO3 = X71851_NO3_mg_per_L_as_NO3) %>% 
-  mutate(NO3 = as.numeric(NO3)) %>% 
-  filter(NO3 != -9999) %>% 
-  group_by(Sample_Name) %>% 
-  mutate(cv_no3 = sd(NO3)/mean(NO3)) 
-
-#make final data frame
-no3_final <- as.data.frame(matrix(NA, ncol = 5, nrow = 1))
-
-colnames(no3_final) = c("no3.temp", "Sample_Name", "Rep",  "cv_no3", "cv_no3_rem")
-
-#Number of unique parent IDs with replicates to loop through
-unique.samples = unique(cv_ions$Sample_Name)
-
-for (i in 1:length(unique.samples)) {
+ions = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Ions/03_ProcessedData/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47.csv") %>% 
+  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", NO3_mg_per_L), 0.035, as.numeric(NO3_mg_per_L))) %>% 
+  rename(Parent = Sample_Name) %>% 
+  select(c(Parent, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L))
   
-  ## Subset replicates
-  data_subset = subset(cv_ions, cv_ions$Sample_Name == unique.samples[i])
-  
-  ## Pull out TN percent values
-  no3.temp = as.numeric(data_subset$NO3)
-  
-  ## Calculate standard deviation, average, and coefficient of variation of rates
-  no3.temp.sd <- sd(no3.temp)
-  no3.temp.mean <- mean(no3.temp)
-  CV = abs(no3.temp.sd/no3.temp.mean)
-  
-  #looping to get 3 best samples
-  for (sample.reduction in 1:3)  {
-    
-    if (length(no3.temp) > 2) {
-      
-      dist.temp = as.matrix(abs(dist(no3.temp)))
-      dist.comp = numeric() 
-      
-      for(no3.now in 1:ncol(dist.temp)) {
-        
-        dist.comp = rbind(dist.comp,c(no3.now,sum(dist.temp[,no3.now])))
-        
-      }
-      
-      dist.comp[,2] = as.numeric(dist.comp[,2])
-      no3.temp = no3.temp[-which.max(dist.comp[,2])]
-      
-      no3.temp.sd <- sd(no3.temp)
-      no3.temp.mean <- mean(no3.temp)
-      no3.temp.cv <- abs(no3.temp.sd/no3.temp.mean)
-      CV = no3.temp.cv
-      no3.temp.range <- max(no3.temp) - min(no3.temp)
-      range = no3.temp.range
-      
-    } 
-  }
-  
-  if (length(no3.temp) >= 1) {
-    
-    no3.combined <- as.data.frame(no3.temp)
-    
-    no3.removed <- merge(no3.combined, data_subset, by.x = "no3.temp", by.y = "NO3", all.x = TRUE)
-    
-    no3.removed <- no3.removed[!duplicated(no3.removed$Rep), ]
-    
-    no3.removed$cv_no3_rem = as.numeric(abs(sd(no3.temp)/mean(no3.temp)))
-    
-    
-    
-  }
-  
-  no3_final = rbind(no3.removed, no3_final)
-  
-  rm('no3.temp')
-}
-
-mean_no3_clean = no3_final %>% 
-  rename(NO3 = no3.temp) %>% 
-  group_by(Sample_Name) %>% 
-  distinct(Rep, .keep_all = T) %>% 
-  mutate(Mean_NO3 = mean(NO3)) %>% 
-  ungroup() %>% 
-  distinct(Sample_Name, .keep_all = T) %>% 
-  mutate(Parent = str_replace(Sample_Name, "_ION", "")) %>% 
-  select(c(Parent, Mean_NO3))
-
-# Clean NO3 that we don't trust (below 0.5 mg/L standard) - give all these a value of 0.25 mg/L  
-
-lod_no3 = cv_ions %>% 
-  group_by(Sample_Name) %>% 
-  mutate(NO3_lod = ifelse(NO3 < 0.5, 0.25, NO3)) %>% 
-  mutate(cv_no3_lod = sd(NO3_lod)/mean(NO3_lod)) %>% 
-  filter(NO3_lod != 0.52) %>% # remove outlier form SPS_0028 - only one with LODs
-  mutate(Mean_NO3_lod = mean(NO3_lod)) %>% 
-  ungroup() %>% 
-  distinct(Sample_Name, .keep_all = T) %>% 
-  mutate(Parent = str_replace(Sample_Name, "_ION", "")) %>% 
-  select(c(Parent, Mean_NO3_lod))
 
 #Check LOD
 tss = read.csv("./Data/Multiple_linear_regression/SPS_TSS.csv", skip = 2) %>% 
@@ -277,8 +184,7 @@ mean_dic = dic %>%
 
 sample = left_join(mean_dic, mean_npoc_tn_clean) %>% 
   left_join(tss) %>% 
-  left_join(mean_no3_clean) %>% 
-  left_join(lod_no3) %>% 
+  left_join(ions) %>% 
   rename(Sample_Name = Parent)
 
 
@@ -320,7 +226,18 @@ ggplot() +
   geom_histogram(long_data, mapping = aes(x = value)) + 
   facet_wrap(~ variable, scales = "free") +
   theme_minimal()
+
+##Spearman correlation before transformations
+
+spearman <- cor(new_data, method = "spearman", use = "complete.obs")
+
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Spearman Correlation")
+
+dev.off()
   
+
 # Transform data ----------------------------------------------------------
 
 #decide how you want to do this, eg, cube or log transform
@@ -352,9 +269,12 @@ ggplot() +
 
 # Check Co-Linearity ------------------------------------------------------
 ## Pearson without cube transformation
-scale_data = as.data.frame(scale(new_data))%>% 
+scale_data = as.data.frame(scale(new_data)) %>% 
   rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x)) %>% 
   drop_na()
+
+mean(scale_data$scale_ERwc)
+sd(scale_data$scale_ERwc)
 
 scale_pearson <- cor(scale_data, method = "pearson")
 
@@ -371,6 +291,9 @@ dev.off()
 scale_cube_data = as.data.frame(scale(cube_data))%>% 
   rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x))
 
+mean(scale_cube_data$scale_cube_ERwc)
+sd(scale_cube_data$scale_cube_ERwc)
+
 scale_cube_pearson <- cor(scale_cube_data, method = "pearson")
 
 png(file = paste0("./Figures/", as.character(Sys.Date()),"_Cube_Scale_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
@@ -380,7 +303,7 @@ corrplot(scale_cube_pearson,type = "upper", method = "number", tl.col = "black",
 
 dev.off()
 
-## Keep just TN ####
+## Keep NO3, remove TN ####
 pearson_df <- as.data.frame(scale_cube_pearson)
 
 row_names_pearson <- rownames(pearson_df)
@@ -392,7 +315,7 @@ pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>%
   filter(value != 1) %>% 
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
   filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
-  filter(!grepl("Mean_NO3|Mean_NO3_lod",Variable) & !grepl("Mean_NO3|Mean_NO3_lod", variable))
+  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
 
 # pull out erwc correlations only
 erwc_melted <- pearson_melted %>% 
@@ -417,7 +340,7 @@ loop_melt = choose_melted %>%
 # Pearson correlation coefficient to remove above
 correlation = 0.7
 
-## Start loop to remove highly correlated (> 0.5)
+## Start loop to remove highly correlated (> 0.7)
 erwc_filter = function(loop_melt) {
   
   rows_to_keep = rep(TRUE, nrow(loop_melt))
@@ -485,7 +408,7 @@ scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 # Start LASSO -------------------------------------------------------------
 
 ## LASSO with Correlation Matrix Selected Variables 
-set.seed(42)
+
 ## Set response variable (Cube_Effect_Size) and scale
 yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
 mean(yvar)
@@ -501,7 +424,7 @@ x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_varia
 xvars <- data.matrix(x_cube_variables)
 
 lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                  ,standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                  standardize = FALSE, standardize.response = FALSE, intercept = FALSE
                   #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
                   # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
 )
@@ -512,12 +435,12 @@ best_lambda
 plot(lasso)
 
 best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                           , standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                           standardize = FALSE, standardize.response = FALSE, intercept = FALSE
                            #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
                            #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
 )
 
-#lasso_coefs = coef(best_lasso_model)
+lasso_coefs = coef(best_lasso_model)
 coef(best_lasso_model)
 
 yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
@@ -527,297 +450,81 @@ sse <- sum((yvar_predict - yvar)^2)
 
 rsq = 1 - sse/sst
 
-rsq
+rsq #0.428
 
-## Using Published NO3 ####
+## Loop through LASSO to get average over a lot of seeds ####
 
-# Melt the dataframe for plotting
-pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
-  filter(value != 1) %>% 
-  mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
-  filter(!grepl("Mean_TN|Mean_NO3_lod",Variable) & !grepl("Mean_TN|Mean_NO3_lod", variable))
+num_seeds = 100
+seeds = sample(1:500, num_seeds)
 
-# pull out erwc correlations only
-erwc_melted <- pearson_melted %>% 
-  filter(grepl("ERwc", variable)) 
+## Set response variable (Cube_Effect_Size) and scale
+yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
+mean(yvar)
+sd(yvar)
 
-choose_melted <- pearson_melted %>% 
-  filter(!grepl("ERwc", variable)) %>%
-  #distinct(value, .keep_all = TRUE) %>% 
-  left_join(erwc_melted, by = "Variable") %>% 
-  rename(Variable_1 = Variable) %>% 
-  rename(Variable_2 = variable.x) %>% 
-  rename(Correlation = value.x) %>% 
-  rename(Variable_1_ERwc_Correlation = value.y) %>% 
-  select(-c(variable.y)) %>% 
-  left_join(erwc_melted, by = c("Variable_2" = "Variable")) %>% 
-  rename(Variable_2_ERwc_Correlation = value) %>% 
-  select(-c(variable))
+norm_coeffs = list()
+r2_scores = numeric(num_seeds)
 
-loop_melt = choose_melted %>% 
-  arrange(desc(Correlation))
+## Set predictor variables and scale
+exclude_col = "scale_cube_ERwc"
 
-# Pearson correlation coefficient to remove above
-correlation = 0.7
+x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
+#mean(x_cube_variables$scale_cube_Temp)
+#sd(x_cube_variables$scale_cube_Temp)
 
-## Start loop to remove highly correlated (> 0.5)
-erwc_filter = function(loop_melt) {
+xvars <- data.matrix(x_cube_variables)
+
+
+for (i in 1:num_seeds) {
+
+  seed = seeds[i]
+  set.seed(seed)
   
-  rows_to_keep = rep(TRUE, nrow(loop_melt))
-  
-  for (i in seq_len(nrow(loop_melt))) {
-    
-    if (!rows_to_keep[i]) next
-    
-    row = loop_melt[i, ]
-    
-    if (row$Correlation < correlation) next
-    
-    if(row$Variable_1_ERwc_Correlation >= row$Variable_2_ERwc_Correlation) {
-      
-      var_to_keep = row$Variable_1
-      var_to_remove = row$Variable_2
-      
-    } else {
-      
-      var_to_keep = row$Variable_2
-      var_to_remove = row$Variable_1
-      
-    }
-    
-    loop_melt$Variable_to_Keep[i] = var_to_keep
-    loop_melt$Variable_to_Remove[i] = var_to_remove
-    
-    for (j in seq(i + 1, nrow(loop_melt))) {
-      
-      if(loop_melt$Variable_1[j] == var_to_remove || loop_melt$Variable_2[j] == var_to_remove) {
-        
-        rows_to_keep[j] = FALSE
-        
-      }
-      
-    }
-    
-    
-  }
-  
-  return(loop_melt[rows_to_keep, ])
-  
+lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
+                  standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
+                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
+)
+
+best_lambda <- lasso$lambda.min
+#best_lambda
+#plot(lasso)
+
+best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
+                           standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
+                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
+)
+
+lasso_coefs = as.matrix(coef(best_lasso_model, s = best_lambda))
+
+norm_coeffs_scale = lasso_coefs/max(abs(lasso_coefs[-1]))
+
+norm_coeffs[[as.character(seed)]] = norm_coeffs_scale[-1, , drop = FALSE]
+
+y_pred <- predict(best_lasso_model, newx = xvars, s = best_lambda)
+
+sst <- sum((yvar - mean(yvar))^2)
+sse <- sum((y_pred - yvar)^2)
+r2_scores[i] <- 1 - (sse / sst)
+
 }
 
-filtered_data = erwc_filter(loop_melt) 
+norm_coeffs_matrix = do.call(cbind, norm_coeffs)
 
-# pull out variables to remove
-removed_variables = filtered_data %>% 
-  distinct(Variable_to_Remove)
+mean_coeffs = as.data.frame(norm_coeffs_matrix, row.names = rownames(norm_coeffs_matrix))
 
-# pull out all variables 
-all_variables = erwc_melted %>% 
-  select(c(Variable))
-
-# remove variables from all variables to get variables to keep for LASSO 
-kept_variables = erwc_melted[!(erwc_melted$Variable %in% removed_variables$Variable_to_Remove), ]
-
-
-col_to_keep = unique(kept_variables$Variable)
-col_to_keep = c(col_to_keep, "scale_cube_ERwc")
-
-scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
-
-
-# Start LASSO -------------------------------------------------------------
-
-## LASSO with Correlation Matrix Selected Variables 
-set.seed(42)
-## Set response variable (Cube_Effect_Size) and scale
-yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
-
-## Set predictor variables and scale
-exclude_col = "scale_cube_ERwc"
-
-x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
-
-xvars <- data.matrix(x_cube_variables)
-
-lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                  ,standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-best_lambda <- lasso$lambda.min
-best_lambda
-
-plot(lasso)
-
-best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                           , standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-#lasso_coefs = coef(best_lasso_model)
-coef(best_lasso_model)
-
-yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
-
-sst <- sum((yvar - mean(yvar))^2)
-sse <- sum((yvar_predict - yvar)^2)
-
-rsq = 1 - sse/sst
-
-rsq
-
-## Using 0.25 NO3 ####
-
-# Melt the dataframe for plotting
-pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
-  filter(value != 1) %>% 
-  mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
-  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% 
-  filter(Variable != "scale_cube_Mean_NO3") %>% 
-  filter(variable != "scale_cube_Mean_NO3")
-
-# pull out erwc correlations only
-erwc_melted <- pearson_melted %>% 
-  filter(grepl("ERwc", variable)) 
-
-choose_melted <- pearson_melted %>% 
-  filter(!grepl("ERwc", variable)) %>%
-  #distinct(value, .keep_all = TRUE) %>% 
-  left_join(erwc_melted, by = "Variable") %>% 
-  rename(Variable_1 = Variable) %>% 
-  rename(Variable_2 = variable.x) %>% 
-  rename(Correlation = value.x) %>% 
-  rename(Variable_1_ERwc_Correlation = value.y) %>% 
-  select(-c(variable.y)) %>% 
-  left_join(erwc_melted, by = c("Variable_2" = "Variable")) %>% 
-  rename(Variable_2_ERwc_Correlation = value) %>% 
-  select(-c(variable))
-
-loop_melt = choose_melted %>% 
-  arrange(desc(Correlation))
-
-# Pearson correlation coefficient to remove above
-correlation = 0.7
-
-## Start loop to remove highly correlated (> 0.5)
-erwc_filter = function(loop_melt) {
+colnames(mean_coeffs) = make.names(colnames(mean_coeffs), unique = T)
   
-  rows_to_keep = rep(TRUE, nrow(loop_melt))
-  
-  for (i in seq_len(nrow(loop_melt))) {
-    
-    if (!rows_to_keep[i]) next
-    
-    row = loop_melt[i, ]
-    
-    if (row$Correlation < correlation) next
-    
-    if(row$Variable_1_ERwc_Correlation >= row$Variable_2_ERwc_Correlation) {
-      
-      var_to_keep = row$Variable_1
-      var_to_remove = row$Variable_2
-      
-    } else {
-      
-      var_to_keep = row$Variable_2
-      var_to_remove = row$Variable_1
-      
-    }
-    
-    loop_melt$Variable_to_Keep[i] = var_to_keep
-    loop_melt$Variable_to_Remove[i] = var_to_remove
-    
-    for (j in seq(i + 1, nrow(loop_melt))) {
-      
-      if(loop_melt$Variable_1[j] == var_to_remove || loop_melt$Variable_2[j] == var_to_remove) {
-        
-        rows_to_keep[j] = FALSE
-        
-      }
-      
-    }
-    
-    
-  }
-  
-  return(loop_melt[rows_to_keep, ])
-  
-}
+mean_coeffs_df = mean_coeffs %>% 
+  mutate(RowNames = rownames(mean_coeffs)) %>% 
+  rowwise() %>% 
+  mutate(mean = mean(c_across(contains("s1"))), 
+         sd = sd(c_across(contains("s1")))) %>% 
+  relocate(mean, .before = s1) %>% 
+  relocate(sd, .before = s1) %>% 
+  relocate(RowNames, .before = mean)
 
-filtered_data = erwc_filter(loop_melt) 
-
-# pull out variables to remove
-removed_variables = filtered_data %>% 
-  distinct(Variable_to_Remove)
-
-# pull out all variables 
-all_variables = erwc_melted %>% 
-  select(c(Variable))
-
-# remove variables from all variables to get variables to keep for LASSO 
-kept_variables = erwc_melted[!(erwc_melted$Variable %in% removed_variables$Variable_to_Remove), ]
-
-
-col_to_keep = unique(kept_variables$Variable)
-col_to_keep = c(col_to_keep, "scale_cube_ERwc")
-
-scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
-
-
-# Start LASSO -------------------------------------------------------------
-
-## LASSO with Correlation Matrix Selected Variables 
-set.seed(42)
-## Set response variable (Cube_Effect_Size) and scale
-yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
-
-## Set predictor variables and scale
-exclude_col = "scale_cube_ERwc"
-
-x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
-
-xvars <- data.matrix(x_cube_variables)
-
-lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                  ,standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-best_lambda <- lasso$lambda.min
-best_lambda
-
-plot(lasso)
-
-best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                           , standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-#lasso_coefs = coef(best_lasso_model)
-coef(best_lasso_model)
-
-yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
-
-sst <- sum((yvar - mean(yvar))^2)
-sse <- sum((yvar_predict - yvar)^2)
-
-rsq = 1 - sse/sst
-
-rsq
-
-
-
+results_r2 = as.data.frame(r2_scores) 
+mean(results_r2$r2_scores)
+sd(results_r2$r2_scores)
