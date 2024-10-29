@@ -150,8 +150,6 @@ mean_npoc_tn_clean = npoc_tn_final %>%
 
 ## Try with published NO3 data
 
-"C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Ions/03_ProcessedData/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47.csv"
-
 ions = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Ions/03_ProcessedData/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47.csv") %>% 
   mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", NO3_mg_per_L), 0.035, as.numeric(NO3_mg_per_L))) %>% 
   rename(Parent = Sample_Name) %>% 
