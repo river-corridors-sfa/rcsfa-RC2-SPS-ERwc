@@ -5,13 +5,14 @@
 library(tidyverse)
 library(dplyr)
 library(corrplot)
-#library(ggpubr)
-#library(ggpmisc)
+library(ggpubr)
+library(ggpmisc)
 # library(factoextra)
 # library(stringr)
 library(glmnet)
 # library(magick)
 library(readxl)
+library(hal9001)
 
 
 # Working Directory -------------------------------------------------------
@@ -150,10 +151,13 @@ mean_npoc_tn_clean = npoc_tn_final %>%
 
 ## Try with published NO3 data
 
-ions = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Ions/03_ProcessedData/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47/20241021_Data_Processed_Ions_SBR_RC2_SPS_1-47.csv") %>% 
-  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", NO3_mg_per_L), 0.035, as.numeric(NO3_mg_per_L))) %>% 
-  rename(Parent = Sample_Name) %>% 
-  select(c(Parent, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L))
+ions = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Boye_Files/SPS/SPS_Ions_Boye_2024-10-30.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), 0.035, as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% 
+  separate(Sample_Name, c("Parent", "Rep"), sep = "_ION") %>% 
+  mutate(Cl_mg_per_L = as.numeric(X00940_Cl_mg_per_L)) %>% 
+  mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
+  select(c(Parent, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
   
 
 #Check LOD
@@ -257,7 +261,8 @@ cube_data = new_data %>%
   drop_na()
 
 long_cube_data = cube_data %>% 
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
+  rownames_to_column("Sample_Name") %>% 
+  pivot_longer(!Sample_Name, names_to = "variable", values_to = "value")
 
 ggplot() + 
   geom_histogram(long_cube_data, mapping = aes(x = value)) + 
@@ -404,8 +409,87 @@ scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 
 
 # Start LASSO -------------------------------------------------------------
+rf_data = new_data %>% 
+  drop_na()
 
-## LASSO with Correlation Matrix Selected Variables 
+X = rf_data %>% 
+  select(Temp, StrOrd, TotDr, mean_DIC, Mean_NPOC, Mean_TN, TSS, NO3_mg_per_L, SO4_mg_per_L, Cl_mg_per_L, Trans, Peaks, NormTrans)
+
+Y = rf_data$ERwc
+
+index = createDataPartition(Y, p = 0.75, list = F)
+
+X_train = X[index,]
+X_test = X[-index,]
+Y_train = Y[index]
+Y_test = Y[-index]
+
+set.seed(42)
+
+rf = randomForest(x = X_train, y = Y_train, maxnodes = 10, ntree = 10)
+
+predictions = predict(rf, X_test)
+
+result = X_test
+
+result['ERwc'] = Y_test
+result['prediction'] = predictions
+
+head(result)
+
+ggplot()+ 
+  geom_point(aes(x = X_test$Temp, y = Y_test, color = "red")) +
+  geom_point(aes(x = X_test$Temp, y = predictions, color = "blue")) + 
+  scale_color_manual(labels = c("Predicted", "Real"), values = c("blue", "red"))
+
+print(paste0('MAE: ', mae(Y_test, predictions)))
+print(paste0('MSE: ', caret::postResample(predictions, Y_test)['RMSE']^2))
+print(paste0('R2: ', caret::postResample(predictions, Y_test)['Rsquared']))
+
+N = 26
+
+x_train = X_train[1:N,]
+y_train = Y_train[1:N]
+
+seed = 7
+metric = 'RMSE'
+
+customRF = list(type = "Regression", library = "randomForest", loop = NULL)
+
+customRF$parameters = data.frame(parameter = c("maxnodes", "ntree"), class = rep("numeric", 2), label = c("maxnodes","ntree"))
+
+customRF$grid = function(x,y,len = NULL, search = "grid") {}
+
+customRF$fit = function(x,y,wts, param,lev, last, weights, classProbs, ...){
+  
+  randomForest(x,y,maxnodes = param$maxnodes, ntree = param$ntree, ...)
+}
+
+customRF$predict = function(modelFit, newdata, preProc = NULL, submodels = NULL)
+
+predict(modelFit, newdata)
+
+customRF$prob = function(modelFit, newdata, preProc = NULL, submodels = NULL)
+  predict(modelFit, newdata, type = "prob")
+
+customRF$sort = function(x) x[order(x[,1]),]
+customRF$levels = function(x) x$classes
+
+control = trainControl(method = "repeatedcv", number = 10, repeats = 3, search = 'grid')
+
+tunegrid = expand.grid(.maxnodes = c(70,80,90,100), .ntree = c(900,1000, 1100))
+
+set.seed(seed)
+
+rf_gridsearch = train(x = x_train, y = y_train, method = customRF, metric = metric, tuneGrid = tunegrid, trControl = control)
+
+plot(rf_gridsearch)
+
+rf_gridsearch$bestTune
+
+varImpPlot(rf_gridsearch$finalModel, main = 'Feature Importance')
+
+  ## LASSO with Correlation Matrix Selected Variables 
 
 ## Set response variable (Cube_Effect_Size) and scale
 yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
@@ -526,3 +610,39 @@ mean_coeffs_df = mean_coeffs %>%
 results_r2 = as.data.frame(r2_scores) 
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
+
+ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 2.75, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 2.75, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
+
+ggplot(new_data, aes(y = ERwc, x = Temp)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 18.5, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+ stat_cor(data = new_data, label.x = 18.5, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
+
+ggplot(new_data, aes(y = ERwc, x = Trans)) +
+  geom_point() + theme_bw() + 
+ stat_cor(data = new_data, label.x = 60250, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 60250, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
+
+ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 6.50, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 6.50, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
+
+ggplot(new_data, aes(y = ERwc, x = StrOrd)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 6.50, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 6.50, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
+
+ggplot(new_data, aes(y = ERwc, x = mean_DIC)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x =32.5, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 32.5, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)
