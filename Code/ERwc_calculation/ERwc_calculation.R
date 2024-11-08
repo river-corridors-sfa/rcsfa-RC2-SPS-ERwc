@@ -90,23 +90,31 @@ ERwc <- DO_slope %>%
   rowwise() %>% 
   mutate(Mean_ERwc = mean(c(Water_Column_Respiration_1, Water_Column_Respiration_2, Water_Column_Respiration_3), na.rm = TRUE)) %>% 
   mutate(SD_ERwc = sd(c(Water_Column_Respiration_1, Water_Column_Respiration_2, Water_Column_Respiration_3), na.rm = TRUE)) %>% 
-  mutate(CV_ERwc = (SD_ERwc/Mean_ERwc)*100) %>% 
+  mutate(CV_ERwc = abs((SD_ERwc/Mean_ERwc)*100))%>% 
+  mutate(range_ERWc = max(c_across(Water_Column_Respiration_1:Water_Column_Respiration_3)) - min(c_across(Water_Column_Respiration_1:Water_Column_Respiration_3))) %>%
   mutate(Mean_Temp = mean(c(Temperature_1_Mean, Temperature_2_Mean, Temperature_3_Mean), na.rm = TRUE)) %>% 
   mutate(SD_Temp = sd(c(Temperature_1_Mean, Temperature_2_Mean, Temperature_3_Mean), na.rm = TRUE)) %>% 
   mutate(CV_Temp = (SD_Temp/Mean_Temp)*100) %>% 
   relocate(Mean_ERwc, .after = Site_ID) %>% 
-  relocate(CV_ERwc, .after = Mean_ERwc)
+  relocate(CV_ERwc, .after = Mean_ERwc) %>% 
+    relocate(range_ERWc, .after = CV_ERwc)
 
-ERwc_mean_melt =  reshape2::melt(ERwc, id.vars = "Site_ID") %>% 
-  filter(grepl("Respiration", variable)) 
-                      
-          
-ggplot(ERwc_mean_melt, aes(x = Site_ID, y = value)) + 
+ERwc_mean_melt =  reshape2::melt(ERwc, id.vars = c("Site_ID", "CV_ERwc")) %>% 
+  filter(grepl("Respiration", variable)) %>% 
+  arrange(CV_ERwc) 
+
+ordered_site_ids <- ERwc_mean_melt %>%
+  dplyr::select(c(Site_ID, CV_ERwc)) %>%
+  distinct() %>%
+  arrange(CV_ERwc) %>%
+  pull(Site_ID)
+
+ggplot(ERwc_mean_melt, aes(x = factor(Site_ID, levels = ordered_site_ids), y = value)) + 
   geom_boxplot()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-ggplot(ERwc, aes(x = CV_ERwc, y = Mean_ERwc)) + 
-  geom_point(aes(color = Mean_ERwc < -0.5))
+ggplot(ERwc, aes(x = arrange(CV_ERwc))) + 
+  geom_boxplot(y = )
 
 ## pull out mean temperature
 

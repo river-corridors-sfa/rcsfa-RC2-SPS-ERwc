@@ -19,7 +19,8 @@ erwc_sps = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv')
   select(-c(X)) %>% 
   mutate(Mean_ERwc = round(Mean_ERwc, 3)) %>% 
   mutate(Mean_Temp = round(Mean_Temp, 3)) %>% 
-  left_join(data, by = "Site_ID")
+  left_join(data, by = "Site_ID") %>% 
+  filter(Mean_ERwc < 0.5) # remove positive respiration rates > 0.5
 
 # read in  ERtotal data
 ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteIDs.csv'))
@@ -28,6 +29,10 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteI
 # ERwater data from literture
 #ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
 erwc_lit <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
+
+median(erwc_sps$Mean_ERwc)
+mean(erwc_sps$Mean_ERwc)
+sd(erwc_sps$Mean_ERwc)/sqrt(length((erwc_sps$Mean_ERwc)))
 
 ## calculate the skewness for ERtotal and ER water in this study
 sk1= round(skewness(ERriv$Total_Ecosystem_Respiration_Volumetric),2)
@@ -74,23 +79,28 @@ p1 <- ggplot() +
   )+
   scale_linetype_manual("",breaks = c("lit"),labels = c( expression("ER"[wc]*"(Lit)")),
                         values = c("dashed"))+theme_classic()+
-  theme(legend.position = 'right',#legend.box = "horizontal",
-        legend.spacing.y = unit(0, "mm"), 
-        legend.text = element_text(size=12),
-        #legend.background = element_rect(size=0.5, linetype="solid",colour = "black"),
-        #legend.justification = c("right", "top"),
-        #legend.background = element_rect(fill = "white", color = "black", linewidth = 0.5),
-        #legend.key = element_rect(fill = "white", color = "black", linewidth = 0.5),
-        legend.box.just = "left")
+  theme(legend.position = c(0.25,0.95),
+        legend.justification = c("top"),
+        legend.margin = margin(-12, 0, 3, 3),
+        legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
+        legend.box.margin = margin(1, 1, 1, 1),
+        legend.spacing.y = unit(0, 'cm'),
+        legend.box.background = element_rect(fill = "white", linewidth = 0.4,colour = "black"),
+        legend.key = element_rect(fill = "white", color = "black", linewidth = 0.5))
 
+p1
 # Extract the colour legend - leg1
 leg1 <- gtable_filter(ggplot_gtable(ggplot_build(p1)), "guide-box") 
 
 ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend_ML.png"),
        plot=p1, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
+library(grid)
+
 # plotNew <- p0 + 
-#   annotation_custom(grob = leg1, xmin = -0.075, xmax = -0.045, ymin = 20, ymax = 30)
+#   annotation_custom(grob = leg1, xmin = -7.5, xmax = -5.5, ymin = 0.15, ymax = 0.25) + 
+#   annotation_custom(grob = rectGrob(gp = gpar(fill = NA, col = "black")), xmin = -7.25, xmax = -4.85, ymin = 0.17, ymax = 0.25)
+
 
 # density plot for ERtotal 
 # figure out ymins/maxes for ERwc_sps and ERwc_lit
@@ -134,31 +144,35 @@ p3 <- ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fil
   theme_classic()+
   labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
   # geom_rect(aes(xmin=-4.63,xmax=-0.02,ymin=0,ymax=0.08,colour="lit",fill='lit'))+ #ER lit
-  geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=0.03,colour="wc",fill='wc'), alpha=0.5)+ # changed this from stagnant values to pull from df
-  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.03, color = "lit", fill="lit"), alpha = 0.5)+
-  #annotate("rect", xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.03, alpha=0.6, color = "lit", fill="lit") + # changed this from stagnant values to pull from df
-  #annotate("rect", xmin=-0.11,xmax=0,ymin=0,ymax=0.08,  fill="blue") +
-  scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
+  geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=0.023,colour="wc",fill='wc'), alpha=0.5)+ # changed this from stagnant values to pull from df
+  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.023, color = "lit", fill="lit"), alpha = 0.5)+
+   scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
                       values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
   scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
                     values = c("grey", "lightblue", "#fbb1ac"))+
   xlim(-20, max(ERriv$Total_Ecosystem_Respiration_Areal))+
 theme(
-  legend.position = c(.28, .95),
+  legend.position = c(.275, .95),
   legend.justification = c( "top"),
   legend.margin = margin(-12, 0, 3, 3),
   legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
-  legend.background = element_rect(fill = "white", color = "black", linewidth = 0.2),
-  legend.key = element_rect(fill = "white", color = "black", linewidth = 0.2),
+  legend.background = element_rect(fill = "white", color = "black", linewidth = 0.4),
+  legend.key = element_rect(fill = "white", color = "black", linewidth = 0.4),
   legend.box.just = "right"
 )
 
-ggsave(file.path('./Plots',"hist_density_plot_bottom_ERtot_ML.png"),
-       plot=p3, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
+p3
+
+ggsave(file.path('./Plots',"hist_density_plot_bottom_ERtot_ML_pos_removed.png"), plot=p3, width = 4, height = 3, dpi = 300,device = "png") 
+
+combined = grid.arrange(p1,p3, nrow=1)
+
+ggsave(file.path('./Plots',"combined_hist_density_plot_ML_pos_removed.png"), plot=combined, width = 8, height = 3, dpi = 300,device = "png") 
 
 ##############################################################
 # use lme4 to estimate the means among the sites
 rdata <- read.csv(file.path('./Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'), skip=52)
+
 rdata <- rdata[c('Site_ID','Dissolved_Oxygen_1_Slope','Dissolved_Oxygen_2_Slope','Dissolved_Oxygen_3_Slope')]
 
 rdata2 <- rdata %>%
@@ -175,8 +189,9 @@ wsummary<-rdata2 %>%
   summarise(mean = mean(ERwc),
             sd = sd(ERwc),
             var = var(ERwc))
-mean(wsummary$sd)
-mean(wsummary$var)
+mean(wsummary$sd) #average standard deviation by site?
+mean(wsummary$var) #average variance by site?
+
 ## lme4 fitting
 
 lfit <- lmer( ERwc ~  (1 | Site_ID), data=rdata2)  
@@ -186,10 +201,10 @@ summary(lfit)
 ###############################################################
 # plot to visualize the value of ERwater in each Site
 #odata=data[c('Site_ID','ERwc')]
-odata=rdata2
-odata <- odata %>%
+odata = rdata2 %>%
   group_by(Site_ID) %>%
-  mutate(mean = mean(ERwc),median =median(ERwc) )
+  mutate(mean = mean(ERwc),median = median(ERwc)) %>% 
+  filter(!grepl("S38|S83", Site_ID))
 
 ##
 #order by mean values
@@ -206,13 +221,15 @@ for (i in 1:length(sites)){
 DotPlot <- ggplot(odata, aes(x=mean_rank, y=ERwc)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
   stat_summary(fun=mean, geom="point", shape=18,size=3, color="red") +
-  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
+  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.2,dotsize = 0.4) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))+
   scale_x_discrete(labels=sites)
+
 DotPlotFin <- DotPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                               panel.background = element_blank(), axis.line = element_line(colour = "black"))
 print(DotPlotFin)
+
 ggsave(file.path("./Plots",paste0('ERwc_dotplot_mean_rank_ML',".png")), 
        plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
@@ -231,12 +248,14 @@ for (i in 1:length(sites)){
 DotPlot <- ggplot(odata, aes(x=median_rank, y=ERwc)) + 
   geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
   stat_summary(fun=median, geom="point", shape=18,size=3, color="red") +
-  geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.002,dotsize = 0.8) +
+  geom_dotplot(binaxis='y', stackdir='center', binwidth = 0.2, dotsize = 0.4) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))+
   scale_x_discrete(labels=sites)
+
 DotPlotFin <- DotPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                               panel.background = element_blank(), axis.line = element_line(colour = "black"))
 print(DotPlotFin)
+
 ggsave(file.path("./Plots",paste0('ERwc_dotplot_median_rank_ML',".png")), 
        plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
