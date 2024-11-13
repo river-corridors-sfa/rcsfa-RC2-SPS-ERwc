@@ -28,6 +28,11 @@ DO_slope<-DO_summary %>%
                               Dissolved_Oxygen_2_Slope,Dissolved_Oxygen_3_Slope,
                               Dissolved_Oxygen_1_NRMSE,Dissolved_Oxygen_2_NRMSE,Dissolved_Oxygen_3_NRMSE, Dissolved_Oxygen_1_RMSE, Dissolved_Oxygen_2_RMSE, Dissolved_Oxygen_3_RMSE, Dissolved_Oxygen_1_Rsquared, Dissolved_Oxygen_2_Rsquared, Dissolved_Oxygen_3_Rsquared, Temperature_1_Mean, Temperature_2_Mean, Temperature_3_Mean)
 
+DO_pos = DO_slope %>% 
+  select(c(Site_ID, Dissolved_Oxygen_1_Slope, Dissolved_Oxygen_2_Slope, Dissolved_Oxygen_3_Slope)) %>% 
+  reshape2::melt(id.vars = "Site_ID") %>% 
+  filter(value > 0 ) %>% 
+  distinct(Site_ID)
 # If NRMSE > 0.03, remove slope (largest is 0.003 in this dataset, which is a 0.3% error)
 
 for (i in c(1:3)){
@@ -122,4 +127,8 @@ ERwc_mean = ERwc %>%
   select(c(Site_ID, Mean_ERwc, Mean_Temp))
 
 write.csv(ERwc_mean, paste0(Out_Path, '/ERwc_Mean.csv'))
+
+## Plot S20R and T02
+
+s20r = read.csv("C:/GitHub/rcsfa-RC2-SPS-ERwc/Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_S20R_Cle_Elum_2021-09-02.csv", skip = 15)
   

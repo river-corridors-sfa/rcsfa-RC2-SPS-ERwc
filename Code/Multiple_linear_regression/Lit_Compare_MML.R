@@ -2,6 +2,8 @@ library(tidyverse)
 library(moments)
 library(ggbreak)
 library(gtable)
+library(gridExtra)
+library(ggpubr)
 
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
@@ -66,19 +68,18 @@ ggsave(file.path('./Plots',"hist_density_plot_ERwater_ML.png"),
 ## density plot for ERwater with legend
 # why is adjust different? what does this do?
 p1 <- ggplot() + 
-  geom_density(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 4)+
+  geom_density(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 4, bounds = c(min(erwc_sps$Mean_ERwc), max(erwc_sps$Mean_ERwc)))+
   geom_vline(aes(xintercept=median(erwc_sps$Mean_ERwc)),color="blue",  size=1)+
   geom_vline(data=erwc_lit, aes(xintercept=Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
-  #scale_x_cut(breaks=c(-0.12), which=c(1), scales=c(0.25, 1),space = 0.2)+ theme_bw()+ 
-  # xlab(expression("ER"[wc]*"")) +
-  # ylab('Density')  + theme_classic()+ #+ scale_fill_grey()
   labs(x = expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density')+
   scale_fill_manual("",breaks = c("wc"),labels = c(expression("ER"[wc]*" (this study)")),
                     values = c("skyblue"))+
   scale_colour_hue("",breaks = c("lit"),labels = c( expression("ER"[wc]*" (Lit)"))
   )+
   scale_linetype_manual("",breaks = c("lit"),labels = c( expression("ER"[wc]*"(Lit)")),
-                        values = c("dashed"))+theme_classic()+
+                        values = c("dashed"))+
+  theme_classic()+
+  #xlim(min(erwc_sps$Mean_ERwc), 0)+
   theme(legend.position = c(0.25,0.95),
         legend.justification = c("top"),
         legend.margin = margin(-12, 0, 3, 3),
@@ -95,17 +96,11 @@ leg1 <- gtable_filter(ggplot_gtable(ggplot_build(p1)), "guide-box")
 ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend_ML.png"),
        plot=p1, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
 
-library(grid)
-
-# plotNew <- p0 + 
-#   annotation_custom(grob = leg1, xmin = -7.5, xmax = -5.5, ymin = 0.15, ymax = 0.25) + 
-#   annotation_custom(grob = rectGrob(gp = gpar(fill = NA, col = "black")), xmin = -7.25, xmax = -4.85, ymin = 0.17, ymax = 0.25)
-
 
 # density plot for ERtotal 
 # figure out ymins/maxes for ERwc_sps and ERwc_lit
 p2 <- ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fill="tot")) + 
-  geom_density()+ 
+  geom_density(bounds = c(min(ERriv$Total_Ecosystem_Respiration_Volumetric), max(ERriv$Total_Ecosystem_Respiration_Volumetric)))+ 
   geom_vline(aes(xintercept=median(Total_Ecosystem_Respiration_Volumetric)), color='black', size=1)+ 
   # xlab(expression("ER"[tot]*"")) +
   # ylab('Density') + scale_fill_grey() + 
@@ -128,6 +123,7 @@ p2 <- ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fil
     legend.box.just = "right"
   )
 
+p2
 
 ggsave(file.path('./Plots',"hist_density_plot_ERtot_legend_ML.png"),
        plot=p2, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
@@ -135,22 +131,21 @@ ggsave(file.path('./Plots',"hist_density_plot_ERtot_legend_ML.png"),
 
 # density plot for ERtotal with legend
 
-
 p3 <- ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fill="tot")) + 
-  geom_density()+ 
+  geom_density(bounds = c(min(ERriv$Total_Ecosystem_Respiration_Volumetric), max(ERriv$Total_Ecosystem_Respiration_Volumetric)))+ 
   geom_vline(aes(xintercept=median(Total_Ecosystem_Respiration_Volumetric)), color='black', size=0.8)+ 
   # xlab(expression("ER"[tot]*"")) +
   # ylab('Density') + scale_fill_grey() + 
   theme_classic()+
   labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
   # geom_rect(aes(xmin=-4.63,xmax=-0.02,ymin=0,ymax=0.08,colour="lit",fill='lit'))+ #ER lit
-  geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=0.023,colour="wc",fill='wc'), alpha=0.5)+ # changed this from stagnant values to pull from df
-  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.023, color = "lit", fill="lit"), alpha = 0.5)+
+  geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=0.026,colour="wc",fill='wc'), alpha=0.5)+ # changed this from stagnant values to pull from df
+  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.026, color = "lit", fill="lit"), alpha = 0.5)+
    scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
                       values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
   scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
                     values = c("grey", "lightblue", "#fbb1ac"))+
-  xlim(-20, max(ERriv$Total_Ecosystem_Respiration_Areal))+
+  xlim(-20, max(ERriv$Total_Ecosystem_Respiration_Volumetric))+
 theme(
   legend.position = c(.275, .95),
   legend.justification = c( "top"),
@@ -163,11 +158,43 @@ theme(
 
 p3
 
+# make boxes behind density plot larger and transparent?
+
+ggplot(ERriv, aes(x=Total_Ecosystem_Respiration_Volumetric,color='tot',fill="tot")) + 
+  geom_density()+ 
+  geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=Inf), colour="blue",fill= "lightblue", alpha=0.01) +
+  geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=Inf), color = "#F9847B", fill="#fbb1ac", alpha = 0.01)+
+  #geom_rect(aes(xmin= min(erwc_sps$Mean_ERwc),xmax=max(erwc_sps$Mean_ERwc),ymin=0,ymax=0.105,colour="wc",fill='wc'), alpha=0.2)+ # changed this from stagnant values to pull from df
+  geom_vline(aes(xintercept=median(Total_Ecosystem_Respiration_Volumetric)), color='black', size=0.8)+ 
+  theme_classic()+
+  labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
+ 
+  #geom_rect(aes(xmin = min(erwc_lit$Water_Column_Respiration_Literature),xmax= max(erwc_lit$Water_Column_Respiration_Literature),ymin=0,ymax=0.023, color = "lit", fill="lit"), alpha = 0.5)+
+  scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
+                      values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
+  scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" range (this study)"), expression("ER"[wc]*" range (Lit) ")),
+                    values = c("grey", "lightblue", "#fbb1ac"))+
+  xlim(-20, max(ERriv$Total_Ecosystem_Respiration_Areal))+
+  theme(
+    legend.position = c(.275, .95),
+    legend.justification = c( "top"),
+    legend.margin = margin(-12, 0, 3, 3),
+    legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
+    legend.background = element_rect(fill = "white", color = "black", linewidth = 0.4),
+    legend.key = element_rect(fill = "white", color = "black", linewidth = 0.4),
+    legend.box.just = "right"
+  )
+
+
+
 ggsave(file.path('./Plots',"hist_density_plot_bottom_ERtot_ML_pos_removed.png"), plot=p3, width = 4, height = 3, dpi = 300,device = "png") 
 
 combined = grid.arrange(p1,p3, nrow=1)
+combined = ggarrange(p1, p3, nrow = 1, labels = c("(a)", "(b)"), label.x = c(0.9, 0.85), label.y = c(0.95, 0.95))
 
-ggsave(file.path('./Plots',"combined_hist_density_plot_ML_pos_removed.png"), plot=combined, width = 8, height = 3, dpi = 300,device = "png") 
+combined
+
+ggsave(file.path('./Plots',"bounded_combined_hist_density_plot_ML_pos_removed.png"), plot=combined, width = 8, height = 3, dpi = 300,device = "png") 
 
 ##############################################################
 # use lme4 to estimate the means among the sites
