@@ -212,12 +212,13 @@ all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>%
 
 ## Shorten Names 
 
-new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Trans = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations"#, TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean"#, TN = "TN_mg_per_L_as_N_mean"#, Br = #"Br_mg_per_L_mean", Ca = #"Ca_mg_per_L_mean", Cl = #"Cl_mg_per_L_mean", Fl = #"F_mg_per_L_mean", Mg = #"Mg_mg_per_L_mean", NO3 = #"NO3_mg_per_L_as_NO3_mean", K = #"K_mg_per_L_mean", Na = #"Na_mg_per_L_mean", SO4 = #"SO4_mg_per_L_as_SO4_mean"
+new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations"#, TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean"#, TN = "TN_mg_per_L_as_N_mean"#, Br = #"Br_mg_per_L_mean", Ca = #"Ca_mg_per_L_mean", Cl = #"Cl_mg_per_L_mean", Fl = #"F_mg_per_L_mean", Mg = #"Mg_mg_per_L_mean", NO3 = #"NO3_mg_per_L_as_NO3_mean", K = #"K_mg_per_L_mean", Na = #"Na_mg_per_L_mean", SO4 = #"SO4_mg_per_L_as_SO4_mean"
                 )
 
 new_data <- all_data %>% 
   rename(!!!new_names) %>% 
-  column_to_rownames("Site_ID")
+  column_to_rownames("Site_ID") %>% 
+  filter(ERwc < 0.5)
 
 ## Look at histograms
 
@@ -240,6 +241,11 @@ corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 
 dev.off()
   
 
+ggplot(new_data, aes(x = Mean_NPOC, y = ERwc)) + 
+  geom_point() + 
+  theme_bw()
+
+       
 # Transform data ----------------------------------------------------------
 
 #decide how you want to do this, eg, cube or log transform
@@ -249,6 +255,15 @@ dev.off()
 # log gives a lot of NAs even with + 1
 log_data = new_data %>% 
   mutate_if(is.numeric, log10)
+
+long_log_data = log_data %>% 
+  rownames_to_column("Sample_Name") %>% 
+  pivot_longer(!Sample_Name, names_to = "variable", values_to = "value")
+
+ggplot() + 
+  geom_histogram(long_log_data, mapping = aes(x = value)) + 
+  facet_wrap(~ variable, scales = "free") +
+  theme_minimal()
 
 log_data_plus_one = new_data %>% 
   mutate_if(is.numeric, ~ log10(. + 1))
@@ -611,38 +626,101 @@ results_r2 = as.data.frame(r2_scores)
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
 
-ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
+npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
   geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 2.75, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 2.75, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  stat_cor(data = new_data, label.x = 2.25, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 2.25, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE) + 
+  ggtitle("NPOC")
 
-ggplot(new_data, aes(y = ERwc, x = Temp)) +
+tss_plot = ggplot(new_data, aes(y = ERwc, x = TSS)) +
   geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 18.5, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
- stat_cor(data = new_data, label.x = 18.5, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  #geom_smooth()
+  stat_cor(data = new_data, label.x = 45, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 45, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("TSS")
 
-ggplot(new_data, aes(y = ERwc, x = Trans)) +
+tn_plot = ggplot(new_data, aes(y = ERwc, x = Mean_TN)) +
   geom_point() + theme_bw() + 
- stat_cor(data = new_data, label.x = 60250, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 60250, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  stat_cor(data = new_data, label.x = 1.25, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 1.25, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("TN")
 
-ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
+transformations_plot = ggplot(new_data, aes(y = ERwc, x = Transformations)) +
   geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 6.50, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 6.50, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  stat_cor(data = new_data, label.x = 57500, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 57500, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Transformations")
 
-ggplot(new_data, aes(y = ERwc, x = StrOrd)) +
+norm_plot = ggplot(new_data, aes(y = ERwc, x = NormTrans)) +
   geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 6.50, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 6.50, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  stat_cor(data = new_data, label.x = 7.75, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 7.75, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Normalized Transformations")
 
-ggplot(new_data, aes(y = ERwc, x = mean_DIC)) +
+totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
   geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x =32.5, label.y = 1.5, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 32.5, label.y = 1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)
+  stat_cor(data = new_data, label.x = 10000, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 10000, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Total Drainage")
+
+no3_plot = ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 5.5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 5.5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("NO3")
+
+temp_plot = ggplot(new_data, aes(y = ERwc, x = Temp)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 17, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+ stat_cor(data = new_data, label.x = 17, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Temperature")
+
+strord_plot = ggplot(new_data, aes(y = ERwc, x = StrOrd)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x = 5.50, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 5.50, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Stream Order")
+
+cl_plot = ggplot(new_data, aes(y = ERwc, x = Cl_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x =5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Cl")
+
+dic_plot = ggplot(new_data, aes(y = ERwc, x = mean_DIC)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x =27.5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 27.5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("DIC")
+
+so4_plot = ggplot(new_data, aes(y = ERwc, x = SO4_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x =8, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 8, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("SO4")
+
+peaks_plot = ggplot(new_data, aes(y = ERwc, x = Peaks)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = new_data, label.x =7600, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 7600, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Peaks")
+
+combined = ggarrange(npoc_plot, tss_plot, tn_plot, transformations_plot, norm_plot, no3_plot, totdr_plot, temp_plot, strord_plot, dic_plot, cl_plot, so4_plot, peaks_plot, nrow = 4, ncol = 4)
+
+combined
+
+ggsave(file.path('./Figures',"combined_scatter_plots.png"), plot=combined, width = 12, height = 12, dpi = 300,device = "png") 
+
