@@ -3,7 +3,7 @@
 
 # Libraries ---------------------------------------------------------------
 library(tidyverse)
-library(dplyr)
+#library(dplyr)
 library(corrplot)
 library(ggpubr)
 library(ggpmisc)
@@ -12,7 +12,8 @@ library(ggpmisc)
 library(glmnet)
 # library(magick)
 library(readxl)
-library(hal9001)
+#library(hal9001)
+#library(GGally)
 
 
 # Working Directory -------------------------------------------------------
@@ -27,28 +28,6 @@ rm(list=ls());graphics.off()
 
 cube_root <- function(x) sign(x) * (abs(x))^(1/3)
 
-# function for pearson corr matrix
-panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r = (cor(x, y, method = c("pearson")))
-  txt <- format(c(r, 0.123456789), digits=digits)[1]
-  txt <- paste(prefix, txt, sep="")
-  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)} else {cex = cex.cor}
-  text(0.5, 0.5, txt, cex = cex.cor * (1 + r)/1)
-  
-  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
-  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
-  
-  test <- cor.test(x,y)
-  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
-  #text(0.5, 0.5, txt, cex = cex * r)
-  text(.5, .8, Signif, cex=cex, col=2)
-  
-}
-
-
 # Read in Data ------------------------------------------------------------
 
 mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>% 
@@ -59,144 +38,68 @@ geo = read.csv("./Data/Multiple_linear_regression/v2_RCSFA_Extracted_Geospatial_
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
 
-npoc_tn = read.csv("./Data/Multiple_linear_regression/v2_SPS_NPOC_TN.csv", skip = 2) %>% 
+data = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N)) %>% 
+  select(c(Sample_Name, Mean_00691_DIC_mg_per_L_as_C))
+  
+
+npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
   rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
   rename(TN = X00602_TN_mg_per_L_as_N) %>% 
   mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN))) %>% 
   mutate(NPOC = as.numeric(NPOC)) %>% 
+  filter(!grepl("OUTLIER", Methods_Deviation))%>% 
   separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
-  group_by(Parent) %>% 
-  #mutate(cv_npoc = sd(NPOC)/mean(NPOC)) %>% 
-  mutate(cv_tn = sd(TN)/mean(TN))
-
-npoc_tn$flag <- NA
-
-#make final data frame
-npoc_tn_final <- as.data.frame(matrix(NA, ncol = 7, nrow = 1))
-
-colnames(npoc_tn_final) = c("tn.temp", "Parent", "Rep",  "NPOC",  "cv_tn", "cv_tn_rem", "flag")
-
-#Number of unique parent IDs with replicates to loop through
-unique.samples = unique(npoc_tn$Parent)
-
-for (i in 1:length(unique.samples)) {
-  
-  ## Subset replicates
-  data_subset = subset(npoc_tn, npoc_tn$Parent == unique.samples[i])
-  
-  ## Pull out TN percent values
-  tn.temp = as.numeric(data_subset$TN)
-  
-  ## Calculate standard deviation, average, and coefficient of variation of rates
-  tn.temp.sd <- sd(tn.temp)
-  tn.temp.mean <- mean(tn.temp)
-  CV = abs(tn.temp.sd/tn.temp.mean)
-  
-  #looping to get 3 best samples
-  for (sample.reduction in 1:3)  {
-    
-    if (length(tn.temp) > 2) {
-      
-      dist.temp = as.matrix(abs(dist(tn.temp)))
-      dist.comp = numeric() 
-      
-      for(tn.now in 1:ncol(dist.temp)) {
-        
-        dist.comp = rbind(dist.comp,c(tn.now,sum(dist.temp[,tn.now])))
-        
-      }
-      
-      dist.comp[,2] = as.numeric(dist.comp[,2])
-      tn.temp = tn.temp[-which.max(dist.comp[,2])]
-      
-      tn.temp.sd <- sd(tn.temp)
-      tn.temp.mean <- mean(tn.temp)
-      tn.temp.cv <- abs(tn.temp.sd/tn.temp.mean)
-      CV = tn.temp.cv
-      tn.temp.range <- max(tn.temp) - min(tn.temp)
-      range = tn.temp.range
-      
-    } 
-  }
-  
-  if (length(tn.temp) >= 2) {
-    
-    tn.combined <- as.data.frame(tn.temp)
-    
-    tn.removed <- merge(tn.combined, data_subset, by.x = "tn.temp", by.y = "TN", all.x = TRUE)
-    
-    tn.removed <- tn.removed[!duplicated(tn.removed$Rep), ]
-    
-    tn.removed$cv_tn_rem = as.numeric(abs(sd(tn.temp)/mean(tn.temp)))
-    
-
-    
-  }
-  
-  npoc_tn_final = rbind(tn.removed, npoc_tn_final)
-  
-  rm('tn.temp')
-}
-
-mean_npoc_tn_clean = npoc_tn_final %>% 
-  rename(TN = tn.temp) %>% 
   group_by(Parent) %>% 
   mutate(Mean_NPOC = mean(NPOC)) %>% 
   mutate(Mean_TN = mean(TN)) %>% 
+  ungroup() %>% 
   distinct(Parent, .keep_all = T) %>% 
-  select(c(Parent, Mean_NPOC, Mean_TN)) %>% 
-  mutate(Parent = str_replace(Parent, "_OCN", ""))
+  mutate(Sample_Name = str_replace(Parent, "_OCN", "_Water")) %>% 
+  select(c(Sample_Name, Mean_NPOC, Mean_TN))
+
 
 ## Try with published NO3 data
 
-ions = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Boye_Files/SPS/SPS_Ions_Boye_2024-10-30.csv", skip = 2) %>% 
+ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), 0.035, as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% 
-  separate(Sample_Name, c("Parent", "Rep"), sep = "_ION") %>% 
+  mutate(Sample_Name = str_replace(Sample_Name, "ION", "Water")) %>% 
+  separate(Sample_Name, c("Sample_Name", "Rep"), sep = "-") %>% 
   mutate(Cl_mg_per_L = as.numeric(X00940_Cl_mg_per_L)) %>% 
   mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
-  select(c(Parent, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
+  select(c(Sample_Name, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
   
 
 #Check LOD
-tss = read.csv("./Data/Multiple_linear_regression/SPS_TSS.csv", skip = 2) %>% 
+tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
   rename(TSS = X00530_TSS_mg_per_L) %>% 
   mutate(TSS = if_else(grepl("Below", TSS), as.numeric(.743), as.numeric(TSS))) %>% 
   separate(Sample_Name, c("Parent","Rep"), sep = "-") %>% 
-  mutate(Parent = str_replace(Parent, "_TSS", "")) %>% 
-  select(c(Parent, TSS))
+  mutate(Sample_Name = str_replace(Parent, "_TSS", "_Water")) %>% 
+  select(c(Sample_Name, TSS))
 
-dic = read.csv("C:/Users/laan208/OneDrive - PNNL/Shared Documents - Core Richland and Sequim Lab-Field Team/Data Generation and Files/RC2/Boye_Files/SPS/SPS_Water_DIC_Boye_2024-09-10.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, X00691_DIC_mg_per_L_as_C)) %>% 
-  rename(DIC = X00691_DIC_mg_per_L_as_C)
+# Use means in DP
+# dic = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_DIC.csv", skip = 2) %>% 
+#   filter(grepl("SPS", Sample_Name)) %>% 
+#   select(c(Sample_Name, X00691_DIC_mg_per_L_as_C)) %>% 
+#   rename(DIC = X00691_DIC_mg_per_L_as_C)
 
-mean_dic = dic %>% 
-  mutate(DIC = as.numeric(DIC)) %>% 
-  separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
-  group_by(Parent) %>% 
-  mutate(mean_DIC = mean(DIC)) %>% 
-  select(c(Parent, mean_DIC)) %>% 
-  distinct(Parent, .keep_all = T) %>% 
-  mutate(Parent = str_replace(Parent, "_DIC", ""))
 
-sample = left_join(mean_dic, mean_npoc_tn_clean) %>% 
-  left_join(tss) %>% 
+sample = left_join(data, npoc_tn) %>% 
   left_join(ions) %>% 
-  rename(Sample_Name = Parent)
+  left_join(tss) %>% 
+  rename(Mean_DIC = Mean_00691_DIC_mg_per_L_as_C) %>% 
+  mutate(Sample_Name = str_replace(Sample_Name, "_Water", "")) %>% 
+  mutate(Mean_DIC = as.numeric(Mean_DIC))
 
 
-# need to get DIC from VGC, check Ions from Sophia, and pull together in summary file code, add ultrameter water chemistry to this? add manta data to this? 
-# sample = read.csv("./Data/Multiple_linear_regression/Summary_Not_Cleaned.csv") %>% 
-#   mutate(Sample_Name = str_remove(Parent, "_MEAN")) %>%   select(-c(X, Parent, X00000_NH4_mg_per_L_as_NH4_mean, X01130_Li_mg_per_L_mean, X00653_PO4_mg_per_L_as_PO4_mean, X71856_NO2_mg_per_L_as_NO2_mean)) %>% 
-#   rename_with(~ str_sub(., 8), starts_with("X")) %>% 
-#   mutate(across(everything(), ~if_else(. == -9999, NA, .))) %>% 
-#   select(c(Sample_Name, TSS_mg_per_L, NPOC_mg_per_L_as_C_mean, DIC_mean))
-#   
+# add ultrameter water chemistry to this? add manta data to this? 
+
 mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metadata.csv") %>% 
   select(c(Site_ID, Sample_Name))
 
@@ -218,7 +121,8 @@ new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", Tot
 new_data <- all_data %>% 
   rename(!!!new_names) %>% 
   column_to_rownames("Site_ID") %>% 
-  filter(ERwc < 0.5)
+  filter(ERwc < 0.5) %>% 
+  drop_na()
 
 ## Look at histograms
 
@@ -239,11 +143,91 @@ png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Spearman_Correl
 corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Spearman Correlation")
 
 dev.off()
-  
 
-ggplot(new_data, aes(x = Mean_NPOC, y = ERwc)) + 
-  geom_point() + 
-  theme_bw()
+spear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
+{
+  
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  
+  r = (cor(x, y, method = c("spearman")))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  
+  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)}
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + abs(r))/2)
+  
+  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
+  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
+  
+  test <- cor.test(x,y, method = "spearman")
+  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
+  #text(0.5, 0.5, txt, cex = cex * r)
+  text(.5, .8, Signif, cex=cex.cor, col=2)
+  
+}
+
+panel.smooth <- function(x, y) {
+  points(x, y, pch = 19, col = rgb(0.1, 0.2, 0.5, alpha = 0.3))
+  abline(lm(y ~ x), col = 'blue', lty = 2)
+}
+
+panel.hist <- function(x, ...) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1))
+  
+  h <- hist(x, plot = FALSE, breaks = "FD")
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  
+  rect(breaks[-nB], 0, breaks[-1], y, col="grey", border="white", ...)
+}
+
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+pairs(new_data,
+      lower.panel = panel.smooth, 
+      upper.panel = spear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(new_data),
+      cex.labels = 0.8) 
+
+dev.off()
+
+##Pearson correlation before transformations
+# function for pearson corr matrix
+
+pear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r = (cor(x, y, method = c("pearson")))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)} 
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + abs(r))/2)
+  
+  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
+  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
+  
+  test <- cor.test(x,y)
+  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
+  #text(0.5, 0.5, txt, cex = cex * r)
+  text(.5, .8, Signif, cex=cex.cor, col=2)
+  
+}
+
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+pairs(new_data,
+      lower.panel = panel.smooth, 
+      upper.panel = pear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(new_data),
+      cex.labels = 0.8) 
+
+dev.off()
+
 
        
 # Transform data ----------------------------------------------------------
@@ -296,10 +280,14 @@ sd(scale_data$scale_ERwc)
 
 scale_pearson <- cor(scale_data, method = "pearson")
 
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
-
-corrplot(scale_pearson,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Effect Samples Pearson Correlation")
+pairs(scale_data,
+      lower.panel = panel.smooth, 
+      upper.panel = pear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(new_data),
+      cex.labels = 0.8) 
 
 dev.off()
 
@@ -314,10 +302,26 @@ sd(scale_cube_data$scale_cube_ERwc)
 
 scale_cube_pearson <- cor(scale_cube_data, method = "pearson")
 
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Cube_Scale_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+pairs(scale_cube_data,
+      lower.panel = panel.smooth, 
+      upper.panel = pear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(scale_cube_data),
+      cex.labels = 0.3) 
+
+dev.off()
 
 
-corrplot(scale_cube_pearson,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Effect Samples Pearson Correlation")
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Cube_Pairs_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+pairs(scale_cube_data,
+      lower.panel = panel.smooth, 
+      upper.panel = spear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(scale_cube_data),
+      cex.labels = 0.5) 
 
 dev.off()
 
@@ -327,6 +331,11 @@ pearson_df <- as.data.frame(scale_cube_pearson)
 row_names_pearson <- rownames(pearson_df)
 
 pearson_df$Variable <- row_names_pearson
+
+spearman_cor = cor(scale_cube_data, method = c("spearman"))
+spearman_df = as.data.frame(spearman_cor)
+row_names_spearman = rownames(spearman_df)
+spearman_df$Variable = row_names_spearman
 
 # Melt the dataframe for plotting
 pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
@@ -424,86 +433,6 @@ scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 
 
 # Start LASSO -------------------------------------------------------------
-rf_data = new_data %>% 
-  drop_na()
-
-X = rf_data %>% 
-  select(Temp, StrOrd, TotDr, mean_DIC, Mean_NPOC, Mean_TN, TSS, NO3_mg_per_L, SO4_mg_per_L, Cl_mg_per_L, Trans, Peaks, NormTrans)
-
-Y = rf_data$ERwc
-
-index = createDataPartition(Y, p = 0.75, list = F)
-
-X_train = X[index,]
-X_test = X[-index,]
-Y_train = Y[index]
-Y_test = Y[-index]
-
-set.seed(42)
-
-rf = randomForest(x = X_train, y = Y_train, maxnodes = 10, ntree = 10)
-
-predictions = predict(rf, X_test)
-
-result = X_test
-
-result['ERwc'] = Y_test
-result['prediction'] = predictions
-
-head(result)
-
-ggplot()+ 
-  geom_point(aes(x = X_test$Temp, y = Y_test, color = "red")) +
-  geom_point(aes(x = X_test$Temp, y = predictions, color = "blue")) + 
-  scale_color_manual(labels = c("Predicted", "Real"), values = c("blue", "red"))
-
-print(paste0('MAE: ', mae(Y_test, predictions)))
-print(paste0('MSE: ', caret::postResample(predictions, Y_test)['RMSE']^2))
-print(paste0('R2: ', caret::postResample(predictions, Y_test)['Rsquared']))
-
-N = 26
-
-x_train = X_train[1:N,]
-y_train = Y_train[1:N]
-
-seed = 7
-metric = 'RMSE'
-
-customRF = list(type = "Regression", library = "randomForest", loop = NULL)
-
-customRF$parameters = data.frame(parameter = c("maxnodes", "ntree"), class = rep("numeric", 2), label = c("maxnodes","ntree"))
-
-customRF$grid = function(x,y,len = NULL, search = "grid") {}
-
-customRF$fit = function(x,y,wts, param,lev, last, weights, classProbs, ...){
-  
-  randomForest(x,y,maxnodes = param$maxnodes, ntree = param$ntree, ...)
-}
-
-customRF$predict = function(modelFit, newdata, preProc = NULL, submodels = NULL)
-
-predict(modelFit, newdata)
-
-customRF$prob = function(modelFit, newdata, preProc = NULL, submodels = NULL)
-  predict(modelFit, newdata, type = "prob")
-
-customRF$sort = function(x) x[order(x[,1]),]
-customRF$levels = function(x) x$classes
-
-control = trainControl(method = "repeatedcv", number = 10, repeats = 3, search = 'grid')
-
-tunegrid = expand.grid(.maxnodes = c(70,80,90,100), .ntree = c(900,1000, 1100))
-
-set.seed(seed)
-
-rf_gridsearch = train(x = x_train, y = y_train, method = customRF, metric = metric, tuneGrid = tunegrid, trControl = control)
-
-plot(rf_gridsearch)
-
-rf_gridsearch$bestTune
-
-varImpPlot(rf_gridsearch$finalModel, main = 'Feature Importance')
-
   ## LASSO with Correlation Matrix Selected Variables 
 
 ## Set response variable (Cube_Effect_Size) and scale
@@ -548,6 +477,12 @@ sse <- sum((yvar_predict - yvar)^2)
 rsq = 1 - sse/sst
 
 rsq #0.428
+
+#check residuals
+
+res = yvar - yvar_predict
+
+plot(res ~ yvar_predict)
 
 ## Loop through LASSO to get average over a lot of seeds ####
 
@@ -625,6 +560,12 @@ mean_coeffs_df = mean_coeffs %>%
 results_r2 = as.data.frame(r2_scores) 
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
+
+## With scale, cube, pearson > 0.7 removals
+  # TN, Temp, TSS, Peaks
+
+## With scale, cube, pearson > 0.7 removals, TN removed
+  # NPOC, Temp, NO3, TSS, Peaks
 
 npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
   geom_point() + theme_bw() + 
@@ -722,5 +663,46 @@ combined = ggarrange(npoc_plot, tss_plot, tn_plot, transformations_plot, norm_pl
 
 combined
 
-ggsave(file.path('./Figures',"combined_scatter_plots.png"), plot=combined, width = 12, height = 12, dpi = 300,device = "png") 
+lasso_comb = ggarrange(npoc_plot, temp_plot, no3_plot, tss_plot, nrow = 2, ncol = 2)
+
+lasso_comb
+
+ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
+
+## Cube root scatter plots
+
+cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.3, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.3, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE) + 
+  ggtitle("Cube NPOC")
+
+cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
+  geom_point() + theme_bw() + 
+  #geom_smooth()
+  stat_cor(data = cube_data, label.x = 3.5, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 3.5, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("Cube TSS")
+
+cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.65, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.65, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("Cube NO3")
+
+cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 2.65, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.65, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("Cube Temperature")
+
+cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_no3_plot, cube_tss_plot, nrow = 2, ncol = 2)
+
+cube_lasso_comb
+
+ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
 
