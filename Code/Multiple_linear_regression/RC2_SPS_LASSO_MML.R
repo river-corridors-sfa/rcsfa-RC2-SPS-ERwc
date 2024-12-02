@@ -309,7 +309,7 @@ pairs(scale_cube_data,
       upper.panel = pear.panel.cor, 
       diag.panel = panel.hist,
       labels = colnames(scale_cube_data),
-      cex.labels = 0.3) 
+      cex.labels = 0.5) 
 
 dev.off()
 
@@ -341,8 +341,8 @@ spearman_df$Variable = row_names_spearman
 pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
   filter(value != 1) %>% 
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
-  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
+  filter(!grepl("ERwc", Variable))# %>% # remove ERwc, don't want it to be removed %>% 
+  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
 
 # pull out erwc correlations only
 erwc_melted <- pearson_melted %>% 
@@ -534,11 +534,13 @@ norm_coeffs_scale = lasso_coefs/max(abs(lasso_coefs[-1]))
 
 norm_coeffs[[as.character(seed)]] = norm_coeffs_scale[-1, , drop = FALSE]
 
-y_pred <- predict(best_lasso_model, newx = xvars, s = best_lambda)
+y_pred = predict(best_lasso_model, newx = xvars, s = best_lambda)
 
-sst <- sum((yvar - mean(yvar))^2)
-sse <- sum((y_pred - yvar)^2)
-r2_scores[i] <- 1 - (sse / sst)
+sst = sum((yvar - mean(yvar))^2)
+sse = sum((y_pred - yvar)^2)
+r2_scores[i] = 1 - (sse / sst)
+
+aic_value = AIC(best_lasso_model$glmnet.fit)
 
 }
 
@@ -560,6 +562,7 @@ mean_coeffs_df = mean_coeffs %>%
 results_r2 = as.data.frame(r2_scores) 
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
+
 
 ## With scale, cube, pearson > 0.7 removals
   # TN, Temp, TSS, Peaks
