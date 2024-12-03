@@ -7,12 +7,18 @@ library(readxl)
 library(tidyverse)
 library(reshape)
 library(ggpmisc)
-
-DO_Path = 'C:/GitHub/rcsfa-RC2-SPS-ERwc/Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'
-
-Out_Path = 'C:/GitHub/rcsfa-RC2-SPS-ERwc/Data/Multiple_linear_regression/'
+library(ggpubr)
 
 #sdir<- 'C:/Brieanne/GitHub/SSS_metabolism/'
+
+current_path <- rstudioapi::getActiveDocumentContext()$path
+setwd(dirname(current_path))
+setwd("../..")
+getwd()
+
+DO_Path = './Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'
+
+Out_Path = './Data/Multiple_linear_regression/'
 
 
 ##########################################################################
@@ -128,7 +134,132 @@ ERwc_mean = ERwc %>%
 
 write.csv(ERwc_mean, paste0(Out_Path, '/ERwc_Mean.csv'))
 
-## Plot S20R and T02
+## Plot S20R and T02 ####
 
-s20r = read.csv("C:/GitHub/rcsfa-RC2-SPS-ERwc/Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_S20R_Cle_Elum_2021-09-02.csv", skip = 15)
-  
+s20r = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_S20R_Cle_Elum_2021-09-02.csv", skip = 15) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")) %>% 
+  mutate(Hour = as.numeric(format(DateTime, "%H"))) %>% 
+  mutate(Minute = as.numeric(format(DateTime, "%M"))) %>% 
+  mutate(Minute = if_else(Hour == 12, 60  + Minute, Minute))
+
+lm_s20r_1 = lm(Dissolved_Oxygen_1 ~ Minute, data = s20r)
+slope_s20r_1 = coef(lm_s20r_1)[2]
+label_s20r_1 = paste0("slope = ", round(slope_s20r_1, 5))
+
+lm_s20r_2 = lm(Dissolved_Oxygen_2 ~ Minute, data = s20r)
+slope_s20r_2 = coef(lm_s20r_2)[2]
+label_s20r_2 = paste0("slope = ", round(slope_s20r_2, 5))
+
+lm_s20r_3 = lm(Dissolved_Oxygen_3 ~ Minute, data = s20r)
+slope_s20r_3 = coef(lm_s20r_3)[2]
+label_s20r_3 = paste0("slope = ",round(slope_s20r_3,5),"0")
+
+
+t02 = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_T02_Yakima_2021-09-07.csv", skip = 15)%>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")) %>% 
+  mutate(Hour = as.numeric(format(DateTime, "%H"))) %>% 
+  mutate(Minute = as.numeric(format(DateTime, "%M"))) %>% 
+  mutate(Minute = if_else(Hour == 12, 60  + Minute, Minute))
+
+lm_t02_1 = lm(Dissolved_Oxygen_1 ~ Minute, data = t02)
+slope_t02_1 = coef(lm_t02_1)[2]
+label_t02_1 = paste0("slope = ", round(slope_t02_1, 5))
+
+lm_t02_2 = lm(Dissolved_Oxygen_2 ~ Minute, data = t02)
+slope_t02_2 = coef(lm_t02_2)[2]
+label_t02_2 = paste0("slope = ", round(slope_t02_2, 5))
+
+lm_t02_3 = lm(Dissolved_Oxygen_3 ~ Minute, data = t02)
+slope_t02_3 = coef(lm_t02_3)[2]
+label_t02_3 = paste0("slope = ", round(slope_t02_3, 5))
+
+s20r_do_plot = ggplot(s20r) + 
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_1), color = "red", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_1), color = "red") +
+  annotate("text", x = s20r$DateTime[81], y = 9.17, label = label_s20r_1, color = "red", size = 3)+
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_2), color = "blue", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_2), color = "blue") +
+  annotate("text", x = s20r$DateTime[81], y = 9.14, label = label_s20r_2, color = "blue", size = 3)+
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_3), color = "black", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_3), color = "black") +
+  annotate("text", x = s20r$DateTime[81], y = 9.11, label = label_s20r_3, color = "black", size = 3)+
+  ylim(8.7, 9.2)+
+  scale_x_datetime(date_labels = "%m/%d %H:%M") +
+  theme_bw() + 
+  annotate("text", x = s20r$DateTime[10], y = 9.17, label = "Site ID S20R", size = 4) +
+  labs(x = "Date and Time in 2021", y = bquote("Dissolved Oxygen (mg L"^-1*")")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_text(margin = margin(t = 10), size = 12), 
+        axis.title.y = element_text(margin = margin(r = 10), size = 12), 
+        axis.text.x = element_text(size = 10), 
+        axis.text.y = element_text(size = 10))
+
+s20r_do_plot
+
+t02_do_plot = ggplot(t02) + 
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_1), color = "red", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_1), color = "red") +
+  annotate("text", x = t02$DateTime[81], y = 8.77, label = label_t02_1, color = "red", size = 3)+
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_2), color = "blue", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_2), color = "blue") +
+  annotate("text", x = t02$DateTime[81], y = 8.74, label = label_t02_2, color = "blue", size = 3)+
+  geom_point(aes(x = DateTime, y = Dissolved_Oxygen_3), color = "black", shape = 21, size = 5) +
+  geom_smooth(method = "lm", se = FALSE, aes(x = DateTime, y = Dissolved_Oxygen_3), color = "black") +
+  annotate("text", x = t02$DateTime[81], y = 8.71, label = label_t02_3, color = "black", size = 3)+
+  ylim(8.3, 8.8)+
+  scale_x_datetime(date_labels = "%m/%d %H:%M") +
+  theme_bw() + 
+  annotate("text", x = t02$DateTime[10], y = 8.77, label = "Site ID T02", size = 4) +
+  labs(x = "Date and Time in 2021", y = bquote("Dissolved Oxygen (mg L"^-1*")")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_text(margin = margin(t = 10), size = 12), 
+        axis.title.y = element_text(margin = margin(r = 10), size = 12), 
+        axis.text.x = element_text(size = 10), 
+        axis.text.y = element_text(size = 10))
+
+t02_do_plot
+
+s20r_temp_plot = ggplot(s20r) + 
+  geom_point(aes(x = DateTime, y = Temperature_1), color = "red", shape = 21, size = 5) +
+  geom_point(aes(x = DateTime, y = Temperature_2), color = "blue", shape = 21, size = 5) +
+  geom_point(aes(x = DateTime, y = Temperature_3), color = "black", shape = 21, size = 5) +
+  ylim(17.4, 18.0)+
+  scale_x_datetime(date_labels = "%m/%d %H:%M") +
+  theme_bw() + 
+  annotate("text", x = s20r$DateTime[10], y = 17.97, label = "Site ID S20R", size = 4) +
+  labs(x = "Date and Time in 2021", y = bquote("Temperature ("~degree*"C)")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_text(margin = margin(t = 10), size = 12), 
+        axis.title.y = element_text(margin = margin(r = 10), size = 12), 
+        axis.text.x = element_text(size = 10), 
+        axis.text.y = element_text(size = 10))
+
+s20r_temp_plot
+
+t02_temp_plot = ggplot(t02) + 
+  geom_point(aes(x = DateTime, y = Temperature_1), color = "red", shape = 21, size = 5) +
+  geom_point(aes(x = DateTime, y = Temperature_2), color = "blue", shape = 21, size = 5) +
+  geom_point(aes(x = DateTime, y = Temperature_3), color = "black", shape = 21, size = 5) +
+  ylim(20.0, 20.6)+
+  scale_x_datetime(date_labels = "%m/%d %H:%M") +
+  theme_bw() + 
+  annotate("text", x = t02$DateTime[10], y = 20.57, label = "Site ID T02", size = 4) +
+  labs(x = "Date and Time in 2021", y = bquote("Temperature ("~degree*"C)")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_text(margin = margin(t = 10), size = 12), 
+        axis.title.y = element_text(margin = margin(r = 10), size = 12), 
+        axis.text.x = element_text(size = 10), 
+        axis.text.y = element_text(size = 10))
+
+t02_temp_plot
+
+ex_combine = ggarrange(s20r_temp_plot, t02_temp_plot, s20r_do_plot, t02_do_plot, nrow = 2, ncol = 2)
+
+ex_combine
+
+ggsave(file.path('./Plots',"example_temp_do_plot_ML.png"),
+       plot = ex_combine, width = 10, height = 6, dpi = 300,device = "png")
