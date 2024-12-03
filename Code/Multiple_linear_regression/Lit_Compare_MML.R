@@ -4,6 +4,7 @@ library(ggbreak)
 library(gtable)
 library(gridExtra)
 library(ggpubr)
+library(readxl)
 
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
@@ -31,6 +32,11 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteI
 # ERwater data from literture
 #ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
 erwc_lit <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
+
+erwc_lit = read_xlsx(file.path("C:/Users/laan208/OneDrive - PNNL/Water_Column_Respiration_Spatial/Drafts/Maggi/Table_2_Calculations.xlsx")) %>% 
+  filter(!grepl("Std. Dev", Notes)) %>% 
+  select(c(Paper, River, `Basin/Station`, Corrected_Value)) %>% 
+  rename(Water_Column_Respiration_Literature = Corrected_Value)
 
 median(erwc_sps$Mean_ERwc)
 mean(erwc_sps$Mean_ERwc)
@@ -95,6 +101,86 @@ leg1 <- gtable_filter(ggplot_gtable(ggplot_build(p1)), "guide-box")
 
 ggsave(file.path('./Plots',"hist_density_plot_ERwater_legend_ML.png"),
        plot=p1, width = 4, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
+
+ward = erwc_lit %>% 
+  filter(grepl("Ward", Paper))
+
+ellis = erwc_lit %>%
+  filter(grepl("Ellis", Paper)) 
+
+genzoli = erwc_lit %>% 
+  filter(grepl("Genzoli", Paper))
+
+quay = erwc_lit %>% 
+  filter(grepl("Quay", Paper))
+
+reisinger = erwc_lit %>% 
+  filter(grepl("Reisinger", Paper))
+
+
+
+
+## Updated histograms/kernel density plots?
+
+lit_sps_density = ggplot() + 
+  geom_density(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue',adjust = 4, #bounds = c(min(erwc_sps$Mean_ERwc), max(erwc_sps$Mean_ERwc))
+               )+
+  geom_vline(aes(xintercept=median(erwc_sps$Mean_ERwc)),color="blue",  size=1)+
+  geom_density(data = erwc_lit, aes(x = Water_Column_Respiration_Literature, fill = "lit"), color = "#F9847B", adjust = 4, alpha= 0.5) +
+  #geom_vline(data=erwc_lit, aes(xintercept=Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
+  geom_vline(aes(xintercept=median(erwc_lit$Water_Column_Respiration_Literature)),color="#F9847B",  size=1)+
+  labs(x = expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density')+
+  scale_fill_manual("",breaks = c("wc", "lit"),labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit)")),
+                    values = c("skyblue", "#F9847B"))+
+  #scale_colour_hue("",breaks = c("lit"),labels = c( expression("ER"[wc]*" (Lit)"))
+  #)+
+  #("",breaks = c("lit"),labels = c( expression("ER"[wc]*"(Lit)")),
+  #                      values = c("dashed"))+
+  theme_classic()+
+  #xlim(min(erwc_sps$Mean_ERwc), 0)+
+  theme(legend.position = c(0.25,0.95),
+        legend.justification = c("top"),
+        legend.margin = margin(-12, 0, 3, 3),
+        legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
+        legend.box.margin = margin(1, 1, 1, 1),
+        legend.spacing.y = unit(0, 'cm'),
+        legend.box.background = element_rect(fill = "white", linewidth = 0.4,colour = "black"),
+        legend.key = element_rect(fill = "white", color = "black", linewidth = 0.5))
+
+ggsave(file.path('./Plots',"sps_lit_density_plot_ML.png"),
+       plot=lit_sps_density, width = 4, height = 3, dpi = 300,device = "png")
+
+lit_sps_hist = ggplot() + 
+  geom_histogram(data = erwc_lit, aes(x = Water_Column_Respiration_Literature, fill = "lit"), color = "#F9847B", alpha = 0.7) +
+  geom_vline(aes(xintercept=median(erwc_lit$Water_Column_Respiration_Literature)),color="#F9847B",  size=1)+
+  geom_histogram(data=erwc_sps, aes(x=Mean_ERwc,fill='wc'),color='blue')+
+  geom_vline(aes(xintercept=median(erwc_sps$Mean_ERwc)),color="blue",  size=1)+
+  #geom_vline(data=erwc_lit, aes(xintercept=Water_Column_Respiration_Literature,color='lit'),linetype="dashed")+
+  labs(x = expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density')+
+  scale_fill_manual("",breaks = c("wc", "lit"),labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit)")),
+                    values = c("skyblue", "#F9847B"))+
+  #scale_colour_hue("",breaks = c("lit"),labels = c( expression("ER"[wc]*" (Lit)"))
+  #)+
+  #("",breaks = c("lit"),labels = c( expression("ER"[wc]*"(Lit)")),
+  #                      values = c("dashed"))+
+  theme_classic()+
+  #xlim(min(erwc_sps$Mean_ERwc), 0)+
+  theme(legend.position = c(0.25,0.95),
+        legend.justification = c("top"),
+        legend.margin = margin(-12, 0, 3, 3),
+        legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
+        legend.box.margin = margin(1, 1, 1, 1),
+        legend.spacing.y = unit(0, 'cm'),
+        legend.box.background = element_rect(fill = "white", linewidth = 0.4,colour = "black"),
+        legend.key = element_rect(fill = "white", color = "black", linewidth = 0.5))
+
+lit_sps_hist
+
+ggsave(file.path('./Plots',"sps_lit_histograms_plot_ML.png"),
+       plot=lit_sps_hist, width = 4, height = 3, dpi = 300,device = "png")
+
+
+
 
 
 # density plot for ERtotal 
