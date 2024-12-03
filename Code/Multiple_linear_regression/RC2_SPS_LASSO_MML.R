@@ -341,8 +341,8 @@ spearman_df$Variable = row_names_spearman
 pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
   filter(value != 1) %>% 
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable))# %>% # remove ERwc, don't want it to be removed %>% 
-  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
+  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
+  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
 
 # pull out erwc correlations only
 erwc_melted <- pearson_melted %>% 
