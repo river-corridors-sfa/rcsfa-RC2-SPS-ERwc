@@ -68,3 +68,17 @@ numBestSitesGtrThan  # Number of sites where Total_Ecosystem_Respiration_Volumet
 # 4) Export data file to csv for kernel density plots, etc.
 write.csv(mean_ERtot_bestSiteIDs, "./Data/Appling_ERtot_analysis/mean_ERtot_bestSiteIDs.csv")
 
+# Maggi - Bernhardt compare ####
+
+bn = readRDS("C:/Users/laan208/Downloads/lotic_gap_filled.rds")
+
+bn_raw = readRDS("C:/Users/laan208/Downloads/lotic_standardized_full.rds")
+
+nwis_01184000 = bn[['nwis_01184000']]
+nwis_01184000_raw = bn_raw[['nwis_01184000']]
+
+mean(nwis_01184000$ER_filled)
+mean(nwis_01184000$ER, na.rm = T)
+mean(nwis_01184000_raw$ER_raw, na.rm = T)
+
+
