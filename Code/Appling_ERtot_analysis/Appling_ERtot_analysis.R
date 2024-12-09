@@ -14,6 +14,8 @@ getwd()
 
 # Read data
 library(readr)
+library(tidyverse)
+
 daily_predictions_ERtot_depth <- read.csv(file.path('./Data/Appling_ERtot_analysis/daily_predictions_ERtot_depth.csv'))
 colnames(daily_predictions_ERtot_depth)
 
@@ -74,8 +76,11 @@ bernhardt = readRDS(url("https://raw.githubusercontent.com/streampulse/metabolis
   bind_rows() %>%
   mutate(Date = format(Date, format = "%Y-%m-%d")) %>% 
   filter(grepl("nwis", Site_ID)) %>% 
-  select(c(Site_ID, Date, ER_filled))
-    
+  select(c(Site_ID, Date, ER_filled)) 
+
+mean_bernhardt_er = bernhardt %>% 
+  group_by(Site_ID) %>% # take average ERtot by site
+  summarise(ERtot_Areal = mean(ER_filled))  
 
 # Read in Appling to get depth data
 
@@ -85,67 +90,14 @@ appling = read.csv("./Data/Appling_ERtot_analysis/daily_predictions.csv") %>%
   rename(Site_ID = site_name) %>% 
   select(c(Site_ID, Date, depth)) 
 
-# Merge Bernhardt and Appling data
+mean_appling_depth = appling %>% 
+  group_by(Site_ID) %>% 
+  summarise(mean_depth = mean(depth))
 
-ERtot = full_join(bernhardt, appling, by = c("Site_ID", "Date"))
+# Merge Bernhardt and Appling data 
 
-group_by(Site_ID) %>%
-    summarise(mean_ER = mean(ER_filled, na.rm = T)) %>% 
-    filter(grepl("nwis", Site_ID)) 
+ERtot = full_join(mean_bernhardt_er, mean_appling_depth, by = c("Site_ID")) %>% 
+  drop_na(ERtot_Areal) %>%  # remove sites with no ER_filled, leaving 208 site
+  mutate(ERtot_Volumetric = ERtot_Areal * (1/mean_depth)) # divide by mean depth to get into mg O2/L/day
 
-
-
-select(c(site_name, date, depth)) %>% clean_tot = result_df %>% 
-  
-  left_j
-
-
-
-calculate_mean_filled = function(site_data){
-  
-  mean_ER_filled = mean(site_data$ER_filled)
-  
-  return(c(mean_ER_filled))
-  
-}
-
-
-means_list = lapply(ERtot, calculate_mean_filled)
-means_matrix = do.call(rbind, means_list)
-
-results_filled = data.frame(mean_ER_filled = means_matrix[, 1]) %>% 
-  rownames_to_column("Site_ID") %>% 
-  filter(grepl("nwis", Site_ID))
-
-summary(results_filled$mean_ER_filled)
-
-calculate_mean_raw = function(raw_data){
-  
-  Site_ID = raw_data$Site_ID
-  mean_ER_raw = mean(raw_data$ER_raw, na.rm = T)
-  
-  return(c(mean_ER_raw))
-  
-}
-
-means_list_raw = lapply(bn_raw, calculate_mean_raw)
-means_matrix_raw = do.call(rbind, means_list_raw)
-
-results_raw = data.frame(mean_ER_raw = means_matrix_raw[, 1]) %>% 
-  rownames_to_column("Site_ID")
-
-all_results = full_join(results_raw, results_filled, by = "Site_ID") #%>% 
-  filter(grepl("nwis", Site_ID))
-
-summary(all_results$mean_ER_filled)
-
-write.csv(all_results, file = "./Data/Multiple_Linear_Regression")
-
-
-ggplot(all_results)+
-  geom_histogram(aes(x = mean_ER_raw, fill = "raw"), color = "blue" , alpha = 0.5) +
-  geom_histogram(aes(x = mean_ER_filled, fill = "gap filled"), color ="#00BA38" , alpha = 0.8) +
-  geom_histogram(aes(x = mean_ER_clean, fill = "clean"), color = "#F8766D", alpha = 0.7) +
-  theme_bw() +
-  xlab("Mean ER comparisons")
-
+write.csv(ERtot, "./Data/Appling_ERtot_analysis/mean_ERtot_cleaned.csv")
