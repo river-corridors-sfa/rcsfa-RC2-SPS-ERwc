@@ -1,11 +1,11 @@
 library(tidyverse)
 library(moments)
-library(ggbreak)
 library(gtable)
 library(gridExtra)
 library(ggpubr)
 library(readxl)
 
+rm(list=ls());graphics.off()
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
