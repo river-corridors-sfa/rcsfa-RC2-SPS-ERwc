@@ -26,6 +26,7 @@ erwc_sps = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv')
   filter(Mean_ERwc < 0.5) # remove positive respiration rates > 0.5
 
 # read in  ERtotal data
+
 ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteIDs.csv'))
 #ERriv$ERvolumetric[ERriv$ERvolumetric>0]<-0
 
@@ -33,8 +34,9 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_bestSiteI
 #ERwc2 <- read.csv(file.path('./Data/Multiple_linear_regression','ERwc_combined_lit_valuesV3.csv'))
 erwc_lit <- read.csv(file.path('./Data/Water_column_respiration_published','Water_column_respiration_published_values.csv'))
 
-erwc_lit = read_xlsx(file.path("C:/Users/laan208/OneDrive - PNNL/Water_Column_Respiration_Spatial/Drafts/Maggi/Table_2_Calculations.xlsx")) %>% 
-  filter(!grepl("Std. Dev", Notes)) %>% 
+# Keeps Devol min/max, 
+erwc_lit = read_xlsx(file.path("C:/Users/laan208/OneDrive - PNNL/Water_Column_Respiration_Spatial/Drafts/Maggi/Table_2_Calculations.xlsx"), skip = 1,sheet = 2) %>% 
+  filter(!grepl("Reisinger", Paper)) %>% 
   select(c(Paper, River, `Basin/Station`, Corrected_Value)) %>% 
   rename(Water_Column_Respiration_Literature = Corrected_Value)
 
