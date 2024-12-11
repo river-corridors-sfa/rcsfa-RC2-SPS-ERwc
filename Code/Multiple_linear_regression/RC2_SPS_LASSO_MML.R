@@ -14,6 +14,7 @@ library(glmnet)
 library(readxl)
 #library(hal9001)
 #library(GGally)
+library(reshape2)
 
 
 # Working Directory -------------------------------------------------------
@@ -466,10 +467,93 @@ best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family 
                            #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
 )
 
-lasso_coefs = coef(best_lasso_model)
-coef(best_lasso_model)
+lasso_coefs = as.vector(coef(best_lasso_model)) 
+#coef(best_lasso_model)
+ 
+# Chat GPT code - removes zero coefficients - does this seem right?
+
+beta = lasso_coefs[-1]#drop intercept
+
+selected_vars = which(beta != 0)#choose non-zero coefficients
+selected_names = colnames(xvars)[selected_vars]
 
 yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
+fitted_values = as.numeric(yvar_predict)
+
+partial_residuals <- lapply(selected_vars, function(j) {
+  
+  xj = xvars[, j] #predictors
+  beta_j = beta[j] # coefficients for predictors
+  
+  # Compute the predicted values excluding the j-th variable
+  residuals = yvar - fitted_values
+  partial_fit = residuals + xj * beta_j #partial residuals?
+  
+  # Prepare a data frame for plotting
+  data.frame(
+    Predictor = xj,
+    Residuals = partial_fit,
+    Variable = colnames(xvars)[j]
+  )
+})
+
+plot_data = do.call(rbind, partial_residuals)
+
+tn_resid = plot_data %>% 
+  filter(grepl("TN", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, TDN"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+npoc_resid = plot_data %>% 
+  filter(grepl("NPOC", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, NPOC"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+temp_resid = plot_data %>% 
+  filter(grepl("Temp", Variable)) %>% 
+ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, Temperature"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+no3_resid = plot_data %>% 
+  filter(grepl("NO3", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, NO"[3]*""^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+tss_resid  = plot_data %>% 
+  filter(grepl("TSS", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, TSS"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))
+
+#without TN
+combine_resid = ggarrange(npoc_resid, temp_resid, no3_resid, tss_resid, labels = c("a", "b", "c", "d"), label.x = 0.9, label.y = 0.95)
+
+# with TN
+
+combine_resid = ggarrange(tn_resid, temp_resid, tss_resid, labels = c("a", "b", "c"), label.x = 0.9, label.y = 0.95)
+
+ggsave(file.path('./Figures',"lasso_residuals_combined_TN.png"), plot=combine_resid, width = 8, height = 8, dpi = 300,device = "png")
+
+
 
 sst <- sum((yvar - mean(yvar))^2)
 sse <- sum((yvar_predict - yvar)^2)
@@ -675,39 +759,51 @@ ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_com
 ## Cube root scatter plots
 
 cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.3, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.3, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE) + 
-  ggtitle("Cube NPOC")
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.325, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.325, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
+  xlab(expression("NPOC"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
-  geom_point() + theme_bw() + 
+  geom_point(shape = 1) + theme_bw() + 
   #geom_smooth()
   stat_cor(data = cube_data, label.x = 3.5, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 3.5, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("Cube TSS")
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("TSS"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.65, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.65, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("Cube NO3")
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.675, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.675, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("NO"[3]*""^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+
+cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.05, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.05, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("TDN"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 2.65, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 2.65, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("Cube Temperature")
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 2.61, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.61, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("Temperature"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_no3_plot, cube_tss_plot, nrow = 2, ncol = 2)
+cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_tn_plot, cube_no3_plot, cube_tss_plot, nrow = 2, ncol = 3)
 
 cube_lasso_comb
 
-ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
+ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 8, dpi = 300,device = "png") 
 
 ## LASSO with all positive values, no positive values, and positive values turned to 0 included ####
 
