@@ -32,6 +32,7 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_cleaned.c
 # Keeps Devol min/max, 
 erwc_lit = read_xlsx(file.path("C:/Users/laan208/OneDrive - PNNL/Water_Column_Respiration_Spatial/Drafts/Maggi/Table_2_Calculations.xlsx"), skip = 1,sheet = 2) %>% 
   #filter(!grepl("Reisinger", Paper)) %>% 
+  filter(!grepl("Gagne", Paper)) %>%  #same as Ward 2018?
   select(c(Paper, River, `Basin/Station`, Corrected_Value)) %>% 
   rename(Water_Column_Respiration_Literature = Corrected_Value)
 
@@ -251,7 +252,7 @@ scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"
   geom_vline(erwc_lit, mapping = aes(xintercept=median(Water_Column_Respiration_Literature)), color="#F9847B", size=0.5)+ 
   geom_vline(erwc_sps, mapping = aes(xintercept=median(Mean_ERwc)), color="blue", size=0.5)+ 
   theme_classic()+
-  labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
+  labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), color = "Legend")+
   theme(
     legend.position = c(.175, .95),
     legend.justification = c( "top"),
@@ -286,6 +287,31 @@ median_lit = erwc_lit %>%
   summarise(median_lit = median(Water_Column_Respiration_Literature), 
             min_lit = max(Water_Column_Respiration_Literature), 
             max_lit = min(Water_Column_Respiration_Literature))
+
+# Boxplots of Medians -----------------------------------------------------
+
+box_df = erwc_sps %>% 
+  rename(Water_Column_Respiration_Literature = Mean_ERwc) %>% 
+  mutate(Paper = "Yakima River basin") %>% 
+  mutate(River = "N/A") %>% 
+  mutate(`Basin/Station` = "N/A") %>% 
+  select(c(Paper, River, `Basin/Station`, Water_Column_Respiration_Literature)) %>% 
+  rbind(erwc_lit)
+
+sps_median = median(erwc_sps$Mean_ERwc)
+lit_median = median(erwc_lit$Water_Column_Respiration_Literature)
+
+
+ggplot() +
+  geom_boxplot(box_df, mapping = aes(x = Paper, y = Water_Column_Respiration_Literature, fill = Paper)) +
+  geom_hline(aes(yintercept = sps_median, color = "Yakima River basin Median"), linetype = "dashed") + 
+  geom_hline(linetype = "dashed", aes(yintercept = lit_median, color = "All Literature Median")) +
+  theme_bw () +
+  scale_color_manual(values = c("black", "#FF61CC"), 
+                     labels = c("All Literature Median", "Yakima River basin Median"))+
+  theme (axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+
 
 ##############################################################
 # use lme4 to estimate the means among the sites

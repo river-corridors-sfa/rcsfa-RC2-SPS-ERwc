@@ -3,12 +3,10 @@
 
 # Libraries ---------------------------------------------------------------
 library(tidyverse)
-#library(dplyr)
 library(corrplot)
 library(ggpubr)
 library(ggpmisc)
 # library(factoextra)
-# library(stringr)
 library(glmnet)
 # library(magick)
 library(readxl)
@@ -342,8 +340,9 @@ spearman_df$Variable = row_names_spearman
 pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
   filter(value != 1) %>% 
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) #%>% # remove ERwc, don't want it to be removed %>% 
-  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
+  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
+  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% 
+  filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
 
 # pull out erwc correlations only
 erwc_melted <- pearson_melted %>% 
@@ -560,7 +559,7 @@ sse <- sum((yvar_predict - yvar)^2)
 
 rsq = 1 - sse/sst
 
-rsq #0.428
+rsq #0.39
 
 #check residuals
 
@@ -647,6 +646,7 @@ results_r2 = as.data.frame(r2_scores)
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
 
+## Drainage is unstable?
 
 ## With scale, cube, pearson > 0.7 removals
   # TN, Temp, TSS, Peaks
@@ -695,7 +695,7 @@ totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
   stat_cor(data = new_data, label.x = 10000, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = new_data, label.x = 10000, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Total Drainage")
+  xlab("Total Drainage")
 
 no3_plot = ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
   geom_point() + theme_bw() + 
@@ -716,7 +716,7 @@ strord_plot = ggplot(new_data, aes(y = ERwc, x = StrOrd)) +
   stat_cor(data = new_data, label.x = 5.50, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = new_data, label.x = 5.50, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Stream Order")
+  xlab("Stream Order")
 
 cl_plot = ggplot(new_data, aes(y = ERwc, x = Cl_mg_per_L)) +
   geom_point() + theme_bw() + 
@@ -799,11 +799,69 @@ cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
   xlab(expression("Temperature"^(1/3))) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
+cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 21, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 21, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("Total Drainage"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+
+cube_strord_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_StrOrd)) +
+  geom_point(shape = 1) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 1.83, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 1.83, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("Stream Order"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+
 cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_tn_plot, cube_no3_plot, cube_tss_plot, nrow = 2, ncol = 3)
 
 cube_lasso_comb
 
 ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 8, dpi = 300,device = "png") 
+
+ggplot(new_data, aes(x = StrOrd, y = TotDr)) +
+  geom_point()
+
+
+ggarrange(totdr_plot, cube_totdr_plot, strord_plot, cube_strord_plot, nrow = 2, ncol = 2)
+
+
+# ANOVA? ------------------------------------------------------------------
+library(car)
+
+leveneTest(ERwc ~ as.character(StrOrd), data = new_data)
+boxplot(ERwc ~ StrOrd, data =  new_data, main = "Variance Comparison")
+
+aov_data = new_data %>% 
+  mutate(StrOrd = as.factor(StrOrd)) %>% 
+  mutate(ER)
+  #mutate(Type = ifelse(StrOrd <= 3, "Small", ifelse(StrOrd <= 6, "Mid", "Large")))
+
+anova_strord = aov(ERwc ~ Type, data = aov_data)
+summary(anova_strord)
+TukeyHSD(anova_strord)
+
+
+anova_totdr = aov(ERwc ~ TotDr, data = aov_data)
+summary(anova_totdr)
+
+strord_lm = lm(ERwc ~ StrOrd, data = new_data)
+Anova(strord_lm, type = "III")
+
+totdr_lm = lm(ERwc ~  TotDr, data = new_data)
+Anova(totdr_lm, type = "III")
+
+library(MASS)
+
+model = polr(StrOrd ~ ERwc, data = aov_data, method = "logistic")
+summary(model)
+
+aov_data$StrOrd = as.ordered(aov_data$StrOrd)
+model = lm(ERwc ~ StrOrd, data = aov_data)
+summary(model)
+
 
 ## LASSO with all positive values, no positive values, and positive values turned to 0 included ####
 
