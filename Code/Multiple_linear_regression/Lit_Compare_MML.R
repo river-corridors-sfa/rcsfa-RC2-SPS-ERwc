@@ -215,8 +215,8 @@ all_density = ggplot() +
   geom_density(ERriv, mapping = aes(x=ERtot_Volumetric, y = ..density..*3,color='tot',fill="tot"), alpha = 0.5) +
   geom_density(erwc_lit, mapping = aes(x = Water_Column_Respiration_Literature, color = "lit",  fill = "lit"), alpha = 0.75, adjust = 4) +
   scale_y_continuous(
-    name = "ERlit + ERwc axis",
-    sec.axis = sec_axis(~./3, name = "ERtot axis")
+    name = expression("ER"[lit]*" and ER"[wc]*" Density"),
+    sec.axis = sec_axis(~./3, name = expression("ER"[tot]*" Density"))
   ) +
   scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
                       values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
@@ -235,6 +235,8 @@ all_density = ggplot() +
     legend.background = element_rect(fill = "white", color = "black", linewidth = 0.4),
     legend.key = element_rect(fill = "white", color = "black", linewidth = 0.4),
     legend.box.just = "right")
+
+all_density
 
 ggsave(file.path('./Plots',"all_density_plot_ML.png"), plot= all_density, width = 8, height = 3, dpi = 300,device = "png") 
 
@@ -296,20 +298,44 @@ box_df = erwc_sps %>%
   mutate(River = "N/A") %>% 
   mutate(`Basin/Station` = "N/A") %>% 
   select(c(Paper, River, `Basin/Station`, Water_Column_Respiration_Literature)) %>% 
-  rbind(erwc_lit)
+  rbind(erwc_lit) %>% 
+  mutate(group = ifelse(Paper == "Yakima River basin", "YRB", "Lit"))
 
 sps_median = median(erwc_sps$Mean_ERwc)
 lit_median = median(erwc_lit$Water_Column_Respiration_Literature)
 
 
-ggplot() +
-  geom_boxplot(box_df, mapping = aes(x = Paper, y = Water_Column_Respiration_Literature, fill = Paper)) +
-  geom_hline(aes(yintercept = sps_median, color = "Yakima River basin Median"), linetype = "dashed") + 
-  geom_hline(linetype = "dashed", aes(yintercept = lit_median, color = "All Literature Median")) +
+box_plot = ggplot() +
+  geom_boxplot(box_df, mapping = aes(x = Paper, y = Water_Column_Respiration_Literature, fill = group, color = group)) +
+  geom_hline(aes(yintercept = sps_median, color = "YRB"), size = 0.5, linetype = "dashed") + 
+  geom_hline(linetype = "dashed", size = 0.5, aes(yintercept = lit_median, color = "Lit")) +
   theme_bw () +
-  scale_color_manual(values = c("black", "#FF61CC"), 
-                     labels = c("All Literature Median", "Yakima River basin Median"))+
-  theme (axis.text.x = element_text(angle = 90, vjust = 0.5))
+  xlab("") +
+  scale_color_manual("", breaks = c("YRB", "Lit"), labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
+           values = c("blue", "#F9847B"))+
+  scale_fill_manual("", breaks = c("YRB", "Lit"), labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
+                    values = c("lightblue", "#fbb1ac"))+
+  ylab(expression("ER"[wc]*(" mg O"[2]*" L"^-1*" d"^-1)))+
+  #scale_color_manual(values = c("black", "#FF61CC"), 
+                    # labels = c("All Literature Median", "Yakima River basin Median"))+
+  theme (axis.text.x = element_text(angle = 90, vjust = 0.5), 
+         legend.position = c(.225, .25),
+         legend.justification = c( "top"),
+         legend.margin = margin(-12, 0, 3, 3),
+         legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
+         legend.background = element_rect(fill = "white", color = "black", linewidth = 0.4),
+         #legend.key = element_rect(fill = "white", color = "black", linewidth = 0.4),
+         legend.box.just = "right", 
+         plot.margin = unit (c(1, 2, 1, 1), "lines"))
+
+
+box_plot
+
+comb_box_dens = ggarrange(all_density, box_plot, nrow = 1, widths = c(2,  1), labels = c("(a)", "(b)"), label.x = c(0.925, 0.9), label.y = c(0.95, 0.95))
+
+comb_box_dens
+
+ggsave(file.path('./Plots',"density_box_plot.png"), plot=comb_box_dens, width = 12, height = 4.5, dpi = 300,device = "png") 
 
 
 
