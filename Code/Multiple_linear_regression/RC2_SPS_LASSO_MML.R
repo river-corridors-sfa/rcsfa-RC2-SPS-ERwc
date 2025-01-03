@@ -654,6 +654,8 @@ sd(results_r2$r2_scores)
 ## With scale, cube, pearson > 0.7 removals, TN removed
   # NPOC, Temp, NO3, TSS, Peaks
 
+## Scatter Plots ####
+
 npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
   geom_point() + theme_bw() + 
   stat_cor(data = new_data, label.x = 2.25, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
@@ -690,8 +692,11 @@ norm_plot = ggplot(new_data, aes(y = ERwc, x = NormTrans)) +
   stat_poly_line(data = new_data, se = FALSE)+ 
   ggtitle("Normalized Transformations")
 
+new_data = new_data %>% 
+  mutate(size = ifelse(StrOrd <= 3, "small", ifelse(StrOrd == 7, "large", "mid")))
+
 totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
-  geom_point() + theme_bw() + 
+  geom_point(aes(color = size)) + theme_bw() + 
   stat_cor(data = new_data, label.x = 10000, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = new_data, label.x = 10000, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = new_data, se = FALSE)+ 
@@ -799,8 +804,14 @@ cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
   xlab(expression("Temperature"^(1/3))) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
+cube_data = cube_data %>% 
+  mutate(size = ifelse(cube_StrOrd <= 1.442250
+, "small", ifelse(cube_StrOrd >= 1.9
+
+, "large", "mid")))
+
 cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
-  geom_point(shape = 1) + theme_bw() + 
+  geom_point(shape = 1, aes(color = size)) + theme_bw() + 
   stat_cor(data = cube_data, label.x = 21, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 21, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
@@ -831,15 +842,15 @@ ggarrange(totdr_plot, cube_totdr_plot, strord_plot, cube_strord_plot, nrow = 2, 
 # ANOVA? ------------------------------------------------------------------
 library(car)
 
-leveneTest(ERwc ~ as.character(StrOrd), data = new_data)
-boxplot(ERwc ~ StrOrd, data =  new_data, main = "Variance Comparison")
+leveneTest(ERwc ~ size, data = new_data)
+boxplot(ERwc ~ size, data =  new_data, main = "Variance Comparison")
 
 aov_data = new_data %>% 
   mutate(StrOrd = as.factor(StrOrd)) %>% 
-  mutate(ER)
-  #mutate(Type = ifelse(StrOrd <= 3, "Small", ifelse(StrOrd <= 6, "Mid", "Large")))
+  #mutate(ER)
+  mutate(Type = ifelse(StrOrd <= 3, "Small", ifelse(StrOrd <= 6, "Mid", "Large")))
 
-anova_strord = aov(ERwc ~ Type, data = aov_data)
+anova_strord = aov(cube_ERwc ~ size, data = cube_data)
 summary(anova_strord)
 TukeyHSD(anova_strord)
 
