@@ -838,6 +838,64 @@ ggplot(new_data, aes(x = StrOrd, y = TotDr)) +
 
 ggarrange(totdr_plot, cube_totdr_plot, strord_plot, cube_strord_plot, nrow = 2, ncol = 2)
 
+## Spatial Scatter Plots ####
+
+cube_doc_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Mean_NPOC)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("DOC")
+
+doc_drain_plot = ggplot(new_data, aes(y = TotDr, x = Mean_NPOC)) +
+  geom_point(aes(color = StrOrd)) + theme_bw() + 
+  stat_cor(data = new_data, label.x =2.75, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 2.75, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("DOC")
+
+cube_no3_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_NO3_mg_per_L)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("no3")
+
+no3_drain_plot = ggplot(new_data, aes(y = TotDr, x = NO3_mg_per_L)) +
+  geom_point(aes(color = StrOrd)) + theme_bw() + 
+  stat_cor(data = new_data, label.x =2.75, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 2.75, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("no3")
+
+cube_tn_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Mean_TN)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("tn")
+
+tn_drain_plot = ggplot(new_data, aes(y = TotDr, x = Mean_TN)) +
+  geom_point(aes(color = StrOrd)) + theme_bw() + 
+  stat_cor(data = new_data, label.x =1, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 1, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("tn")
+
+cube_temp_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Temp)) +
+  geom_point() + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 2, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE)+ 
+  ggtitle("Temp")
+
+temp_drain_plot = ggplot(new_data, aes(y = TotDr, x = Temp)) +
+  geom_point(aes(color = StrOrd)) + theme_bw() + 
+  stat_cor(data = new_data, label.x =10, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 10, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE)+ 
+  ggtitle("Temp")
+
 
 # ANOVA? ------------------------------------------------------------------
 library(car)
