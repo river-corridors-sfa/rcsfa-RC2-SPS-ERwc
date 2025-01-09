@@ -6,12 +6,8 @@ library(tidyverse)
 library(corrplot)
 library(ggpubr)
 library(ggpmisc)
-# library(factoextra)
 library(glmnet)
-# library(magick)
 library(readxl)
-#library(hal9001)
-#library(GGally)
 library(reshape2)
 
 
@@ -25,124 +21,31 @@ rm(list=ls());graphics.off()
 
 # Functions ---------------------------------------------------------------
 
+# Cube Root Transformation
 cube_root <- function(x) sign(x) * (abs(x))^(1/3)
 
-# Read in Data ------------------------------------------------------------
-
-mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>% 
-  select(-X)
-
-## are these the only variables I want?
-geo = read.csv("./Data/Multiple_linear_regression/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21 (1).csv") %>% 
-  select(c(site, streamorde, totdasqkm)) %>% 
-  dplyr::rename(Site_ID = site)
-
-data = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, Mean_00691_DIC_mg_per_L_as_C))
+# Pearson corr matrix
+pear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r = (cor(x, y, method = c("pearson")))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)} 
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + abs(r))/2)
   
-
-npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
-  rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
-  rename(TN = X00602_TN_mg_per_L_as_N) %>% 
-  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN))) %>% 
-  mutate(NPOC = as.numeric(NPOC)) %>% 
-  filter(!grepl("OUTLIER", Methods_Deviation))%>% 
-  separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
-  group_by(Parent) %>% 
-  mutate(Mean_NPOC = mean(NPOC)) %>% 
-  mutate(Mean_TN = mean(TN)) %>% 
-  ungroup() %>% 
-  distinct(Parent, .keep_all = T) %>% 
-  mutate(Sample_Name = str_replace(Parent, "_OCN", "_Water")) %>% 
-  select(c(Sample_Name, Mean_NPOC, Mean_TN))
-
-
-## Try with published NO3 data
-
-ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), 0.035, as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% 
-  mutate(Sample_Name = str_replace(Sample_Name, "ION", "Water")) %>% 
-  separate(Sample_Name, c("Sample_Name", "Rep"), sep = "-") %>% 
-  mutate(Cl_mg_per_L = as.numeric(X00940_Cl_mg_per_L)) %>% 
-  mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
-  select(c(Sample_Name, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
+  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
+  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
   
+  test <- cor.test(x,y)
+  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
+  #text(0.5, 0.5, txt, cex = cex * r)
+  text(.5, .8, Signif, cex=cex.cor, col=2)
+  
+}
 
-#Check LOD
-tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
-  filter(grepl("SPS", Sample_Name)) %>% 
-  select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
-  rename(TSS = X00530_TSS_mg_per_L) %>% 
-  mutate(TSS = if_else(grepl("Below", TSS), as.numeric(.743), as.numeric(TSS))) %>% 
-  separate(Sample_Name, c("Parent","Rep"), sep = "-") %>% 
-  mutate(Sample_Name = str_replace(Parent, "_TSS", "_Water")) %>% 
-  select(c(Sample_Name, TSS))
-
-# Use means in DP
-# dic = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_DIC.csv", skip = 2) %>% 
-#   filter(grepl("SPS", Sample_Name)) %>% 
-#   select(c(Sample_Name, X00691_DIC_mg_per_L_as_C)) %>% 
-#   rename(DIC = X00691_DIC_mg_per_L_as_C)
-
-
-sample = left_join(data, npoc_tn) %>% 
-  left_join(ions) %>% 
-  left_join(tss) %>% 
-  rename(Mean_DIC = Mean_00691_DIC_mg_per_L_as_C) %>% 
-  mutate(Sample_Name = str_replace(Sample_Name, "_Water", "")) %>% 
-  mutate(Mean_DIC = as.numeric(Mean_DIC))
-
-
-# add ultrameter water chemistry to this? add manta data to this? 
-
-mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metadata.csv") %>% 
-  select(c(Site_ID, Sample_Name))
-
-om <- read.csv(file.path("./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv")) 
-
-# Merge Data --------------------------------------------------------------
-
-all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>% 
-  left_join(geo, by = "Site_ID") %>% 
-  full_join(sample, by = "Sample_Name") %>% 
-  left_join(om, by = "Sample_Name") %>% 
-  select(-c(Sample_Name))
-
-## Shorten Names 
-
-new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations"#, TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean"#, TN = "TN_mg_per_L_as_N_mean"#, Br = #"Br_mg_per_L_mean", Ca = #"Ca_mg_per_L_mean", Cl = #"Cl_mg_per_L_mean", Fl = #"F_mg_per_L_mean", Mg = #"Mg_mg_per_L_mean", NO3 = #"NO3_mg_per_L_as_NO3_mean", K = #"K_mg_per_L_mean", Na = #"Na_mg_per_L_mean", SO4 = #"SO4_mg_per_L_as_SO4_mean"
-                )
-
-new_data <- all_data %>% 
-  rename(!!!new_names) %>% 
-  column_to_rownames("Site_ID") %>% 
-  filter(ERwc < 0.5) %>% 
-  drop_na()
-
-## Look at histograms
-
-long_data = new_data %>% 
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
-
-ggplot() + 
-  geom_histogram(long_data, mapping = aes(x = value)) + 
-  facet_wrap(~ variable, scales = "free") +
-  theme_minimal()
-
-##Spearman correlation before transformations
-
-spearman <- cor(new_data, method = "spearman", use = "complete.obs")
-
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
-
-corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Spearman Correlation")
-
-dev.off()
-
+#Spearman corr matric
 spear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
 {
   
@@ -166,11 +69,13 @@ spear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
   
 }
 
+# Scatter Plots 
 panel.smooth <- function(x, y) {
   points(x, y, pch = 19, col = rgb(0.1, 0.2, 0.5, alpha = 0.3))
   abline(lm(y ~ x), col = 'blue', lty = 2)
 }
 
+# Histograms
 panel.hist <- function(x, ...) {
   usr <- par("usr"); on.exit(par(usr))
   par(usr = c(usr[1:2], 0, 1))
@@ -182,6 +87,129 @@ panel.hist <- function(x, ...) {
   rect(breaks[-nB], 0, breaks[-1], y, col="grey", border="white", ...)
 }
 
+# Read in Data ------------------------------------------------------------
+
+mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>% 
+  select(-X)
+
+## Pull out stream order and total drainage area
+# are these the only variables I want?
+geo = read.csv("./Data/Multiple_linear_regression/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21 (1).csv") %>% 
+  select(c(site, streamorde, totdasqkm)) %>% 
+  dplyr::rename(Site_ID = site)
+
+# DIC Data
+data = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, Mean_00691_DIC_mg_per_L_as_C))
+  
+## DOC/TDN 
+npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
+  rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
+  rename(TN = X00602_TN_mg_per_L_as_N) %>% 
+  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN))) %>% #set samples below standard or LOD to half of LOD (0.035)
+  mutate(NPOC = as.numeric(NPOC)) %>% 
+  filter(!grepl("OUTLIER", Methods_Deviation))%>% 
+  separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
+  group_by(Parent) %>% 
+  mutate(Mean_NPOC = mean(NPOC)) %>% 
+  mutate(Mean_TN = mean(TN)) %>% 
+  ungroup() %>% 
+  distinct(Parent, .keep_all = T) %>% 
+  mutate(Sample_Name = str_replace(Parent, "_OCN", "_Water")) %>% 
+  select(c(Sample_Name, Mean_NPOC, Mean_TN))
+
+
+## NO3, SO4, Cl
+ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), as.numeric(0.035), as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% #set samples below standard or LOD to half of LOD (0.035)
+  mutate(Sample_Name = str_replace(Sample_Name, "ION", "Water")) %>% 
+  separate(Sample_Name, c("Sample_Name", "Rep"), sep = "-") %>% 
+  mutate(Cl_mg_per_L = as.numeric(X00940_Cl_mg_per_L)) %>% 
+  mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
+  select(c(Sample_Name, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
+  
+##TSS
+#Check LOD
+tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
+  filter(grepl("SPS", Sample_Name)) %>% 
+  select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
+  rename(TSS = X00530_TSS_mg_per_L) %>% 
+  mutate(TSS = if_else(grepl("Below", TSS), as.numeric(.743), as.numeric(TSS))) %>% 
+  separate(Sample_Name, c("Parent","Rep"), sep = "-") %>% 
+  mutate(Sample_Name = str_replace(Parent, "_TSS", "_Water")) %>% 
+  select(c(Sample_Name, TSS))
+
+## Organic Matter
+# check this is still good
+om <- read.csv(file.path("./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv")) 
+
+# Join all sample data
+sample = left_join(data, npoc_tn) %>% 
+  left_join(ions) %>% 
+  left_join(tss) %>% 
+  rename(Mean_DIC = Mean_00691_DIC_mg_per_L_as_C) %>% 
+  mutate(Sample_Name = str_replace(Sample_Name, "_Water", "")) %>% 
+  mutate(Mean_DIC = as.numeric(Mean_DIC)) %>% 
+  left_join(om) 
+
+# add ultrameter water chemistry to this? add manta data to this? 
+
+## Get Site ID and Sample Names to merge with geospatial data
+mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metadata.csv") %>% 
+  select(c(Site_ID, Sample_Name))
+
+
+# Merge Data --------------------------------------------------------------
+
+all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>% 
+  left_join(geo, by = "Site_ID") %>% 
+  full_join(sample, by = "Sample_Name") %>% 
+  select(-c(Sample_Name))
+
+
+## Clean Data ####
+
+## Shorten Names 
+new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations"#, TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean"#, TN = "TN_mg_per_L_as_N_mean"#, Br = #"Br_mg_per_L_mean", Ca = #"Ca_mg_per_L_mean", Cl = #"Cl_mg_per_L_mean", Fl = #"F_mg_per_L_mean", Mg = #"Mg_mg_per_L_mean", NO3 = #"NO3_mg_per_L_as_NO3_mean", K = #"K_mg_per_L_mean", Na = #"Na_mg_per_L_mean", SO4 = #"SO4_mg_per_L_as_SO4_mean"
+)
+
+## Remove values > 0.5, which are biologically unrealistic. In this dataset, these are likely from diffusion processes as [DO] starts ~5. ERwc < 0.5 is difficult to distinguish from 0, so values are kept
+
+new_data <- all_data %>% 
+  rename(!!!new_names) %>% 
+  column_to_rownames("Site_ID") %>%
+  filter(ERwc < 0.5) %>% # removes S38 and S83
+  drop_na() # S68 doesn't have geospatial data
+
+
+# Data Visualization ------------------------------------------------------
+
+## Look at histograms of data ####
+
+long_data = new_data %>% 
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
+
+ggplot() + 
+  geom_histogram(long_data, mapping = aes(x = value)) + 
+  facet_wrap(~ variable, scales = "free") +
+  theme_minimal()
+
+## Spearman correlation before transformations ####
+
+spearman <- cor(new_data, method = "spearman", use = "complete.obs")
+
+# colorful corrplot
+png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Spearman Correlation")
+
+dev.off()
+
+# corrplot w scatter plots and histograms
 png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
 pairs(new_data,
@@ -193,28 +221,7 @@ pairs(new_data,
 
 dev.off()
 
-##Pearson correlation before transformations
-# function for pearson corr matrix
-
-pear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r = (cor(x, y, method = c("pearson")))
-  txt <- format(c(r, 0.123456789), digits=digits)[1]
-  txt <- paste(prefix, txt, sep="")
-  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)} 
-  text(0.5, 0.5, txt, cex = cex.cor * (1 + abs(r))/2)
-  
-  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
-  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
-  
-  test <- cor.test(x,y)
-  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
-  #text(0.5, 0.5, txt, cex = cex * r)
-  text(.5, .8, Signif, cex=cex.cor, col=2)
-  
-}
+## Pearson correlation before transformations ####
 
 png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
@@ -227,8 +234,6 @@ pairs(new_data,
 
 dev.off()
 
-
-       
 # Transform data ----------------------------------------------------------
 
 #decide how you want to do this, eg, cube or log transform
@@ -251,13 +256,14 @@ ggplot() +
 log_data_plus_one = new_data %>% 
   mutate_if(is.numeric, ~ log10(. + 1))
 
+## Final Transformation  = Cube Root ####
 # cube root allows you to keep sign
-# remove NA values from analysis (might change later)
+
 cube_data = new_data %>% 
  mutate(across(where(is.numeric), cube_root)) %>% 
-  rename_with(where(is.numeric), .fn = ~ paste0("cube_", .x)) %>% 
-  drop_na()
+  rename_with(where(is.numeric), .fn = ~ paste0("cube_", .x)) 
 
+## Look at histograms of cube data
 long_cube_data = cube_data %>% 
   rownames_to_column("Sample_Name") %>% 
   pivot_longer(!Sample_Name, names_to = "variable", values_to = "value")
@@ -269,36 +275,19 @@ ggplot() +
 
 
 # Check Co-Linearity ------------------------------------------------------
-## Pearson without cube transformation
-scale_data = as.data.frame(scale(new_data)) %>% 
-  rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x)) %>% 
-  drop_na()
 
-mean(scale_data$scale_ERwc)
-sd(scale_data$scale_ERwc)
+## Pearson Correlation Matrix of Transformed Data ####
 
-scale_pearson <- cor(scale_data, method = "pearson")
-
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
-
-pairs(scale_data,
-      lower.panel = panel.smooth, 
-      upper.panel = pear.panel.cor, 
-      diag.panel = panel.hist,
-      labels = colnames(new_data),
-      cex.labels = 0.8) 
-
-dev.off()
-
-
-## Scale data before it goes into correlation matrix
+## Scale data before it goes into correlation matrix (doesn't change pearson values - scaling here for consistency before LASSO)
 
 scale_cube_data = as.data.frame(scale(cube_data))%>% 
   rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x))
 
-mean(scale_cube_data$scale_cube_ERwc)
+# check that mean is 0 and sd is 1
+round(mean(scale_cube_data$scale_cube_ERwc), 4)
 sd(scale_cube_data$scale_cube_ERwc)
 
+# Matrix of Pearson correlation values
 scale_cube_pearson <- cor(scale_cube_data, method = "pearson")
 
 png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
@@ -312,45 +301,25 @@ pairs(scale_cube_data,
 
 dev.off()
 
+# Make pearson correlation matrix into df
+pearson_df = as.data.frame(scale_cube_pearson)  %>% 
+  rownames_to_column("Variable")
 
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Cube_Pairs_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
-
-pairs(scale_cube_data,
-      lower.panel = panel.smooth, 
-      upper.panel = spear.panel.cor, 
-      diag.panel = panel.hist,
-      labels = colnames(scale_cube_data),
-      cex.labels = 0.5) 
-
-dev.off()
-
-## Keep NO3, remove TN ####
-pearson_df <- as.data.frame(scale_cube_pearson)
-
-row_names_pearson <- rownames(pearson_df)
-
-pearson_df$Variable <- row_names_pearson
-
-spearman_cor = cor(scale_cube_data, method = c("spearman"))
-spearman_df = as.data.frame(spearman_cor)
-row_names_spearman = rownames(spearman_df)
-spearman_df$Variable = row_names_spearman
-
-# Melt the dataframe for plotting
+## Melt the Pearson dataframe for removing variables ####
 pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
-  filter(value != 1) %>% 
+  filter(value != 1) %>% # remove self-correlations
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) %>% # remove ERwc, don't want it to be removed %>% 
-  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% 
+  filter(!grepl("ERwc", Variable)) %>% # remove ERwc from first column
+  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
   filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
 
-# pull out erwc correlations only
+# Pull out ERwc correlations only
 erwc_melted <- pearson_melted %>% 
   filter(grepl("ERwc", variable)) 
 
-choose_melted <- pearson_melted %>% 
+# Remove ERwc from this DF
+loop_melt <- pearson_melted %>% 
   filter(!grepl("ERwc", variable)) %>%
-  #distinct(value, .keep_all = TRUE) %>% 
   left_join(erwc_melted, by = "Variable") %>% 
   rename(Variable_1 = Variable) %>% 
   rename(Variable_2 = variable.x) %>% 
@@ -359,9 +328,7 @@ choose_melted <- pearson_melted %>%
   select(-c(variable.y)) %>% 
   left_join(erwc_melted, by = c("Variable_2" = "Variable")) %>% 
   rename(Variable_2_ERwc_Correlation = value) %>% 
-  select(-c(variable))
-
-loop_melt = choose_melted %>% 
+  select(-c(variable)) %>% 
   arrange(desc(Correlation))
 
 # Pearson correlation coefficient to remove above
@@ -423,8 +390,8 @@ all_variables = erwc_melted %>%
   select(c(Variable))
 
 # remove variables from all variables to get variables to keep for LASSO 
-kept_variables = erwc_melted[!(erwc_melted$Variable %in% removed_variables$Variable_to_Remove), ]
-
+kept_variables = erwc_melted %>% 
+  filter(!(Variable %in% removed_variables$Variable_to_Remove))
 
 col_to_keep = unique(kept_variables$Variable)
 col_to_keep = c(col_to_keep, "scale_cube_ERwc")
@@ -433,154 +400,20 @@ scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 
 
 # Start LASSO -------------------------------------------------------------
-  ## LASSO with Correlation Matrix Selected Variables 
-
-## Set response variable (Cube_Effect_Size) and scale
-yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
-
-## Set predictor variables and scale
-exclude_col = "scale_cube_ERwc"
-
-x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
-
-xvars <- data.matrix(x_cube_variables)
-
-lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                  standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-best_lambda <- lasso$lambda.min
-best_lambda
-
-plot(lasso)
-
-best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                           standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
-
-lasso_coefs = as.vector(coef(best_lasso_model)) 
-#coef(best_lasso_model)
- 
-# Chat GPT code - removes zero coefficients - does this seem right?
-
-beta = lasso_coefs[-1]#drop intercept
-
-selected_vars = which(beta != 0)#choose non-zero coefficients
-selected_names = colnames(xvars)[selected_vars]
-
-yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
-fitted_values = as.numeric(yvar_predict)
-
-partial_residuals <- lapply(selected_vars, function(j) {
-  
-  xj = xvars[, j] #predictors
-  beta_j = beta[j] # coefficients for predictors
-  
-  # Compute the predicted values excluding the j-th variable
-  residuals = yvar - fitted_values
-  partial_fit = residuals + xj * beta_j #partial residuals?
-  
-  # Prepare a data frame for plotting
-  data.frame(
-    Predictor = xj,
-    Residuals = partial_fit,
-    Variable = colnames(xvars)[j]
-  )
-})
-
-plot_data = do.call(rbind, partial_residuals)
-
-tn_resid = plot_data %>% 
-  filter(grepl("TN", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, TDN"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-npoc_resid = plot_data %>% 
-  filter(grepl("NPOC", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, NPOC"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-temp_resid = plot_data %>% 
-  filter(grepl("Temp", Variable)) %>% 
-ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, Temperature"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-no3_resid = plot_data %>% 
-  filter(grepl("NO3", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, NO"[3]*""^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-tss_resid  = plot_data %>% 
-  filter(grepl("TSS", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, TSS"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))
-
-#without TN
-combine_resid = ggarrange(npoc_resid, temp_resid, no3_resid, tss_resid, labels = c("a", "b", "c", "d"), label.x = 0.9, label.y = 0.95)
-
-# with TN
-
-combine_resid = ggarrange(tn_resid, temp_resid, tss_resid, labels = c("a", "b", "c"), label.x = 0.9, label.y = 0.95)
-
-ggsave(file.path('./Figures',"lasso_residuals_combined_TN.png"), plot=combine_resid, width = 8, height = 8, dpi = 300,device = "png")
-
-
-
-sst <- sum((yvar - mean(yvar))^2)
-sse <- sum((yvar_predict - yvar)^2)
-
-rsq = 1 - sse/sst
-
-rsq #0.39
-
-#check residuals
-
-res = yvar - yvar_predict
-
-plot(res ~ yvar_predict)
 
 ## Loop through LASSO to get average over a lot of seeds ####
 
 num_seeds = 100
 seeds = sample(1:500, num_seeds)
 
-## Set response variable (Cube_Effect_Size) and scale
+## Set response variable (ERwc)
 yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
 
+# list for storing LASSO iterations
 norm_coeffs = list()
 r2_scores = numeric(num_seeds)
 
-## Set predictor variables and scale
+## Set predictor variables
 exclude_col = "scale_cube_ERwc"
 
 x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
@@ -623,16 +456,16 @@ sst = sum((yvar - mean(yvar))^2)
 sse = sum((y_pred - yvar)^2)
 r2_scores[i] = 1 - (sse / sst)
 
-#aic_value = AIC(best_lasso_model$glmnet.fit)
-
 }
 
+# Bind all LASSO results from 100 iterations
 norm_coeffs_matrix = do.call(cbind, norm_coeffs)
 
 mean_coeffs = as.data.frame(norm_coeffs_matrix, row.names = rownames(norm_coeffs_matrix))
 
 colnames(mean_coeffs) = make.names(colnames(mean_coeffs), unique = T)
-  
+
+# Make DF of all LASSO results with mean and std. dev  
 mean_coeffs_df = mean_coeffs %>% 
   mutate(RowNames = rownames(mean_coeffs)) %>% 
   rowwise() %>% 
@@ -649,12 +482,146 @@ sd(results_r2$r2_scores)
 ## Drainage is unstable?
 
 ## With scale, cube, pearson > 0.7 removals
-  # TN, Temp, TSS, Peaks
+  # TN, Temp, TSS
 
 ## With scale, cube, pearson > 0.7 removals, TN removed
   # NPOC, Temp, NO3, TSS, Peaks
 
-## Scatter Plots ####
+## This LASSO is for generating Partial Residual Plots #### 
+
+## LASSO with Correlation Matrix Selected Variables 
+
+## Set response variable (Cube_Effect_Size) and scale
+yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
+mean(yvar)
+sd(yvar)
+
+## Set predictor variables and scale
+exclude_col = "scale_cube_ERwc"
+
+x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
+#mean(x_cube_variables$scale_cube_Temp)
+#sd(x_cube_variables$scale_cube_Temp)
+
+xvars <- data.matrix(x_cube_variables)
+
+lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
+                  standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
+                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
+)
+
+best_lambda <- lasso$lambda.min
+best_lambda
+
+plot(lasso)
+
+best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
+                           standardize = FALSE, standardize.response = FALSE, intercept = FALSE
+                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
+                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
+)
+
+lasso_coefs = as.vector(coef(best_lasso_model)) 
+#coef(best_lasso_model)
+
+
+#check residuals
+
+res = yvar - yvar_predict
+
+plot(res ~ yvar_predict)
+
+
+# Chat GPT code - removes zero coefficients - does this seem right?
+
+beta = lasso_coefs[-1]#drop intercept
+
+selected_vars = which(beta != 0)#choose non-zero coefficients
+selected_names = colnames(xvars)[selected_vars]
+
+yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
+fitted_values = as.numeric(yvar_predict)
+
+partial_residuals <- lapply(selected_vars, function(j) {
+  
+  xj = xvars[, j] #predictors
+  beta_j = beta[j] # coefficients for predictors
+  
+  # Compute the predicted values excluding the j-th variable
+  residuals = yvar - fitted_values
+  partial_fit = residuals + xj * beta_j #partial residuals?
+  
+  # Prepare a data frame for plotting
+  data.frame(
+    Predictor = xj,
+    Residuals = partial_fit,
+    Variable = colnames(xvars)[j]
+  )
+})
+
+plot_data = do.call(rbind, partial_residuals)
+
+## Partial Residual Plots ####
+
+tn_resid = plot_data %>% 
+  filter(grepl("TN", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, TDN"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+npoc_resid = plot_data %>% 
+  filter(grepl("NPOC", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, NPOC"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+temp_resid = plot_data %>% 
+  filter(grepl("Temp", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, Temperature"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+no3_resid = plot_data %>% 
+  filter(grepl("NO3", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, NO"[3]*""^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
+
+tss_resid  = plot_data %>% 
+  filter(grepl("TSS", Variable)) %>% 
+  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
+  theme_bw() +
+  xlab(expression("Scaled, TSS"^(1/3))) +
+  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))
+
+#without TN
+combine_resid = ggarrange(npoc_resid, temp_resid, no3_resid, tss_resid, labels = c("a", "b", "c", "d"), label.x = 0.9, label.y = 0.95)
+
+# with TN
+
+combine_resid = ggarrange(tn_resid, temp_resid, tss_resid, labels = c("a", "b", "c"), label.x = 0.9, label.y = 0.95)
+
+ggsave(file.path('./Figures',"lasso_residuals_combined_TN.png"), plot=combine_resid, width = 8, height = 8, dpi = 300,device = "png")
+
+
+# Scatter Plots of Data ---------------------------------------------------
+
+## Untransformed Scatter Plots ####
 
 npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
   geom_point() + theme_bw() + 
@@ -665,11 +632,10 @@ npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
 
 tss_plot = ggplot(new_data, aes(y = ERwc, x = TSS)) +
   geom_point() + theme_bw() + 
-  #geom_smooth()
   stat_cor(data = new_data, label.x = 45, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 45, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_cor(data = new_data, label.x = 45, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+ #not sig.
   stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("TSS")
+  ggtitle("TSS") 
 
 tn_plot = ggplot(new_data, aes(y = ERwc, x = Mean_TN)) +
   geom_point() + theme_bw() + 
@@ -693,7 +659,7 @@ norm_plot = ggplot(new_data, aes(y = ERwc, x = NormTrans)) +
   ggtitle("Normalized Transformations")
 
 new_data = new_data %>% 
-  mutate(size = ifelse(StrOrd <= 3, "small", ifelse(StrOrd == 7, "large", "mid")))
+  mutate(size = ifelse(StrOrd <= 3, "small", ifelse(StrOrd == 7, "large", "mid"))) # try assigning stream order "sizes"
 
 totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
   geom_point(aes(color = size)) + theme_bw() + 
@@ -730,7 +696,7 @@ cl_plot = ggplot(new_data, aes(y = ERwc, x = Cl_mg_per_L)) +
   stat_poly_line(data = new_data, se = FALSE)+ 
   ggtitle("Cl")
 
-dic_plot = ggplot(new_data, aes(y = ERwc, x = mean_DIC)) +
+dic_plot = ggplot(new_data, aes(y = ERwc, x = Mean_DIC)) +
   geom_point() + theme_bw() + 
   stat_cor(data = new_data, label.x =27.5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = new_data, label.x = 27.5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
@@ -761,7 +727,7 @@ lasso_comb
 
 ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
 
-## Cube root scatter plots
+## Cube root scatter plots ####
 
 cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
   geom_point(shape = 1) + theme_bw() + 
@@ -930,208 +896,3 @@ summary(model)
 aov_data$StrOrd = as.ordered(aov_data$StrOrd)
 model = lm(ERwc ~ StrOrd, data = aov_data)
 summary(model)
-
-
-## LASSO with all positive values, no positive values, and positive values turned to 0 included ####
-
-pos_data = all_data %>% 
-  rename(!!!new_names) %>% 
-  column_to_rownames("Site_ID") %>% 
-  filter(ERwc < 0) %>% # this removes all positive values
-  #mutate(ERwc = ifelse(ERwc > 0, 0, ERwc)) %>% # turn positive values to 0
-  drop_na()
-
-# cube root allows you to keep sign
-# remove NA values from analysis (might change later)
-cube_pos_data = pos_data %>% 
-  mutate(across(where(is.numeric), cube_root)) %>% 
-  rename_with(where(is.numeric), .fn = ~ paste0("cube_", .x)) %>% 
-  drop_na()
-
-scale_cube_pos_data = as.data.frame(scale(cube_pos_data))%>% 
-  rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x))
-
-mean(scale_cube_pos_data$scale_cube_ERwc)
-sd(scale_cube_pos_data$scale_cube_ERwc)
-
-scale_cube_pos_pearson <- cor(scale_cube_pos_data, method = "pearson")
-
-## Keep NO3, remove TN ####
-pearson_pos_df <- as.data.frame(scale_cube_pos_pearson)
-
-row_names_pearson_pos <- rownames(pearson_pos_df)
-
-pearson_pos_df$Variable <- row_names_pearson_pos
-
-# Melt the dataframe for plotting
-pearson_melted_pos <- reshape2::melt(pearson_pos_df, id.vars = "Variable") %>% 
-  filter(value != 1) %>% 
-  mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) #%>% # remove ERwc, don't want it to be removed %>% 
-  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable))
-
-# pull out erwc correlations only
-erwc_melted_pos <- pearson_melted_pos %>% 
-  filter(grepl("ERwc", variable)) 
-
-choose_melted_pos <- pearson_melted_pos %>% 
-  filter(!grepl("ERwc", variable)) %>%
-  #distinct(value, .keep_all = TRUE) %>% 
-  left_join(erwc_melted_pos, by = "Variable") %>% 
-  rename(Variable_1 = Variable) %>% 
-  rename(Variable_2 = variable.x) %>% 
-  rename(Correlation = value.x) %>% 
-  rename(Variable_1_ERwc_Correlation = value.y) %>% 
-  select(-c(variable.y)) %>% 
-  left_join(erwc_melted_pos, by = c("Variable_2" = "Variable")) %>% 
-  rename(Variable_2_ERwc_Correlation = value) %>% 
-  select(-c(variable))
-
-loop_melt_pos = choose_melted_pos %>% 
-  arrange(desc(Correlation))
-
-# Pearson correlation coefficient to remove above
-correlation = 0.7
-
-## Start loop to remove highly correlated (> 0.7)
-erwc_filter_pos = function(loop_melt_pos) {
-  
-  rows_to_keep = rep(TRUE, nrow(loop_melt_pos))
-  
-  for (i in seq_len(nrow(loop_melt_pos))) {
-    
-    if (!rows_to_keep[i]) next
-    
-    row = loop_melt[i, ]
-    
-    if (row$Correlation < correlation) next
-    
-    if(row$Variable_1_ERwc_Correlation >= row$Variable_2_ERwc_Correlation) {
-      
-      var_to_keep = row$Variable_1
-      var_to_remove = row$Variable_2
-      
-    } else {
-      
-      var_to_keep = row$Variable_2
-      var_to_remove = row$Variable_1
-      
-    }
-    
-    loop_melt_pos$Variable_to_Keep[i] = var_to_keep
-    loop_melt_pos$Variable_to_Remove[i] = var_to_remove
-    
-    for (j in seq(i + 1, nrow(loop_melt_pos))) {
-      
-      if(loop_melt_pos$Variable_1[j] == var_to_remove || loop_melt_pos$Variable_2[j] == var_to_remove) {
-        
-        rows_to_keep[j] = FALSE
-        
-      }
-      
-    }
-    
-    
-  }
-  
-  return(loop_melt_pos[rows_to_keep, ])
-  
-}
-
-filtered_data_pos = erwc_filter(loop_melt_pos) 
-
-# pull out variables to remove
-removed_variables_pos = filtered_data_pos %>% 
-  distinct(Variable_to_Remove)
-
-# pull out all variables 
-all_variables_pos = erwc_melted_pos %>% 
-  select(c(Variable))
-
-# remove variables from all variables to get variables to keep for LASSO 
-kept_variables_pos = erwc_melted_pos[!(erwc_melted_pos$Variable %in% removed_variables_pos$Variable_to_Remove), ]
-
-
-col_to_keep_pos = unique(kept_variables_pos$Variable)
-col_to_keep_pos = c(col_to_keep_pos, "scale_cube_ERwc")
-
-scale_cube_variables_pos = scale_cube_pos_data[, col_to_keep_pos, drop = FALSE]
-
-## Loop through LASSO to get average over a lot of seeds ####
-
-num_seeds = 100
-seeds = sample(1:500, num_seeds)
-
-## Set response variable (Cube_Effect_Size) and scale
-yvar <- data.matrix(scale_cube_variables_pos$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
-
-norm_coeffs = list()
-r2_scores = numeric(num_seeds)
-
-## Set predictor variables and scale
-exclude_col = "scale_cube_ERwc"
-
-x_cube_variables = as.data.frame(scale_cube_variables_pos[, !(names(scale_cube_variables_pos) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
-
-xvars <- data.matrix(x_cube_variables)
-
-
-for (i in 1:num_seeds) {
-  
-  seed = seeds[i]
-  set.seed(seed)
-  
-  lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                    standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                    #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                    # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-  )
-  
-  best_lambda <- lasso$lambda.min
-  #best_lambda
-  #plot(lasso)
-  
-  best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                             standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                             #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                             #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-  )
-  
-  lasso_coefs = as.matrix(coef(best_lasso_model, s = best_lambda))
-  
-  norm_coeffs_scale = lasso_coefs/max(abs(lasso_coefs[-1]))
-  
-  norm_coeffs[[as.character(seed)]] = norm_coeffs_scale[-1, , drop = FALSE]
-  
-  y_pred = predict(best_lasso_model, newx = xvars, s = best_lambda)
-  
-  sst = sum((yvar - mean(yvar))^2)
-  sse = sum((y_pred - yvar)^2)
-  r2_scores[i] = 1 - (sse / sst)
-  
-  #aic_value = AIC(best_lasso_model$glmnet.fit)
-  
-}
-
-norm_coeffs_matrix = do.call(cbind, norm_coeffs)
-
-mean_coeffs = as.data.frame(norm_coeffs_matrix, row.names = rownames(norm_coeffs_matrix))
-
-colnames(mean_coeffs) = make.names(colnames(mean_coeffs), unique = T)
-
-mean_coeffs_df = mean_coeffs %>% 
-  mutate(RowNames = rownames(mean_coeffs)) %>% 
-  rowwise() %>% 
-  mutate(mean = mean(c_across(contains("s1"))), 
-         sd = sd(c_across(contains("s1")))) %>% 
-  relocate(mean, .before = s1) %>% 
-  relocate(sd, .before = s1) %>% 
-  relocate(RowNames, .before = mean)
-
-results_r2 = as.data.frame(r2_scores) 
-mean(results_r2$r2_scores)
-sd(results_r2$r2_scores)
