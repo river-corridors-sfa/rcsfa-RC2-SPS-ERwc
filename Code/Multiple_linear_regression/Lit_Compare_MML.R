@@ -215,7 +215,7 @@ all_density = ggplot() +
   geom_density(ERriv, mapping = aes(x=ERtot_Volumetric, y = ..density..*3,color='tot',fill="tot"), alpha = 0.5) +
   geom_density(erwc_lit, mapping = aes(x = Water_Column_Respiration_Literature, color = "lit",  fill = "lit"), alpha = 0.75, adjust = 4) +
   scale_y_continuous(
-    name = expression("ER"[lit]*" and ER"[wc]*" Density"),
+    name = expression("ER"[wc]*" (Lit) and ER"[wc]*" (this study) Density"),
     sec.axis = sec_axis(~./3, name = expression("ER"[tot]*" Density"))
   ) +
   scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
@@ -234,7 +234,8 @@ all_density = ggplot() +
     legend.text = element_text(size=8, hjust = 0, margin = margin(l = 2, r = 5, unit = "pt")),
     legend.background = element_rect(fill = "white", color = "black", linewidth = 0.4),
     legend.key = element_rect(fill = "white", color = "black", linewidth = 0.4),
-    legend.box.just = "right")
+    legend.box.just = "right", 
+    axis.title.y = element_text(size = 10))
 
 all_density
 
@@ -315,7 +316,7 @@ box_plot = ggplot() +
            values = c("blue", "#F9847B"))+
   scale_fill_manual("", breaks = c("YRB", "Lit"), labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
                     values = c("lightblue", "#fbb1ac"))+
-  ylab(expression("ER"[wc]*(" mg O"[2]*" L"^-1*" d"^-1)))+
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))+
   #scale_color_manual(values = c("black", "#FF61CC"), 
                     # labels = c("All Literature Median", "Yakima River basin Median"))+
   theme (axis.text.x = element_text(angle = 90, vjust = 0.5), 
@@ -339,7 +340,7 @@ ggsave(file.path('./Plots',"density_box_plot.png"), plot=comb_box_dens, width = 
 
 
 
-##############################################################
+in ##############################################################
 # use lme4 to estimate the means among the sites
 rdata <- read.csv(file.path('./Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'), skip=52)
 
