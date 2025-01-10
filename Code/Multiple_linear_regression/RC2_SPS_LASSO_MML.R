@@ -310,7 +310,7 @@ pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>%
   filter(value != 1) %>% # remove self-correlations
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
   filter(!grepl("ERwc", Variable)) %>% # remove ERwc from first column
-  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
+  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
   filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
 
 # Pull out ERwc correlations only
@@ -861,6 +861,13 @@ temp_drain_plot = ggplot(new_data, aes(y = TotDr, x = Temp)) +
   stat_cor(data = new_data, label.x = 10, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = new_data, se = FALSE)+ 
   ggtitle("Temp")
+
+## LULC? ####
+
+lulc = read.csv("./Data/Map_Layers/ERwc_Coords_LULC.csv")
+  
+ggplot(lulc, aes(x  = New_LULC_Class, y = Mean_ERwc)) +
+  geom_boxplot()
 
 
 # ANOVA? ------------------------------------------------------------------
