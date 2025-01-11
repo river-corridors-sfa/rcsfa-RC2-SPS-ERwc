@@ -9,6 +9,7 @@ library(ggpmisc)
 library(glmnet)
 library(readxl)
 library(reshape2)
+library(viridis)
 
 
 # Working Directory -------------------------------------------------------
@@ -411,6 +412,7 @@ yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
 
 # list for storing LASSO iterations
 norm_coeffs = list()
+lasso_coefs_pull = list()
 r2_scores = numeric(num_seeds)
 
 ## Set predictor variables
@@ -446,6 +448,8 @@ best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family 
 
 lasso_coefs = as.matrix(coef(best_lasso_model, s = best_lambda))
 
+lasso_coefs_pull[[as.character(seed)]] = lasso_coefs[-1, , drop = FALSE]
+
 norm_coeffs_scale = lasso_coefs/max(abs(lasso_coefs[-1]))
 
 norm_coeffs[[as.character(seed)]] = norm_coeffs_scale[-1, , drop = FALSE]
@@ -457,6 +461,21 @@ sse = sum((y_pred - yvar)^2)
 r2_scores[i] = 1 - (sse / sst)
 
 }
+
+lasso_coef_mat = as.data.frame(do.call(cbind, lasso_coefs_pull)) 
+
+colnames(lasso_coef_mat) = make.names(colnames(lasso_coef_mat), unique = T)
+
+# Make DF of all LASSO results with mean and std. dev  
+lasso_coef_means = lasso_coef_mat %>% 
+  mutate(RowNames = rownames(lasso_coef_mat)) %>% 
+  rowwise() %>% 
+  mutate(mean = mean(c_across(contains("s1"))), 
+         sd = sd(c_across(contains("s1")))) %>% 
+  relocate(mean, .before = s1) %>% 
+  relocate(sd, .before = s1) %>% 
+  relocate(RowNames, .before = mean)
+  
 
 # Bind all LASSO results from 100 iterations
 norm_coeffs_matrix = do.call(cbind, norm_coeffs)
@@ -528,9 +547,9 @@ lasso_coefs = as.vector(coef(best_lasso_model))
 
 #check residuals
 
-res = yvar - yvar_predict
-
-plot(res ~ yvar_predict)
+# res = yvar - yvar_predict
+# 
+# plot(res ~ yvar_predict)
 
 
 # Chat GPT code - removes zero coefficients - does this seem right?
@@ -771,18 +790,28 @@ cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_data = cube_data %>% 
-  mutate(size = ifelse(cube_StrOrd <= 1.442250
-, "small", ifelse(cube_StrOrd >= 1.9
-
-, "large", "mid")))
+  mutate(StrOrd =cube_StrOrd^3) %>% 
+  mutate(StrOrd = as.character(StrOrd))
 
 cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
-  geom_point(shape = 1, aes(color = size)) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 21, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 21, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("Total Drainage"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  geom_point(aes(color = StrOrd), size =4) + theme_bw() +
+  scale_color_viridis(name = "Stream Order", discrete = T)+
+  stat_cor(data = cube_data, label.x = 21, label.y = 0.75, size = 5, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 21, label.y = 0.55, size = 5, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
+  xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 18), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))) 
+
+cube_totdr_plot
+
+ggsave(file.path('./Figures',"cube_totdr_scatter_plot.png"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "png") 
+
 
 cube_strord_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_StrOrd)) +
   geom_point(shape = 1) + theme_bw() + 
@@ -797,109 +826,3 @@ cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_tn_plot, cube_n
 cube_lasso_comb
 
 ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 8, dpi = 300,device = "png") 
-
-ggplot(new_data, aes(x = StrOrd, y = TotDr)) +
-  geom_point()
-
-
-ggarrange(totdr_plot, cube_totdr_plot, strord_plot, cube_strord_plot, nrow = 2, ncol = 2)
-
-## Spatial Scatter Plots ####
-
-cube_doc_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Mean_NPOC)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("DOC")
-
-doc_drain_plot = ggplot(new_data, aes(y = TotDr, x = Mean_NPOC)) +
-  geom_point(aes(color = StrOrd)) + theme_bw() + 
-  stat_cor(data = new_data, label.x =2.75, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 2.75, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("DOC")
-
-cube_no3_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_NO3_mg_per_L)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("no3")
-
-no3_drain_plot = ggplot(new_data, aes(y = TotDr, x = NO3_mg_per_L)) +
-  geom_point(aes(color = StrOrd)) + theme_bw() + 
-  stat_cor(data = new_data, label.x =2.75, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 2.75, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("no3")
-
-cube_tn_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Mean_TN)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x =0.9, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.9, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("tn")
-
-tn_drain_plot = ggplot(new_data, aes(y = TotDr, x = Mean_TN)) +
-  geom_point(aes(color = StrOrd)) + theme_bw() + 
-  stat_cor(data = new_data, label.x =1, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 1, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("tn")
-
-cube_temp_drain_plot = ggplot(cube_data, aes(y = cube_TotDr, x = cube_Temp)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 2, label.y = 22.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 2, label.y = 21.5, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE)+ 
-  ggtitle("Temp")
-
-temp_drain_plot = ggplot(new_data, aes(y = TotDr, x = Temp)) +
-  geom_point(aes(color = StrOrd)) + theme_bw() + 
-  stat_cor(data = new_data, label.x =10, label.y = 11000, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 10, label.y = 10500, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Temp")
-
-## LULC? ####
-
-lulc = read.csv("./Data/Map_Layers/ERwc_Coords_LULC.csv")
-  
-ggplot(lulc, aes(x  = New_LULC_Class, y = Mean_ERwc)) +
-  geom_boxplot()
-
-
-# ANOVA? ------------------------------------------------------------------
-library(car)
-
-leveneTest(ERwc ~ size, data = new_data)
-boxplot(ERwc ~ size, data =  new_data, main = "Variance Comparison")
-
-aov_data = new_data %>% 
-  mutate(StrOrd = as.factor(StrOrd)) %>% 
-  #mutate(ER)
-  mutate(Type = ifelse(StrOrd <= 3, "Small", ifelse(StrOrd <= 6, "Mid", "Large")))
-
-anova_strord = aov(cube_ERwc ~ size, data = cube_data)
-summary(anova_strord)
-TukeyHSD(anova_strord)
-
-
-anova_totdr = aov(ERwc ~ TotDr, data = aov_data)
-summary(anova_totdr)
-
-strord_lm = lm(ERwc ~ StrOrd, data = new_data)
-Anova(strord_lm, type = "III")
-
-totdr_lm = lm(ERwc ~  TotDr, data = new_data)
-Anova(totdr_lm, type = "III")
-
-library(MASS)
-
-model = polr(StrOrd ~ ERwc, data = aov_data, method = "logistic")
-summary(model)
-
-aov_data$StrOrd = as.ordered(aov_data$StrOrd)
-model = lm(ERwc ~ StrOrd, data = aov_data)
-summary(model)
