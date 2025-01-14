@@ -32,7 +32,9 @@ DO_summary<-read_csv(DO_Path, comment = '#', na = c('N/A', -9999))
 DO_slope<-DO_summary %>%
   select(Site_ID,Dissolved_Oxygen_1_Slope,
                               Dissolved_Oxygen_2_Slope,Dissolved_Oxygen_3_Slope,
-                              Dissolved_Oxygen_1_NRMSE,Dissolved_Oxygen_2_NRMSE,Dissolved_Oxygen_3_NRMSE, Dissolved_Oxygen_1_RMSE, Dissolved_Oxygen_2_RMSE, Dissolved_Oxygen_3_RMSE, Dissolved_Oxygen_1_Rsquared, Dissolved_Oxygen_2_Rsquared, Dissolved_Oxygen_3_Rsquared, Temperature_1_Mean, Temperature_2_Mean, Temperature_3_Mean)
+                              Dissolved_Oxygen_1_NRMSE,Dissolved_Oxygen_2_NRMSE,Dissolved_Oxygen_3_NRMSE, Dissolved_Oxygen_1_RMSE, Dissolved_Oxygen_2_RMSE, Dissolved_Oxygen_3_RMSE, Dissolved_Oxygen_1_Rsquared, Dissolved_Oxygen_2_Rsquared, Dissolved_Oxygen_3_Rsquared, Temperature_1_Mean, Temperature_2_Mean, Temperature_3_Mean) %>% 
+  rowwise() %>% 
+  mutate(SD_ERwc = sd(c(Dissolved_Oxygen_1_Slope, Dissolved_Oxygen_2_Slope, Dissolved_Oxygen_3_Slope), na.rm = TRUE))
 
 DO_pos = DO_slope %>% 
   select(c(Site_ID, Dissolved_Oxygen_1_Slope, Dissolved_Oxygen_2_Slope, Dissolved_Oxygen_3_Slope)) %>% 
