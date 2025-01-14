@@ -140,6 +140,7 @@ tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_Sampl
   select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
   rename(TSS = X00530_TSS_mg_per_L) %>% 
   mutate(TSS = if_else(grepl("Below", TSS), as.numeric(.743), as.numeric(TSS))) %>% 
+  mutate(TSS = if_else(TSS <= 0.24, 0.12, TSS)) %>% 
   separate(Sample_Name, c("Parent","Rep"), sep = "-") %>% 
   mutate(Sample_Name = str_replace(Parent, "_TSS", "_Water")) %>% 
   select(c(Sample_Name, TSS))
@@ -311,7 +312,7 @@ pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>%
   filter(value != 1) %>% # remove self-correlations
   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
   filter(!grepl("ERwc", Variable)) %>% # remove ERwc from first column
-  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
+  #filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
   filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
 
 # Pull out ERwc correlations only
