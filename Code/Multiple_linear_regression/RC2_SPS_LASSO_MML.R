@@ -754,7 +754,7 @@ cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
   stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 0.815, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
-  xlab(expression("DOC (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  xlab(expression("DOC (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
@@ -763,7 +763,7 @@ cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
   stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 0.525, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TSS (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  xlab(expression("TSS (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
@@ -772,7 +772,7 @@ cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
   stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 0.30, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("NO"[3]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  xlab(expression("NO"[3]*" (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
@@ -781,7 +781,7 @@ cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
   stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
   stat_cor(data = cube_data, label.x = 0.35, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TDN (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  xlab(expression("TDN (mg L"^-1*")"^(1/3))) +
   ylab("")
  # ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
