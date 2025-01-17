@@ -226,7 +226,7 @@ all_density = ggplot() +
   geom_vline(erwc_lit, mapping = aes(xintercept = median(Water_Column_Respiration_Literature)), color = "#F9847B", size = 0.8) +
   geom_vline(erwc_sps, mapping = aes(xintercept = median(Mean_ERwc)), color = "blue", size = 0.8) +
   theme_classic()+
-  labs(x = expression("ER"[tot]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
+  labs(x = expression("ER"[tot]*" and ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
   theme(
     legend.position = c(.175, .95),
     legend.justification = c( "top"),
