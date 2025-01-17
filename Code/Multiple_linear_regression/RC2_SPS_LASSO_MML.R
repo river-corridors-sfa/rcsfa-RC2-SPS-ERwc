@@ -750,45 +750,49 @@ ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_com
 ## Cube root scatter plots ####
 
 cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
-  geom_point(shape = 1) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.325, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.325, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
-  xlab(expression("NPOC"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  xlab(expression("DOC (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
-  geom_point(shape = 1) + theme_bw() + 
-  #geom_smooth()
-  stat_cor(data = cube_data, label.x = 3.5, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 3.5, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TSS"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  xlab(expression("TSS (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
-  geom_point(shape = 1) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.675, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.675, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("NO"[3]*""^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  xlab(expression("NO"[3]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
-  geom_point(shape = 1) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.05, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.05, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TDN"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  xlab(expression("TDN (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  ylab("")
+ # ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
-  geom_point(shape = 1) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 2.61, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 2.61, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("Temperature"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
+  xlab(expression("Temperature (°C)"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_data = cube_data %>% 
   mutate(StrOrd =cube_StrOrd^3) %>% 
@@ -822,8 +826,11 @@ cube_strord_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_StrOrd)) +
   xlab(expression("Stream Order"^(1/3))) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-cube_lasso_comb = ggarrange(cube_npoc_plot, cube_temp_plot, cube_tn_plot, cube_no3_plot, cube_tss_plot, nrow = 2, ncol = 3)
+cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_tss_plot, cube_no3_plot, nrow = 2, ncol = 3, labels = c("(a)", "(b)", "(c)", "(d)", "(e)"), label.x = c(0.85, 0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95, 0.95))
 
 cube_lasso_comb
 
-ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_comb, width = 12, height = 8, dpi = 300,device = "png") 
+# Annotate Figure by adding common "Effect Size" y-axis
+cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)), rot = 90, size = 15))
+
+ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
