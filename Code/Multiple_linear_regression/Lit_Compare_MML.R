@@ -31,8 +31,6 @@ ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_cleaned.c
 
 # Keeps Devol min/max, 
 erwc_lit = read_xlsx(file.path("C:/Users/laan208/OneDrive - PNNL/Water_Column_Respiration_Spatial/Drafts/Maggi/Table_2_Calculations.xlsx"), skip = 1,sheet = 2) %>% 
-  #filter(!grepl("Reisinger", Paper)) %>% 
-  filter(!grepl("Gagne", Paper)) %>%  #same as Ward 2018?
   select(c(Paper, River, `Basin/Station`, Corrected_Value)) %>% 
   rename(Water_Column_Respiration_Literature = Corrected_Value)
 

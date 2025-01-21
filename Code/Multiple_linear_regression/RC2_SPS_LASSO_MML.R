@@ -294,11 +294,25 @@ scale_cube_pearson <- cor(scale_cube_data, method = "pearson")
 
 png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
-pairs(scale_cube_data,
+pear_data = scale_cube_data %>% 
+  rename_all(~ sub("scale_cube_", "", .)) %>% 
+  rename("Temperature" = "Temp") %>% 
+  rename("Stream Order" = "StrOrd") %>% 
+  rename("Total Drainage" = "TotDr") %>% 
+  rename("DIC" = "Mean_DIC") %>% 
+  rename("DOC" = "Mean_NPOC") %>% 
+  rename("TDN" = "Mean_TN") %>% 
+  rename("NO3" = "NO3_mg_per_L") %>% 
+  rename("Cl" = "Cl_mg_per_L") %>% 
+  rename("SO4" = "SO4_mg_per_L") %>% 
+  rename("Norm. Transformations" = "NormTrans")
+  
+
+pairs(pear_data,
       lower.panel = panel.smooth, 
       upper.panel = pear.panel.cor, 
       diag.panel = panel.hist,
-      labels = colnames(scale_cube_data),
+      labels = colnames(pear_data),
       cex.labels = 0.5) 
 
 dev.off()
