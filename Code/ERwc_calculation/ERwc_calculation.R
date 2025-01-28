@@ -1,7 +1,12 @@
-# RC2 spatial study 2021
-# calculate ERwc
-# M Laan July 19 2024
-rm(list=ls(all=TRUE))
+# Calculates Mean ERwc per site
+
+# Makes Figure S3
+
+# Maggi Laan
+#maggi.laan@gmail.com
+
+
+# Libraries ---------------------------------------------------------------
 
 library(readxl)
 library(tidyverse)
@@ -9,24 +14,20 @@ library(reshape)
 library(ggpmisc)
 library(ggpubr)
 
-#sdir<- 'C:/Brieanne/GitHub/SSS_metabolism/'
+rm(list=ls(all=TRUE))
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
 setwd("../..")
 getwd()
 
-DO_Path = './Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'
-
-Out_Path = './Data/Multiple_linear_regression/'
-
-
 ##########################################################################
 ## DO slope
 
-# Read in miniDOT manual chamber summary file
-DO_summary<-read_csv(DO_Path, comment = '#', na = c('N/A', -9999))
+# get data here: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1892052, v3_SFA_SpatialStudy_2021_SensorData.zip
 
+# Read in miniDOT manual chamber summary file
+DO_summary<-read_csv('./Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv', comment = '#', na = c('N/A', -9999))
 
 # Pull out slope/NRMSE from each site 
 DO_slope<-DO_summary %>%
@@ -36,11 +37,13 @@ DO_slope<-DO_summary %>%
   rowwise() %>% 
   mutate(SD_ERwc = sd(c(Dissolved_Oxygen_1_Slope, Dissolved_Oxygen_2_Slope, Dissolved_Oxygen_3_Slope), na.rm = TRUE))
 
+# check positive slopes
 DO_pos = DO_slope %>% 
   select(c(Site_ID, Dissolved_Oxygen_1_Slope, Dissolved_Oxygen_2_Slope, Dissolved_Oxygen_3_Slope)) %>% 
   reshape2::melt(id.vars = "Site_ID") %>% 
   filter(value > 0 ) %>% 
   distinct(Site_ID)
+
 # If NRMSE > 0.03, remove slope (largest is 0.003 in this dataset, which is a 0.3% error)
 
 for (i in c(1:3)){
@@ -49,49 +52,6 @@ for (i in c(1:3)){
 }
 
 # No depth measurements, so will stay as mg O2/L/min
-
-# Look at other possible NRMSE issues 
-# df_melt <- reshape2::melt(DO_slope, id.vars = "Site_ID")
-# 
-# df_melt <- df_melt %>%
-#     mutate(Rep = sub("Dissolved_Oxygen_(\\d)_(.*)", "\\1", variable),
-#            Measure = sub("Dissolved_Oxygen_(\\d)_(.*)", "\\2", variable)) %>%
-#     select(-variable) %>%
-#     pivot_wider(names_from = Measure, values_from = value)
-# 
-# slope_hist <- ggplot(data = df_melt, aes(x = Slope ))+
-#     geom_histogram()
-# 
-# nrmse_hist <- ggplot(data = df_melt, aes(x = NRMSE ))+
-#     geom_histogram()
-# 
-# r2_hist <- ggplot(data = df_melt, aes(x = Rsquared ))+
-#     geom_histogram()
-# 
-# 
-# scatter_slope_r2 <- ggplot(data = df_melt, aes(x = log10(abs(Slope)), y = Rsquared)) +
-#     geom_point() +
-#     geom_smooth(method = "lm", formula = y ~ x)+
-#     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-#                  formula = y ~ x, parse = TRUE, size = 5)
-# 
-# scatter_slope_nrmse_log <- ggplot(data = df_melt, aes(x = log10(abs(Slope)), y = NRMSE)) +
-#     geom_point() +
-#     geom_smooth(method = "lm", formula = y ~ x)+
-#     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-#                  formula = y ~ x, parse = TRUE, size = 5)
-# 
-#   scatter_slope_nrmse <- ggplot(data = df_melt, aes(x = Slope, y = NRMSE)) +
-#     geom_point() +
-#     geom_smooth(method = "lm", formula = y ~ x)+
-#     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-#                  formula = y ~ x, parse = TRUE, size = 5)
-# 
-# scatter_nrmse_r2 <- ggplot(data = df_melt, aes(x = Rsquared, y = NRMSE)) +
-#   geom_point() +
-#   geom_smooth(method = "lm", formula = y ~ x)+
-#   stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-#                formula = y ~ x, parse = TRUE, size = 5)
 
 ## Convert to mg O2/L/day
 
@@ -134,7 +94,7 @@ ggplot(ERwc, aes(x = arrange(CV_ERwc))) +
 ERwc_mean = ERwc %>% 
   select(c(Site_ID, Mean_ERwc, Mean_Temp))
 
-write.csv(ERwc_mean, paste0(Out_Path, '/ERwc_Mean.csv'))
+write.csv(ERwc_mean, './Data/Multiple_linear_regression/', '/ERwc_Mean.csv')
 
 ## Plot S20R and T02 ####
 
@@ -263,5 +223,5 @@ ex_combine = ggarrange(s20r_temp_plot, t02_temp_plot, s20r_do_plot, t02_do_plot,
 
 ex_combine
 
-ggsave(file.path('./Plots',"example_temp_do_plot_ML.png"),
+ggsave(file.path('./Figures',"Figure_S3_Temp_DO_Plots.png"),
        plot = ex_combine, width = 10, height = 6, dpi = 300,device = "png")
