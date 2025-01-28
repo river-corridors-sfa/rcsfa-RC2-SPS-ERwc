@@ -815,8 +815,8 @@ cube_data = cube_data %>%
 cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
   geom_point(aes(color = StrOrd), size =4) + theme_bw() +
   scale_color_viridis(name = "Stream Order", discrete = T)+
-  stat_cor(data = cube_data, label.x = 21, label.y = 0.75, size = 5, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 21, label.y = 0.55, size = 5, digits = 2, aes(label = paste(..p.label..)))+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.9, size = 6, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
   xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
   ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
@@ -829,7 +829,7 @@ cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
 
 cube_totdr_plot
 
-ggsave(file.path('./Figures',"cube_totdr_scatter_plot.png"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "png") 
+ggsave(file.path('./Figures',"cube_totdr_scatter_plot.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
 
 
 cube_strord_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_StrOrd)) +
