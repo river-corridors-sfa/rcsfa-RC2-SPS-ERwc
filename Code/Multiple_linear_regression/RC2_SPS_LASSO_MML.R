@@ -1,7 +1,11 @@
-# Code to run LASSO on SPS ERwc data 
 
+# Code to run LASSO on SPS ERwc data for Table 2
 
-# Libraries ---------------------------------------------------------------
+# Makes Figures 3b, 4, S2
+
+# Author: Maggi Laan (maggi.laan@gmail.com)
+
+# Libraries ------------------------------------------------------------
 library(tidyverse)
 library(corrplot)
 library(ggpubr)
@@ -12,7 +16,7 @@ library(reshape2)
 library(viridis)
 
 
-# Working Directory -------------------------------------------------------
+# Working Directory ----------------------------------------------------
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
 setwd("../..")
@@ -20,7 +24,7 @@ getwd()
 
 rm(list=ls());graphics.off()
 
-# Functions ---------------------------------------------------------------
+# Functions ------------------------------------------------------------
 
 # Cube Root Transformation
 cube_root <- function(x) sign(x) * (abs(x))^(1/3)
@@ -46,30 +50,6 @@ pear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
   
 }
 
-#Spearman corr matric
-spear.panel.cor <- function(x, y, digits=2, prefix="", cex.cor)
-{
-  
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  
-  r = (cor(x, y, method = c("spearman")))
-  txt <- format(c(r, 0.123456789), digits=digits)[1]
-  txt <- paste(prefix, txt, sep="")
-  
-  if(missing(cex.cor)) {cex.cor <- 0.8/strwidth(txt)}
-  text(0.5, 0.5, txt, cex = cex.cor * (1 + abs(r))/2)
-  
-  # if(missing(cex.cor)) {cex <- 1.2/strwidth(txt)} else {cex = cex.cor}
-  # text(0.5, 0.5, txt, cex = cex * sin(sqrt(abs(r))))
-  
-  test <- cor.test(x,y, method = "spearman")
-  Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", " "))
-  #text(0.5, 0.5, txt, cex = cex * r)
-  text(.5, .8, Signif, cex=cex.cor, col=2)
-  
-}
-
 # Scatter Plots 
 panel.smooth <- function(x, y) {
   points(x, y, pch = 19, col = rgb(0.1, 0.2, 0.5, alpha = 0.3))
@@ -88,14 +68,13 @@ panel.hist <- function(x, ...) {
   rect(breaks[-nB], 0, breaks[-1], y, col="grey", border="white", ...)
 }
 
-# Read in Data ------------------------------------------------------------
+# Read in Data ---------------------------------------------------------
 
 mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>% 
   select(-X)
 
 ## Pull out stream order and total drainage area
-# are these the only variables I want?
-geo = read.csv("./Data/Multiple_linear_regression/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21 (1).csv") %>% 
+geo = read.csv("https://github.com/river-corridors-sfa/Geospatial_variables/raw/refs/heads/main/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21.csv") %>% 
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
 
@@ -110,7 +89,7 @@ npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_S
   select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
   rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
   rename(TN = X00602_TN_mg_per_L_as_N) %>% 
-  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN))) %>% #set samples below standard or LOD to half of LOD (0.035)
+  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN)), missing = NA_real_) %>% #set samples below standard or LOD to half of LOD (0.035)
   mutate(NPOC = as.numeric(NPOC)) %>% 
   filter(!grepl("OUTLIER", Methods_Deviation))%>% 
   separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
@@ -126,7 +105,7 @@ npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_S
 ## NO3, SO4, Cl
 ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
-  mutate(NO3_mg_per_L = ifelse(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), as.numeric(0.035), as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% #set samples below standard or LOD to half of LOD (0.035)
+  mutate(NO3_mg_per_L = if_else(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), as.numeric(0.035), as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% #set samples below standard or LOD to half of LOD (0.035)
   mutate(Sample_Name = str_replace(Sample_Name, "ION", "Water")) %>% 
   separate(Sample_Name, c("Sample_Name", "Rep"), sep = "-") %>% 
   mutate(Cl_mg_per_L = as.numeric(X00940_Cl_mg_per_L)) %>% 
@@ -165,7 +144,7 @@ mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metada
   select(c(Site_ID, Sample_Name))
 
 
-# Merge Data --------------------------------------------------------------
+# Merge Data -----------------------------------------------------------
 
 all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>% 
   left_join(geo, by = "Site_ID") %>% 
@@ -176,8 +155,7 @@ all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>%
 ## Clean Data ####
 
 ## Shorten Names 
-new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations"#, TSS = "TSS_mg_per_L", DIC = "DIC_mean", NPOC = "NPOC_mg_per_L_as_C_mean"#, TN = "TN_mg_per_L_as_N_mean"#, Br = #"Br_mg_per_L_mean", Ca = #"Ca_mg_per_L_mean", Cl = #"Cl_mg_per_L_mean", Fl = #"F_mg_per_L_mean", Mg = #"Mg_mg_per_L_mean", NO3 = #"NO3_mg_per_L_as_NO3_mean", K = #"K_mg_per_L_mean", Na = #"Na_mg_per_L_mean", SO4 = #"SO4_mg_per_L_as_SO4_mean"
-)
+new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations")
 
 ## Remove values > 0.5, which are biologically unrealistic. In this dataset, these are likely from diffusion processes as [DO] starts ~5. ERwc < 0.5 is difficult to distinguish from 0, so values are kept
 
@@ -192,36 +170,12 @@ new_data <- all_data %>%
 
 ## Look at histograms of data ####
 
-long_data = new_data %>% 
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
-
+new_data %>% 
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>% 
 ggplot() + 
-  geom_histogram(long_data, mapping = aes(x = value)) + 
+  geom_histogram(mapping = aes(x = value)) + 
   facet_wrap(~ variable, scales = "free") +
   theme_minimal()
-
-## Spearman correlation before transformations ####
-
-spearman <- cor(new_data, method = "spearman", use = "complete.obs")
-
-# colorful corrplot
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Scale_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
-
-corrplot(spearman,type = "upper", method = "number", tl.col = "black", tl.cex = 1.6, cl.cex = 1.25,  title = "Spearman Correlation")
-
-dev.off()
-
-# corrplot w scatter plots and histograms
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Spearman_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
-
-pairs(new_data,
-      lower.panel = panel.smooth, 
-      upper.panel = spear.panel.cor, 
-      diag.panel = panel.hist,
-      labels = colnames(new_data),
-      cex.labels = 0.8) 
-
-dev.off()
 
 ## Pearson correlation before transformations ####
 
@@ -236,29 +190,8 @@ pairs(new_data,
 
 dev.off()
 
-# Transform data ----------------------------------------------------------
+# Cube Root Transform data ---------------------------------------------
 
-#decide how you want to do this, eg, cube or log transform
-
-#should everything be transformed (eg Peaks, stream order, Transformations?)
-
-# log gives a lot of NAs even with + 1
-log_data = new_data %>% 
-  mutate_if(is.numeric, log10)
-
-long_log_data = log_data %>% 
-  rownames_to_column("Sample_Name") %>% 
-  pivot_longer(!Sample_Name, names_to = "variable", values_to = "value")
-
-ggplot() + 
-  geom_histogram(long_log_data, mapping = aes(x = value)) + 
-  facet_wrap(~ variable, scales = "free") +
-  theme_minimal()
-
-log_data_plus_one = new_data %>% 
-  mutate_if(is.numeric, ~ log10(. + 1))
-
-## Final Transformation  = Cube Root ####
 # cube root allows you to keep sign
 
 cube_data = new_data %>% 
@@ -266,17 +199,15 @@ cube_data = new_data %>%
   rename_with(where(is.numeric), .fn = ~ paste0("cube_", .x)) 
 
 ## Look at histograms of cube data
-long_cube_data = cube_data %>% 
+cube_data %>% 
   rownames_to_column("Sample_Name") %>% 
-  pivot_longer(!Sample_Name, names_to = "variable", values_to = "value")
-
-ggplot() + 
-  geom_histogram(long_cube_data, mapping = aes(x = value)) + 
+  pivot_longer(!Sample_Name, names_to = "variable", values_to = "value") %>% ggplot() + 
+  geom_histogram( mapping = aes(x = value)) + 
   facet_wrap(~ variable, scales = "free") +
   theme_minimal()
 
 
-# Check Co-Linearity ------------------------------------------------------
+# Check Co-Linearity ---------------------------------------------------
 
 ## Pearson Correlation Matrix of Transformed Data ####
 
@@ -415,7 +346,7 @@ col_to_keep = c(col_to_keep, "scale_cube_ERwc")
 scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 
 
-# Start LASSO -------------------------------------------------------------
+# Start LASSO ----------------------------------------------------------
 
 ## Loop through LASSO to get average over a lot of seeds ####
 
@@ -481,7 +412,7 @@ lasso_coef_mat = as.data.frame(do.call(cbind, lasso_coefs_pull))
 
 colnames(lasso_coef_mat) = make.names(colnames(lasso_coef_mat), unique = T)
 
-# Make DF of all LASSO results with mean and std. dev  
+# Make DF of all LASSO results with mean and std. dev (un-normalized)
 lasso_coef_means = lasso_coef_mat %>% 
   mutate(RowNames = rownames(lasso_coef_mat)) %>% 
   rowwise() %>% 
@@ -492,7 +423,7 @@ lasso_coef_means = lasso_coef_mat %>%
   relocate(RowNames, .before = mean)
   
 
-# Bind all LASSO results from 100 iterations
+# Bind all normalized LASSO results from 100 iterations
 norm_coeffs_matrix = do.call(cbind, norm_coeffs)
 
 mean_coeffs = as.data.frame(norm_coeffs_matrix, row.names = rownames(norm_coeffs_matrix))
@@ -513,7 +444,6 @@ results_r2 = as.data.frame(r2_scores)
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
 
-## Drainage is unstable?
 
 ## With scale, cube, pearson > 0.7 removals
   # TN, Temp, TSS
@@ -521,139 +451,84 @@ sd(results_r2$r2_scores)
 ## With scale, cube, pearson > 0.7 removals, TN removed
   # NPOC, Temp, NO3, TSS, Peaks
 
-## This LASSO is for generating Partial Residual Plots #### 
+# Scatter Plots of Data -----------------------------------------------
 
-## LASSO with Correlation Matrix Selected Variables 
+## Figure 2b ####
+cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
+  geom_point(aes(color = StrOrd), size =4) + theme_bw() +
+  scale_color_viridis(name = "Stream Order", discrete = T)+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.9, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
+  xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 18), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))) 
 
-## Set response variable (Cube_Effect_Size) and scale
-yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-mean(yvar)
-sd(yvar)
+cube_totdr_plot
 
-## Set predictor variables and scale
-exclude_col = "scale_cube_ERwc"
+ggsave(file.path('./Figures',"Fibure3b_Cube_TotDr_Scatter_Plots.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
 
-x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
+## Figure 4 - Cube root scatter plots ####
 
-xvars <- data.matrix(x_cube_variables)
+cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
+  xlab(expression("DOC (mg L"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
-                  standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                  #,standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                  # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
+cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("TSS (mg L"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-best_lambda <- lasso$lambda.min
-best_lambda
+cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("NO"[3]*" (mg L"^-1*")"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-plot(lasso)
+cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("TDN (mg L"^-1*")"^(1/3))) +
+  ylab("")
+ # ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
-                           standardize = FALSE, standardize.response = FALSE, intercept = FALSE
-                           #  , standardize = TRUE, standardize.response = TRUE, intercept = FALSE
-                           #, standardize = TRUE, standardize.response = FALSE, intercept = FALSE
-)
+cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
+  geom_point(shape = 1, size = 3) + theme_bw() + 
+  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  xlab(expression("Temperature (°C)"^(1/3))) +
+  ylab("")
+  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-lasso_coefs = as.vector(coef(best_lasso_model)) 
-#coef(best_lasso_model)
+cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_tss_plot, cube_no3_plot, nrow = 2, ncol = 3, labels = c("(a)", "(b)", "(c)", "(d)", "(e)"), label.x = c(0.85, 0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95, 0.95))
 
+cube_lasso_comb
 
-#check residuals
+# Annotate Figure by adding common "Effect Size" y-axis
+cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)), rot = 90, size = 15))
 
-# res = yvar - yvar_predict
-# 
-# plot(res ~ yvar_predict)
+ggsave(file.path('./Figures',"Figure4_Cube_Lasso_Combined_Scatter_Plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
 
-
-# Chat GPT code - removes zero coefficients - does this seem right?
-
-beta = lasso_coefs[-1]#drop intercept
-
-selected_vars = which(beta != 0)#choose non-zero coefficients
-selected_names = colnames(xvars)[selected_vars]
-
-yvar_predict <- predict(best_lasso_model, s = best_lambda, newx = xvars)
-fitted_values = as.numeric(yvar_predict)
-
-partial_residuals <- lapply(selected_vars, function(j) {
-  
-  xj = xvars[, j] #predictors
-  beta_j = beta[j] # coefficients for predictors
-  
-  # Compute the predicted values excluding the j-th variable
-  residuals = yvar - fitted_values
-  partial_fit = residuals + xj * beta_j #partial residuals?
-  
-  # Prepare a data frame for plotting
-  data.frame(
-    Predictor = xj,
-    Residuals = partial_fit,
-    Variable = colnames(xvars)[j]
-  )
-})
-
-plot_data = do.call(rbind, partial_residuals)
-
-## Partial Residual Plots ####
-
-tn_resid = plot_data %>% 
-  filter(grepl("TN", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, TDN"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-npoc_resid = plot_data %>% 
-  filter(grepl("NPOC", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, NPOC"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-temp_resid = plot_data %>% 
-  filter(grepl("Temp", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, Temperature"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-no3_resid = plot_data %>% 
-  filter(grepl("NO3", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, NO"[3]*""^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")")) 
-
-tss_resid  = plot_data %>% 
-  filter(grepl("TSS", Variable)) %>% 
-  ggplot(plot_data, mapping = aes(x = Predictor, y = Residuals)) +
-  geom_point(shape = 1) +
-  geom_smooth(method = "lm", color = "blue", linetype = "dashed",se = FALSE) +
-  theme_bw() +
-  xlab(expression("Scaled, TSS"^(1/3))) +
-  ylab(expression("Partial Residuals - ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))
-
-#without TN
-combine_resid = ggarrange(npoc_resid, temp_resid, no3_resid, tss_resid, labels = c("a", "b", "c", "d"), label.x = 0.9, label.y = 0.95)
-
-# with TN
-
-combine_resid = ggarrange(tn_resid, temp_resid, tss_resid, labels = c("a", "b", "c"), label.x = 0.9, label.y = 0.95)
-
-ggsave(file.path('./Figures',"lasso_residuals_combined_TN.png"), plot=combine_resid, width = 8, height = 8, dpi = 300,device = "png")
-
-
-# Scatter Plots of Data ---------------------------------------------------
 
 ## Untransformed Scatter Plots ####
 
@@ -712,7 +587,7 @@ no3_plot = ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
 temp_plot = ggplot(new_data, aes(y = ERwc, x = Temp)) +
   geom_point() + theme_bw() + 
   stat_cor(data = new_data, label.x = 17, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
- stat_cor(data = new_data, label.x = 17, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
+  stat_cor(data = new_data, label.x = 17, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
   stat_poly_line(data = new_data, se = FALSE)+ 
   ggtitle("Temperature")
 
@@ -760,91 +635,3 @@ lasso_comb = ggarrange(npoc_plot, temp_plot, no3_plot, tss_plot, nrow = 2, ncol 
 lasso_comb
 
 ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
-
-## Cube root scatter plots ####
-
-cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
-  geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
-  xlab(expression("DOC (mg L"^-1*")"^(1/3))) +
-  ylab("")
-  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
-  geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TSS (mg L"^-1*")"^(1/3))) +
-  ylab("")
-  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
-  geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("NO"[3]*" (mg L"^-1*")"^(1/3))) +
-  ylab("")
-  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
-  geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("TDN (mg L"^-1*")"^(1/3))) +
-  ylab("")
- # ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
-  geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("Temperature (°C)"^(1/3))) +
-  ylab("")
-  #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_data = cube_data %>% 
-  mutate(StrOrd =cube_StrOrd^3) %>% 
-  mutate(StrOrd = as.character(StrOrd))
-
-cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
-  geom_point(aes(color = StrOrd), size =4) + theme_bw() +
-  scale_color_viridis(name = "Stream Order", discrete = T)+
-  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.9, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
-  xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
-  theme(legend.title = element_text(size = 15),
-        legend.text = element_text(size = 12),
-        axis.text = element_text(size = 15),
-        axis.title = element_text(size = 18), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
-        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))) 
-
-cube_totdr_plot
-
-ggsave(file.path('./Figures',"cube_totdr_scatter_plot.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
-
-
-cube_strord_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_StrOrd)) +
-  geom_point(shape = 1) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 1.83, label.y = 0.75, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = cube_data, label.x = 1.83, label.y = 0.55, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
-  xlab(expression("Stream Order"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
-
-cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_tss_plot, cube_no3_plot, nrow = 2, ncol = 3, labels = c("(a)", "(b)", "(c)", "(d)", "(e)"), label.x = c(0.85, 0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95, 0.95))
-
-cube_lasso_comb
-
-# Annotate Figure by adding common "Effect Size" y-axis
-cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)), rot = 90, size = 15))
-
-ggsave(file.path('./Figures',"cube_lasso_combined_scatter_plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
