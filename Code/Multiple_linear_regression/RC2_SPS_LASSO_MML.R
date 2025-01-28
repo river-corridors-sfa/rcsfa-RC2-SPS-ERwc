@@ -78,12 +78,12 @@ geo = read.csv("https://github.com/river-corridors-sfa/Geospatial_variables/raw/
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
 
-# DIC Data
+# DIC data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
 data = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, Mean_00691_DIC_mg_per_L_as_C))
   
-## DOC/TDN 
+## DOC/TDN data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
 npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
@@ -102,7 +102,7 @@ npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_S
   select(c(Sample_Name, Mean_NPOC, Mean_TN))
 
 
-## NO3, SO4, Cl
+## NO3, SO4, Cl data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
 ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   mutate(NO3_mg_per_L = if_else(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), as.numeric(0.035), as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% #set samples below standard or LOD to half of LOD (0.035)
@@ -112,8 +112,7 @@ ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_Samp
   mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
   select(c(Sample_Name, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
   
-##TSS
-#Check LOD
+## TSS data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
 tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
@@ -125,7 +124,6 @@ tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_Sampl
   select(c(Sample_Name, TSS))
 
 ## Organic Matter
-# check this is still good
 om <- read.csv(file.path("./Data/OM_transformation_analysis/SPS_Total_and_Normalized_Transformations_01-03-23.csv")) 
 
 # Join all sample data
@@ -137,9 +135,8 @@ sample = left_join(data, npoc_tn) %>%
   mutate(Mean_DIC = as.numeric(Mean_DIC)) %>% 
   left_join(om) 
 
-# add ultrameter water chemistry to this? add manta data to this? 
 
-## Get Site ID and Sample Names to merge with geospatial data
+## Get Site ID and Sample Names to merge with geospatial data: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1892052, v3_SFA_SpatialStudy_2021_SensorData.zip
 mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metadata.csv") %>% 
   select(c(Site_ID, Sample_Name))
 
@@ -150,7 +147,6 @@ all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>%
   left_join(geo, by = "Site_ID") %>% 
   full_join(sample, by = "Sample_Name") %>% 
   select(-c(Sample_Name))
-
 
 ## Clean Data ####
 
@@ -529,109 +525,3 @@ cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("E
 
 ggsave(file.path('./Figures',"Figure4_Cube_Lasso_Combined_Scatter_Plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
 
-
-## Untransformed Scatter Plots ####
-
-npoc_plot = ggplot(new_data, aes(y = ERwc, x = Mean_NPOC)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 2.25, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 2.25, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE) + 
-  ggtitle("NPOC")
-
-tss_plot = ggplot(new_data, aes(y = ERwc, x = TSS)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 45, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 45, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+ #not sig.
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("TSS") 
-
-tn_plot = ggplot(new_data, aes(y = ERwc, x = Mean_TN)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 1.25, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 1.25, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("TN")
-
-transformations_plot = ggplot(new_data, aes(y = ERwc, x = Transformations)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 57500, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 57500, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Transformations")
-
-norm_plot = ggplot(new_data, aes(y = ERwc, x = NormTrans)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 7.75, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 7.75, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Normalized Transformations")
-
-new_data = new_data %>% 
-  mutate(size = ifelse(StrOrd <= 3, "small", ifelse(StrOrd == 7, "large", "mid"))) # try assigning stream order "sizes"
-
-totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
-  geom_point(aes(color = size)) + theme_bw() + 
-  stat_cor(data = new_data, label.x = 10000, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 10000, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  xlab("Total Drainage")
-
-no3_plot = ggplot(new_data, aes(y = ERwc, x = NO3_mg_per_L)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 5.5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 5.5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("NO3")
-
-temp_plot = ggplot(new_data, aes(y = ERwc, x = Temp)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 17, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 17, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Temperature")
-
-strord_plot = ggplot(new_data, aes(y = ERwc, x = StrOrd)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x = 5.50, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 5.50, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  xlab("Stream Order")
-
-cl_plot = ggplot(new_data, aes(y = ERwc, x = Cl_mg_per_L)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x =5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Cl")
-
-dic_plot = ggplot(new_data, aes(y = ERwc, x = Mean_DIC)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x =27.5, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 27.5, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("DIC")
-
-so4_plot = ggplot(new_data, aes(y = ERwc, x = SO4_mg_per_L)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x =8, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 8, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("SO4")
-
-peaks_plot = ggplot(new_data, aes(y = ERwc, x = Peaks)) +
-  geom_point() + theme_bw() + 
-  stat_cor(data = new_data, label.x =7600, label.y = 1.5, size = 3, digits = 2, aes(label = paste(..rr.label..)))+
-  stat_cor(data = new_data, label.x = 7600, label.y = 0.9, size = 3, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = new_data, se = FALSE)+ 
-  ggtitle("Peaks")
-
-combined = ggarrange(npoc_plot, tss_plot, tn_plot, transformations_plot, norm_plot, no3_plot, totdr_plot, temp_plot, strord_plot, dic_plot, cl_plot, so4_plot, peaks_plot, nrow = 4, ncol = 4)
-
-combined
-
-lasso_comb = ggarrange(npoc_plot, temp_plot, no3_plot, tss_plot, nrow = 2, ncol = 2)
-
-lasso_comb
-
-ggsave(file.path('./Figures',"lasso_combined_scatter_plots.png"), plot=lasso_comb, width = 12, height = 12, dpi = 300,device = "png") 
