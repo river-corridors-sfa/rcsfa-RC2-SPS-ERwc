@@ -70,7 +70,7 @@ panel.hist <- function(x, ...) {
 
 # Read in Data ---------------------------------------------------------
 
-mean_erwc = read.csv("./Data/Multiple_linear_regression/ERwc_Mean.csv") %>% 
+mean_erwc = read.csv("./Data/ERwc_Mean.csv") %>% 
   select(-X)
 
 ## Pull out stream order and total drainage area
@@ -78,13 +78,16 @@ geo = read.csv("https://github.com/river-corridors-sfa/Geospatial_variables/raw/
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
 
-# DIC data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
-data = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
+## Download data and add to Published_Data folder
+##  https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
+
+# DIC 
+data = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Sample_Data_Summary.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, Mean_00691_DIC_mg_per_L_as_C))
   
-## DOC/TDN data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
-npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
+## DOC/TDN 
+npoc_tn = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_NPOC_TN.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
   rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
@@ -102,8 +105,8 @@ npoc_tn = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_S
   select(c(Sample_Name, Mean_NPOC, Mean_TN))
 
 
-## NO3, SO4, Cl data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
-ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
+## NO3, SO4, Cl data link
+ions = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/v3_SPS_Water_Ions.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   mutate(NO3_mg_per_L = if_else(grepl("Nitrate", X71851_NO3_mg_per_L_as_NO3), as.numeric(0.035), as.numeric(X71851_NO3_mg_per_L_as_NO3))) %>% #set samples below standard or LOD to half of LOD (0.035)
   mutate(Sample_Name = str_replace(Sample_Name, "ION", "Water")) %>% 
@@ -112,8 +115,8 @@ ions = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_Samp
   mutate(SO4_mg_per_L = as.numeric(X00945_SO4_mg_per_L_as_SO4)) %>% 
   select(c(Sample_Name, NO3_mg_per_L, Cl_mg_per_L, SO4_mg_per_L)) 
   
-## TSS data link: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1898914, v3_SFA_SpatialStudy_2021_SampleData.zip
-tss = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
+## TSS 
+tss = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/v2_SPS_Water_TSS.csv", skip = 2) %>% 
   filter(grepl("SPS", Sample_Name)) %>% 
   select(c(Sample_Name, X00530_TSS_mg_per_L)) %>% 
   rename(TSS = X00530_TSS_mg_per_L) %>% 
@@ -137,7 +140,7 @@ sample = left_join(data, npoc_tn) %>%
 
 
 ## Get Site ID and Sample Names to merge with geospatial data: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1892052, v3_SFA_SpatialStudy_2021_SensorData.zip
-mapping = read.csv("./Data/Multiple_linear_regression/v2_SPS_Sensor_Field_Metadata.csv") %>% 
+mapping = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SensorData/v2_SPS_Sensor_Field_Metadata.csv") %>% 
   select(c(Site_ID, Sample_Name))
 
 

@@ -15,10 +15,10 @@ setwd(dirname(current_path))
 setwd("../..")
 getwd()
 
-# Maggi - Bernhardt compare ####
+# Bernhardt compare ####
 
 # get data here: https://github.com/streampulse/metabolism_synthesis
-#url to Bernhardt (2022) github file with gap filled data
+# url to Bernhardt (2022) github file with gap filled data
 bernhardt = readRDS(url("https://raw.githubusercontent.com/streampulse/metabolism_synthesis/master/output_data/lotic_gap_filled.rds")) %>% 
   bind_rows() %>%
   mutate(Date = format(Date, format = "%Y-%m-%d")) %>% 
@@ -30,8 +30,8 @@ mean_bernhardt_er = bernhardt %>%
   summarise(ERtot_Areal = mean(ER_filled))  
 
 # Read in Appling to get depth data
-# get data here: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389
-appling = read.csv("./Data/Appling_ERtot_analysis/daily_predictions.csv") %>% 
+# get data here and add to Published_Data folder: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389
+appling = read.csv("./Data/Published_Data/daily_predictions.csv") %>% 
   mutate(Date = as.POSIXct(date, format = "%m/%d/%Y")) %>% 
   mutate(Date = format(Date, format = "%Y-%m-%d")) %>% 
   rename(Site_ID = site_name) %>% 
@@ -46,4 +46,4 @@ ERtot = full_join(mean_bernhardt_er, mean_appling_depth, by = c("Site_ID")) %>%
   drop_na(ERtot_Areal) %>%  # remove sites with no ER_filled, leaving 208 site
   mutate(ERtot_Volumetric = ERtot_Areal * (1/mean_depth)) # divide by mean depth to get into mg O2/L/day
 
-write.csv(ERtot, "./Data/Appling_ERtot_analysis/mean_ERtot_cleaned.csv")
+write.csv(ERtot, "./Data/mean_ERtot_cleaned.csv")

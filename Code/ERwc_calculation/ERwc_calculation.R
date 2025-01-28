@@ -24,10 +24,11 @@ getwd()
 ##########################################################################
 ## DO slope
 
-# get data here: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1892052, v3_SFA_SpatialStudy_2021_SensorData.zip
+# get data here: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F1892052, v3_SFA_SpatialStudy_2021_SensorData.zip and add to Published Data folder
 
 # Read in miniDOT manual chamber summary file
-DO_summary<-read_csv('./Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv', comment = '#', na = c('N/A', -9999))
+DO_summary<-read_csv('./Data/Published_Data/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Plots_and_Summary_Statistics/v3_Minidot_Summary_Statistics.csv', comment = '#', na = c('N/A', -9999))
+
 
 # Pull out slope/NRMSE from each site 
 DO_slope<-DO_summary %>%
@@ -94,7 +95,7 @@ ggplot(ERwc, aes(x = arrange(CV_ERwc))) +
 ERwc_mean = ERwc %>% 
   select(c(Site_ID, Mean_ERwc, Mean_Temp))
 
-write.csv(ERwc_mean, './Data/Multiple_linear_regression/', '/ERwc_Mean.csv')
+write.csv(ERwc_mean, './Data', '/ERwc_Mean.csv')
 
 ## Plot S20R and T02 ####
 

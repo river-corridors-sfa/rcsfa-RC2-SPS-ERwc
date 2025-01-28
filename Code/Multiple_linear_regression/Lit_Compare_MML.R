@@ -25,18 +25,18 @@ getwd()
 
 # Read in ERwc Data -------------------------------------------------------
 
-erwc_sps = read.csv(file.path('./Data/Multiple_linear_regression/ERwc_Mean.csv')) %>% 
+erwc_sps = read.csv(file.path('./Data/ERwc_Mean.csv')) %>% 
   select(-c(X)) %>% 
   mutate(Mean_ERwc = round(Mean_ERwc, 3)) %>% 
   mutate(Mean_Temp = round(Mean_Temp, 3)) %>% 
   filter(Mean_ERwc < 0.5) # remove positive respiration rates > 0.5
 
 # read in  ERtotal data
-
-ERriv = read.csv(file.path('./Data/Appling_ERtot_analysis','mean_ERtot_cleaned.csv')) %>% select(-c(X))
+ERriv = read.csv(file.path('./Data/','mean_ERtot_cleaned.csv')) %>% select(-c(X))
 
 # Keeps Devol Min/Max 
-erwc_lit = read.csv(file.path("./Data/Appling_ERtot_analysis","Table_S5_Calculations.csv"), skip = 1) %>% 
+#download .xlsx file from SI and add sheet 2 as .csv to Published_Data folder
+erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.csv"), skip = 1) %>% 
   select(c(Paper, River, `Basin.Station`, Corrected_Value)) %>% 
   rename(Water_Column_Respiration_Literature = Corrected_Value)
 
@@ -141,7 +141,7 @@ ggsave(file.path('./Plots',"density_box_plot.png"), plot=comb_box_dens, width = 
 ## FIGURE S4 ####
 
 # read in raw data
-raw_data <- read.csv(file.path('./Data/Multiple_linear_regression/v3_Minidot_Summary_Statistics.csv'), skip=52) %>% 
+raw_data <- read.csv(file.path('./Data/Published_Data/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Plots_and_Summary_Statistics/v3_Minidot_Summary_Statistics.csv'), skip=52) %>% 
   select(c("Site_ID", "Dissolved_Oxygen_1_Slope", "Dissolved_Oxygen_2_Slope", "Dissolved_Oxygen_3_Slope")) %>%
   pivot_longer(
     cols = !Site_ID, 
