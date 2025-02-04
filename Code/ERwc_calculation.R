@@ -18,7 +18,7 @@ rm(list=ls(all=TRUE))
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
-setwd("../..")
+setwd("./..")
 getwd()
 
 ##########################################################################
@@ -95,7 +95,7 @@ ggplot(ERwc, aes(x = arrange(CV_ERwc))) +
 ERwc_mean = ERwc %>% 
   select(c(Site_ID, Mean_ERwc, Mean_Temp))
 
-write.csv(ERwc_mean, './Data', '/ERwc_Mean.csv')
+write.csv(ERwc_mean, './Data/ERwc_Mean.csv', row.names = F)
 
 ## Plot S20R and T02 ####
 

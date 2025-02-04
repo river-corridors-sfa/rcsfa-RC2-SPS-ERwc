@@ -12,7 +12,7 @@ rm(list=ls());graphics.off()
 # Set working directory
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
-setwd("../..")
+setwd("./..")
 getwd()
 
 # Bernhardt compare ####
@@ -46,4 +46,4 @@ ERtot = full_join(mean_bernhardt_er, mean_appling_depth, by = c("Site_ID")) %>%
   drop_na(ERtot_Areal) %>%  # remove sites with no ER_filled, leaving 208 site
   mutate(ERtot_Volumetric = ERtot_Areal * (1/mean_depth)) # divide by mean depth to get into mg O2/L/day
 
-write.csv(ERtot, "./Data/mean_ERtot_cleaned.csv")
+write.csv(ERtot, "./Data/mean_ERtot_cleaned.csv", row.names = F)
