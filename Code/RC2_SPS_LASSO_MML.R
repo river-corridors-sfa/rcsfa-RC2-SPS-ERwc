@@ -19,7 +19,7 @@ library(viridis)
 # Working Directory ----------------------------------------------------
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
-setwd("../..")
+setwd("./..")
 getwd()
 
 rm(list=ls());graphics.off()
@@ -70,11 +70,10 @@ panel.hist <- function(x, ...) {
 
 # Read in Data ---------------------------------------------------------
 
-mean_erwc = read.csv("./Data/ERwc_Mean.csv") %>% 
-  select(-X)
+mean_erwc = read.csv("./Data/ERwc_Mean.csv")
 
 ## Pull out stream order and total drainage area
-geo = read.csv("https://github.com/river-corridors-sfa/Geospatial_variables/raw/refs/heads/main/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21.csv") %>% 
+geo = read.csv("https://github.com/river-corridors-sfa/Geospatial_variables/raw/refs/heads/main/Archived_versions/v2_RCSFA_Extracted_Geospatial_Data_2023-06-21.csv") %>% 
   select(c(site, streamorde, totdasqkm)) %>% 
   dplyr::rename(Site_ID = site)
 
@@ -344,6 +343,16 @@ col_to_keep = c(col_to_keep, "scale_cube_ERwc")
 
 scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
 
+scale_all_data = new_data %>% 
+  mutate(StrOrd = as.numeric(StrOrd)) %>% 
+  mutate(Transformations = as.numeric(Transformations)) %>% 
+  mutate(Peaks = as.numeric(Peaks)) %>%
+  filter(NO3_mg_per_L < 5) %>% 
+  mutate(across(where(is.numeric), ~scale(.x)[,1])) 
+
+# mean(scale_all_data$Mean_ERwc)
+# sd(scale_all_data$Mean_ERwc)
+
 
 # Start LASSO ----------------------------------------------------------
 
@@ -354,7 +363,7 @@ seeds = sample(1:500, num_seeds)
 
 ## Set response variable (ERwc)
 yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-
+yvar = data.matrix(scale_all_data$ERwc)
 # list for storing LASSO iterations
 norm_coeffs = list()
 lasso_coefs_pull = list()
@@ -362,10 +371,13 @@ r2_scores = numeric(num_seeds)
 
 ## Set predictor variables
 exclude_col = "scale_cube_ERwc"
+exclude_col = "ERwc"
 
 x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
-#mean(x_cube_variables$scale_cube_Temp)
-#sd(x_cube_variables$scale_cube_Temp)
+
+x_cube_variables = as.data.frame(scale_all_data[, !(names(scale_all_data) %in% exclude_col)])
+mean(x_cube_variables$Temp)
+sd(x_cube_variables$Temp)
 
 xvars <- data.matrix(x_cube_variables)
 
@@ -382,8 +394,10 @@ lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
 )
 
 best_lambda <- lasso$lambda.min
-#best_lambda
-#plot(lasso)
+
+#best_lambda = lasso$lambda.1se
+# best_lambda
+# plot(lasso)
 
 best_lasso_model <- glmnet(xvars, yvar, alpha = 1, lambda = best_lambda, family = "gaussian",
                            standardize = FALSE, standardize.response = FALSE, intercept = FALSE
@@ -451,6 +465,21 @@ sd(results_r2$r2_scores)
   # NPOC, Temp, NO3, TSS, Peaks
 
 # Scatter Plots of Data -----------------------------------------------
+
+totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
+  geom_point(aes(color = as.factor(StrOrd), size =4)) + theme_bw() +
+  scale_color_viridis(name = "Stream Order", discrete = T)+
+  stat_cor(data = new_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = new_data, label.x = 2.5, label.y = -2.1, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  stat_poly_line(data = new_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
+  xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
+  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 18), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))) 
 
 ## Figure 2b ####
 cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +

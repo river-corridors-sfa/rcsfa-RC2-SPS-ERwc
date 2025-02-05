@@ -19,20 +19,19 @@ rm(list=ls());graphics.off()
 
 current_path <- rstudioapi::getActiveDocumentContext()$path
 setwd(dirname(current_path))
-setwd("../..")
+setwd("./..")
 getwd()
 
 
 # Read in ERwc Data -------------------------------------------------------
 
 erwc_sps = read.csv(file.path('./Data/ERwc_Mean.csv')) %>% 
-  select(-c(X)) %>% 
   mutate(Mean_ERwc = round(Mean_ERwc, 3)) %>% 
   mutate(Mean_Temp = round(Mean_Temp, 3)) %>% 
   filter(Mean_ERwc < 0.5) # remove positive respiration rates > 0.5
 
 # read in  ERtotal data
-ERriv = read.csv(file.path('./Data/','mean_ERtot_cleaned.csv')) %>% select(-c(X))
+ERriv = read.csv(file.path('./Data/','mean_ERtot_cleaned.csv'))
 
 # Keeps Devol Min/Max 
 #download .xlsx file from SI and add sheet 2 as .csv to Published_Data folder
@@ -42,6 +41,7 @@ erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.cs
 
 median(erwc_sps$Mean_ERwc) # our median: -0.579
 mean(erwc_sps$Mean_ERwc) # our mean: -0.817
+sd(erwc_sps$Mean_ERwc)
 sd(erwc_sps$Mean_ERwc)/sqrt(length((erwc_sps$Mean_ERwc))) # our SE: 0.19
 
 # Density Plots -----------------------------------------------------------
