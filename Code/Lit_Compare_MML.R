@@ -65,7 +65,7 @@ all_density = ggplot() +
   geom_vline(erwc_lit, mapping = aes(xintercept = median(Water_Column_Respiration_Literature)), color = "#F9847B", size = 0.8) +
   geom_vline(erwc_sps, mapping = aes(xintercept = median(Mean_ERwc)), color = "blue", size = 0.8) +
   theme_classic()+
-  labs(x = expression("ER"[tot]*" and ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"), y = 'Density', color = "Legend")+
+  labs(x = expression("ER"[tot]*" and ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"), y = 'Density', color = "Legend")+
   theme(
     legend.position = c(.175, .95),
     legend.justification = c( "top"),
@@ -113,7 +113,7 @@ box_plot = ggplot() +
            values = c("blue", "#F9847B"))+
   scale_fill_manual("", breaks = c("YRB", "Lit"), labels = c(expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
                     values = c("lightblue", "#fbb1ac"))+
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"))+
+  ylab(expression("ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"))+
   #scale_color_manual(values = c("black", "#FF61CC"), 
                     # labels = c("All Literature Median", "Yakima River basin Median"))+
   theme (axis.text.x = element_text(angle = 90, vjust = 0.5), 
@@ -135,7 +135,7 @@ comb_box_dens = ggarrange(all_density, box_plot, nrow = 1, widths = c(2,  1), la
 
 comb_box_dens
 
-ggsave(file.path('./Plots',"density_box_plot.png"), plot=comb_box_dens, width = 12, height = 4.5, dpi = 300,device = "png") 
+ggsave(file.path('./Figures/',"density_box_plot.png"), plot=comb_box_dens, width = 12, height = 4.5, dpi = 300,device = "png") 
 
 
 ## FIGURE S4 ####
@@ -162,7 +162,7 @@ DotPlot <- ggplot(clean_data, aes(x= reorder(Site_ID, ERwc), y=ERwc)) +
   geom_hline(yintercept=0, linetype="dashed", color = "red",alpha=0.8)+
   stat_summary(fun=mean, geom="point", shape=18,size=3, color="red") +
   geom_dotplot(binaxis='y', stackdir='center',binwidth = 0.2,dotsize = 0.4) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*"day"^-1*")")) + xlab("Site ID") + 
+  ylab(expression("ER"[wc]*" (g O"[2]*" m"^-3*"d"^-1*")")) + xlab("Site ID") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),legend.position = c(0, 0))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                               panel.background = element_blank(), axis.line = element_line(colour = "black"))
@@ -170,4 +170,4 @@ DotPlot <- ggplot(clean_data, aes(x= reorder(Site_ID, ERwc), y=ERwc)) +
 DotPlot
 
 ggsave(file.path("./Figures",paste0('FigureS4_Dot_Plot_Mean_Rank',".png")), 
-       plot=DotPlotFin, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
+       plot=DotPlot, width = 6, height = 3, dpi = 300,device = "png") #grid.arrange(p1,p2, nrow=1)
