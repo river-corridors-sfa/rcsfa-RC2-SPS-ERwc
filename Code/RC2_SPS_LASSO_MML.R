@@ -246,105 +246,106 @@ pairs(pear_data,
 
 dev.off()
 
-# Make pearson correlation matrix into df
-pearson_df = as.data.frame(scale_cube_pearson)  %>% 
-  rownames_to_column("Variable")
+# # Make pearson correlation matrix into df
+# pearson_df = as.data.frame(scale_cube_pearson)  %>% 
+#   rownames_to_column("Variable")
+# 
+# ## Melt the Pearson dataframe for removing variables ####
+# pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
+#   filter(value != 1) %>% # remove self-correlations
+#   mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
+#   filter(!grepl("ERwc", Variable)) %>% # remove ERwc from first column
+#   filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
+#   filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
+# 
+# # Pull out ERwc correlations only
+# erwc_melted <- pearson_melted %>% 
+#   filter(grepl("ERwc", variable)) 
+# 
+# # Remove ERwc from this DF
+# loop_melt <- pearson_melted %>% 
+#   filter(!grepl("ERwc", variable)) %>%
+#   left_join(erwc_melted, by = "Variable") %>% 
+#   rename(Variable_1 = Variable) %>% 
+#   rename(Variable_2 = variable.x) %>% 
+#   rename(Correlation = value.x) %>% 
+#   rename(Variable_1_ERwc_Correlation = value.y) %>% 
+#   select(-c(variable.y)) %>% 
+#   left_join(erwc_melted, by = c("Variable_2" = "Variable")) %>% 
+#   rename(Variable_2_ERwc_Correlation = value) %>% 
+#   select(-c(variable)) %>% 
+#   arrange(desc(Correlation))
+# 
+# # Pearson correlation coefficient to remove above
+# correlation = 0.7
+# 
+# ## Start loop to remove highly correlated (> 0.7)
+# erwc_filter = function(loop_melt) {
+#   
+#   rows_to_keep = rep(TRUE, nrow(loop_melt))
+#   
+#   for (i in seq_len(nrow(loop_melt))) {
+#     
+#     if (!rows_to_keep[i]) next
+#     
+#     row = loop_melt[i, ]
+#     
+#     if (row$Correlation < correlation) next
+#     
+#     if(row$Variable_1_ERwc_Correlation >= row$Variable_2_ERwc_Correlation) {
+#       
+#       var_to_keep = row$Variable_1
+#       var_to_remove = row$Variable_2
+#       
+#     } else {
+#       
+#       var_to_keep = row$Variable_2
+#       var_to_remove = row$Variable_1
+#       
+#     }
+#     
+#     loop_melt$Variable_to_Keep[i] = var_to_keep
+#     loop_melt$Variable_to_Remove[i] = var_to_remove
+#     
+#     for (j in seq(i + 1, nrow(loop_melt))) {
+#       
+#       if(loop_melt$Variable_1[j] == var_to_remove || loop_melt$Variable_2[j] == var_to_remove) {
+#         
+#         rows_to_keep[j] = FALSE
+#         
+#       }
+#       
+#     }
+#     
+#     
+#   }
+#   
+#   return(loop_melt[rows_to_keep, ])
+#   
+# }
+# 
+# filtered_data = erwc_filter(loop_melt) 
+# 
+# # pull out variables to remove
+# removed_variables = filtered_data %>% 
+#   distinct(Variable_to_Remove)
+# 
+# # pull out all variables 
+# all_variables = erwc_melted %>% 
+#   select(c(Variable))
+# 
+# # remove variables from all variables to get variables to keep for LASSO 
+# kept_variables = erwc_melted %>% 
+#   filter(!(Variable %in% removed_variables$Variable_to_Remove))
+# 
+# col_to_keep = unique(kept_variables$Variable)
+# col_to_keep = c(col_to_keep, "scale_cube_ERwc")
 
-## Melt the Pearson dataframe for removing variables ####
-pearson_melted <- reshape2::melt(pearson_df, id.vars = "Variable") %>% 
-  filter(value != 1) %>% # remove self-correlations
-  mutate(value = abs(value)) %>% # do this so it removes in order, and doesn't leave out high negative correlations
-  filter(!grepl("ERwc", Variable)) %>% # remove ERwc from first column
-  filter(!grepl("Mean_TN",Variable) & !grepl("Mean_TN", variable)) %>% # Run twice, once keeping TN and once removing
-  filter(!grepl("StrOrd", Variable) & !grepl("StrOrd", variable)) #try removing stream order to keep drainage area 
-
-# Pull out ERwc correlations only
-erwc_melted <- pearson_melted %>% 
-  filter(grepl("ERwc", variable)) 
-
-# Remove ERwc from this DF
-loop_melt <- pearson_melted %>% 
-  filter(!grepl("ERwc", variable)) %>%
-  left_join(erwc_melted, by = "Variable") %>% 
-  rename(Variable_1 = Variable) %>% 
-  rename(Variable_2 = variable.x) %>% 
-  rename(Correlation = value.x) %>% 
-  rename(Variable_1_ERwc_Correlation = value.y) %>% 
-  select(-c(variable.y)) %>% 
-  left_join(erwc_melted, by = c("Variable_2" = "Variable")) %>% 
-  rename(Variable_2_ERwc_Correlation = value) %>% 
-  select(-c(variable)) %>% 
-  arrange(desc(Correlation))
-
-# Pearson correlation coefficient to remove above
-correlation = 0.7
-
-## Start loop to remove highly correlated (> 0.7)
-erwc_filter = function(loop_melt) {
-  
-  rows_to_keep = rep(TRUE, nrow(loop_melt))
-  
-  for (i in seq_len(nrow(loop_melt))) {
-    
-    if (!rows_to_keep[i]) next
-    
-    row = loop_melt[i, ]
-    
-    if (row$Correlation < correlation) next
-    
-    if(row$Variable_1_ERwc_Correlation >= row$Variable_2_ERwc_Correlation) {
-      
-      var_to_keep = row$Variable_1
-      var_to_remove = row$Variable_2
-      
-    } else {
-      
-      var_to_keep = row$Variable_2
-      var_to_remove = row$Variable_1
-      
-    }
-    
-    loop_melt$Variable_to_Keep[i] = var_to_keep
-    loop_melt$Variable_to_Remove[i] = var_to_remove
-    
-    for (j in seq(i + 1, nrow(loop_melt))) {
-      
-      if(loop_melt$Variable_1[j] == var_to_remove || loop_melt$Variable_2[j] == var_to_remove) {
-        
-        rows_to_keep[j] = FALSE
-        
-      }
-      
-    }
-    
-    
-  }
-  
-  return(loop_melt[rows_to_keep, ])
-  
-}
-
-filtered_data = erwc_filter(loop_melt) 
-
-# pull out variables to remove
-removed_variables = filtered_data %>% 
-  distinct(Variable_to_Remove)
-
-# pull out all variables 
-all_variables = erwc_melted %>% 
-  select(c(Variable))
-
-# remove variables from all variables to get variables to keep for LASSO 
-kept_variables = erwc_melted %>% 
-  filter(!(Variable %in% removed_variables$Variable_to_Remove))
-
-col_to_keep = unique(kept_variables$Variable)
-col_to_keep = c(col_to_keep, "scale_cube_ERwc")
-
-scale_cube_variables = scale_cube_data[, col_to_keep, drop = FALSE]
+scale_cube_variables = scale_cube_data %>% 
+  select(-c(scale_cube_StrOrd))#[, col_to_keep, drop = FALSE]
 
 scale_all_data = new_data %>% 
-  mutate(StrOrd = as.numeric(StrOrd)) %>% 
+  select(-c(StrOrd)) %>% 
   mutate(Transformations = as.numeric(Transformations)) %>% 
   mutate(Peaks = as.numeric(Peaks)) %>%
   filter(NO3_mg_per_L < 5) %>% 
@@ -363,7 +364,7 @@ seeds = sample(1:500, num_seeds)
 
 ## Set response variable (ERwc)
 yvar <- data.matrix(scale_cube_variables$scale_cube_ERwc)
-yvar = data.matrix(scale_all_data$ERwc)
+#yvar = data.matrix(scale_all_data$ERwc)
 # list for storing LASSO iterations
 norm_coeffs = list()
 lasso_coefs_pull = list()
@@ -394,9 +395,9 @@ lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
                   # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
 )
 
-best_lambda <- lasso$lambda.min
+#best_lambda <- lasso$lambda.min
 
-#best_lambda = lasso$lambda.1se
+best_lambda = lasso$lambda.1se
 # best_lambda
 # plot(lasso)
 
@@ -449,7 +450,7 @@ colnames(mean_coeffs) = make.names(colnames(mean_coeffs), unique = T)
 # Make DF of all LASSO results with mean and std. dev  
 mean_coeffs_df = mean_coeffs %>% 
   mutate(RowNames = rownames(mean_coeffs)) %>% 
-  #select(where(~!any(is.nan(.)))) %>% 
+  select(where(~!any(is.nan(.)))) %>% 
   rowwise() %>% 
   mutate(mean = mean(c_across(contains("s1"))), 
          sd = sd(c_across(contains("s1")))) %>% 
@@ -457,7 +458,8 @@ mean_coeffs_df = mean_coeffs %>%
   relocate(sd, .before = s1) %>% 
   relocate(RowNames, .before = mean)
 
-results_r2 = as.data.frame(r2_scores) 
+results_r2 = as.data.frame(r2_scores) %>% 
+  filter(r2_scores != 0)
 mean(results_r2$r2_scores)
 sd(results_r2$r2_scores)
 
@@ -488,11 +490,11 @@ totdr_plot = ggplot(new_data, aes(y = ERwc, x = TotDr)) +
 cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
   geom_point(aes(color = as.factor(cube_StrOrd^3)), size =4) + theme_bw() +
   scale_color_viridis(name = "Stream Order", discrete = T)+
-  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 2.5, label.y = -1.9, size = 6, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
   xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
-  ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3))) +
+  ylab(expression("ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"^(1/3))) +
   theme(legend.title = element_text(size = 15),
         legend.text = element_text(size = 12),
         axis.text = element_text(size = 15),
@@ -502,51 +504,51 @@ cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
 
 cube_totdr_plot
 
-ggsave(file.path('./Figures',"Fibure3b_Cube_TotDr_Scatter_Plots.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
+ggsave(file.path('./Figures',"Figure3b_Cube_TotDr_Scatter_Plots.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
 
 ## Figure 4 - Cube root scatter plots ####
 
 cube_npoc_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_NPOC)) +
   geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.815, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 0.815, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed") + 
   xlab(expression("DOC (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_tss_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TSS)) +
   geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.525, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 0.525, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
   xlab(expression("TSS (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_no3_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_NO3_mg_per_L)) +
   geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.30, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 0.30, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
   xlab(expression("NO"[3]*" (mg L"^-1*")"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_tn_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Mean_TN)) +
   geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 0.35, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 0.35, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+ # stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
   xlab(expression("TDN (mg L"^-1*")"^(1/3))) +
   ylab("")
  # ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
 cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
   geom_point(shape = 1, size = 3) + theme_bw() + 
-  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..rr.label..)))+
+  stat_cor(data = cube_data, label.x = 2.025, label.y = -1.7, size = 4, digits = 2, aes(label = paste(..r.label..)))+
   #stat_cor(data = cube_data, label.x = 2.025, label.y = -1.9, size = 4, digits = 2, aes(label = paste(..p.label..)))+
-  stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed")+ 
   xlab(expression("Temperature (°C)"^(1/3))) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
@@ -556,7 +558,7 @@ cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_t
 cube_lasso_comb
 
 # Annotate Figure by adding common "Effect Size" y-axis
-cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)), rot = 90, size = 15))
+cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"^(1/3)), rot = 90, size = 15))
 
 ggsave(file.path('./Figures',"Figure4_Cube_Lasso_Combined_Scatter_Plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
 
