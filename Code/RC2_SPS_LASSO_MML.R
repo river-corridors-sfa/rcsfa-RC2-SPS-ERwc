@@ -372,7 +372,7 @@ r2_scores = numeric(num_seeds)
 
 ## Set predictor variables
 exclude_col = "scale_cube_ERwc"
-exclude_col = "ERwc"
+#exclude_col = "ERwc"
 
 x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
 
@@ -505,6 +505,8 @@ cube_totdr_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_TotDr)) +
 cube_totdr_plot
 
 ggsave(file.path('./Figures',"Figure3b_Cube_TotDr_Scatter_Plots.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
+
+
 
 ## Figure 4 - Cube root scatter plots ####
 
