@@ -348,7 +348,7 @@ scale_all_data = new_data %>%
   select(-c(StrOrd)) %>% 
   mutate(Transformations = as.numeric(Transformations)) %>% 
   mutate(Peaks = as.numeric(Peaks)) %>%
-  filter(NO3_mg_per_L < 5) %>% 
+  #filter(NO3_mg_per_L < 5) %>% 
   mutate(across(where(is.numeric), ~scale(.x)[,1])) 
 
 mean(scale_all_data$ERwc)
@@ -376,7 +376,7 @@ exclude_col = "ERwc"
 
 x_cube_variables = as.data.frame(scale_cube_variables[, !(names(scale_cube_variables) %in% exclude_col)])
 
-x_cube_variables = as.data.frame(scale_all_data[, !(names(scale_all_data) %in% exclude_col)])
+# x_cube_variables = as.data.frame(scale_all_data[, !(names(scale_all_data) %in% exclude_col)])
 mean(x_cube_variables$Temp)
 sd(x_cube_variables$Temp)
 
@@ -395,9 +395,9 @@ lasso = cv.glmnet(xvars, yvar, alpha = 1, nfolds = 5,
                   # , standardize = TRUE, standardize.response = FALSE, intercept = FALSE
 )
 
-#best_lambda <- lasso$lambda.min
+best_lambda <- lasso$lambda.min
 
-best_lambda = lasso$lambda.1se
+#best_lambda = lasso$lambda.1se
 # best_lambda
 # plot(lasso)
 
@@ -553,12 +553,14 @@ cube_temp_plot = ggplot(cube_data, aes(y = cube_ERwc, x = cube_Temp)) +
   ylab("")
   #ylab(expression("ER"[wc]*" (mg O"[2]*" L"^-1*" d"^-1*")"^(1/3)))
 
-cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_tss_plot, cube_no3_plot, nrow = 2, ncol = 3, labels = c("(a)", "(b)", "(c)", "(d)", "(e)"), label.x = c(0.85, 0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95, 0.95))
+# cube_lasso_comb = ggarrange(cube_tn_plot, cube_npoc_plot, cube_temp_plot, cube_tss_plot, cube_no3_plot, nrow = 2, ncol = 3, labels = c("(a)", "(b)", "(c)", "(d)", "(e)"), label.x = c(0.85, 0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95, 0.95))
+
+cube_lasso_comb = ggarrange(cube_tn_plot, cube_temp_plot, cube_npoc_plot, cube_tss_plot, nrow = 2, ncol = 2, labels = c("(a)", "(b)", "(c)", "(d)"), label.x = c(0.85, 0.85, 0.85, 0.85), label.y = c(0.95, 0.95, 0.95, 0.95))
 
 cube_lasso_comb
 
 # Annotate Figure by adding common "Effect Size" y-axis
 cube_lasso_ann = annotate_figure(cube_lasso_comb, left = text_grob(expression("ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"^(1/3)), rot = 90, size = 15))
 
-ggsave(file.path('./Figures',"Figure4_Cube_Lasso_Combined_Scatter_Plots.png"), plot=cube_lasso_ann, width = 12, height = 8, dpi = 300,device = "png") 
+ggsave(file.path('./Figures',"Figure4_Cube_Lasso_Combined_Scatter_Plots.png"), plot=cube_lasso_ann, width = 10, height = 8, dpi = 300,device = "png") 
 
