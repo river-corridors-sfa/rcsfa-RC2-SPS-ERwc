@@ -507,6 +507,25 @@ cube_totdr_plot
 ggsave(file.path('./Figures',"Figure3b_Cube_TotDr_Scatter_Plots.pdf"), plot=cube_totdr_plot, width = 10, height = 8, dpi = 300,device = "pdf") 
 
 
+## Try boxplots of stream order?
+
+ggplot(cube_data, aes(y = cube_ERwc, x = (cube_StrOrd^3), fill = (cube_StrOrd^3), group = cube_StrOrd)) +
+  geom_boxplot() +
+  theme_bw() +
+  #geom_point(aes(color = as.factor(cube_StrOrd^3)), size =4) + theme_bw() +
+  scale_fill_viridis(name = "Stream Order")+
+  stat_cor(data = cube_data, label.x = 2.5, label.y = -1.7, size = 6, digits = 2, aes(label = paste(..r.label..)))+
+  #stat_cor(data = cube_data, label.x = 2.5, label.y = -1.9, size = 6, digits = 2, aes(label = paste(..p.label..)))+
+  #stat_poly_line(data = cube_data, se = FALSE, linetype = "dashed", linewidth = 2)+ 
+  xlab(expression("Total Drainage Area (km"^2*")"^(1/3))) +
+  ylab(expression("ER"[wc]*" (g O"[2]*" m"^-3*" d"^-1*")"^(1/3))) +
+  theme(legend.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 18), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)), 
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))) 
+
 
 ## Figure 4 - Cube root scatter plots ####
 
