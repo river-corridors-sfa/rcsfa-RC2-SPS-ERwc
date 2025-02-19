@@ -99,7 +99,7 @@ write.csv(ERwc_mean, './Data/ERwc_Mean.csv', row.names = F)
 
 ## Plot S20R and T02 ####
 
-s20r = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_S20R_Cle_Elum_2021-09-02.csv", skip = 15) %>% 
+s20r = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_S20R_Cle_Elum_2021-09-02.csv", skip = 15) %>% 
   mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")) %>% 
   mutate(Hour = as.numeric(format(DateTime, "%H"))) %>% 
   mutate(Minute = as.numeric(format(DateTime, "%M"))) %>% 
@@ -118,7 +118,7 @@ slope_s20r_3 = coef(lm_s20r_3)[2]
 label_s20r_3 = paste0("slope = ",round(slope_s20r_3,5),"0")
 
 
-t02 = read.csv("./Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_T02_Yakima_2021-09-07.csv", skip = 15)%>% 
+t02 = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SensorData/MinidotManualChamber/Data/v2_Minidot_T02_Yakima_2021-09-07.csv", skip = 15)%>% 
   mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")) %>% 
   mutate(Hour = as.numeric(format(DateTime, "%H"))) %>% 
   mutate(Minute = as.numeric(format(DateTime, "%M"))) %>% 
