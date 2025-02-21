@@ -55,11 +55,11 @@ all_density = ggplot() +
   geom_density(erwc_lit, mapping = aes(x = Water_Column_Respiration_Literature, color = "lit",  fill = "lit"), alpha = 0.75, adjust = 4) +
   scale_y_continuous(
     name = expression("ER"[wc]*" (Lit) and ER"[wc]*" (this study) Density"),
-    sec.axis = sec_axis(~./3, name = expression("ER"[tot]*" Density"))
+    sec.axis = sec_axis(~./3, name = expression("ER"[tot]*" (Lit) Density"))
   ) +
-  scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
+  scale_colour_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*" (Lit)"), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
                       values = c("black", "blue", "#F9847B"),aesthetics = c("colour"))+
-  scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*""), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
+  scale_fill_manual("",breaks = c("tot", "wc", "lit"),labels = c(expression("ER"[tot]*" (Lit)"), expression("ER"[wc]*" (this study)"), expression("ER"[wc]*" (Lit) ")),
                     values = c("grey", "lightblue", "#fbb1ac"))+
   geom_vline(ERriv, mapping = aes(xintercept=median(ERtot_Volumetric)), color='black', size=0.8)+ 
   geom_vline(erwc_lit, mapping = aes(xintercept = median(Water_Column_Respiration_Literature)), color = "#F9847B", size = 0.8) +
