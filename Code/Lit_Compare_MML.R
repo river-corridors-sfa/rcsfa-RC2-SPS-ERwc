@@ -135,7 +135,7 @@ comb_box_dens = ggarrange(all_density, box_plot, nrow = 1, widths = c(2,  1), la
 
 comb_box_dens
 
-ggsave(file.path('./Figures/',"density_box_plot.png"), plot=comb_box_dens, width = 12, height = 4.5, dpi = 300,device = "png") 
+ggsave(file.path('./Figures/',"Figure2_ERlit_Density_Box_Plots.png"), plot=comb_box_dens, width = 12, height = 4.5, dpi = 300,device = "png") 
 
 
 ## FIGURE S4 ####
