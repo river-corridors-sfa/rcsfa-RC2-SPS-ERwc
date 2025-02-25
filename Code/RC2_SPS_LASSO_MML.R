@@ -91,7 +91,7 @@ npoc_tn = read.csv("./Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/v3
   select(c(Sample_Name, X00681_NPOC_mg_per_L_as_C, X00602_TN_mg_per_L_as_N, Methods_Deviation)) %>% 
   rename(NPOC = X00681_NPOC_mg_per_L_as_C) %>% 
   rename(TN = X00602_TN_mg_per_L_as_N) %>% 
-  mutate(TN = if_else(grepl("Below", TN), as.numeric(.035), as.numeric(TN)), missing = NA_real_) %>% #set samples below standard or LOD to half of LOD (0.035)
+  mutate(TN = if_else(grepl("Below_0.1", TN), as.numeric(.05),  if_else(grepl("Below_0.07", TN), as.numeric(.035), as.numeric(TN)), missing = NA_real_)) %>% #set samples below standard to half of lowest standard (0.05) or LOD to half of LOD (0.035)
   mutate(NPOC = as.numeric(NPOC)) %>% 
   filter(!grepl("OUTLIER", Methods_Deviation))%>% 
   separate(Sample_Name, c("Parent", "Rep"), sep = "-") %>% 
@@ -177,7 +177,7 @@ ggplot() +
 
 ## Pearson correlation before transformations ####
 
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+#png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
 pairs(new_data,
       lower.panel = panel.smooth, 
@@ -186,7 +186,7 @@ pairs(new_data,
       labels = colnames(new_data),
       cex.labels = 0.8) 
 
-dev.off()
+#dev.off()
 
 # Cube Root Transform data ---------------------------------------------
 
