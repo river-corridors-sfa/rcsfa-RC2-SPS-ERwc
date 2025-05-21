@@ -155,6 +155,7 @@ all_data = left_join(mean_erwc, mapping, by = "Site_ID") %>%
 ## Shorten Names 
 new_names = c(ERwc = "Mean_ERwc", Temp = "Mean_Temp", StrOrd = "streamorde", TotDr = "totdasqkm", Transformations = "Total_Number_of_Transformations", Peaks = "Number_of_Peaks", NormTrans = "Normalized_Transformations")
 
+
 ## Remove values > 0.5, which are biologically unrealistic. In this dataset, these are likely from diffusion processes as [DO] starts ~5. ERwc < 0.5 is difficult to distinguish from 0, so values are kept
 
 new_data <- all_data %>% 
@@ -358,6 +359,19 @@ sd(results_r2$r2_scores)
 
 ## With scale, cube, pearson > 0.7 removals, TN removed
   # NPOC, Temp, NO3, TSS, Peaks
+
+## Multiple regression for review
+
+mlm_imp = lm(scale_cube_ERwc ~ scale_cube_Mean_TN + scale_cube_Temp + 
+               scale_cube_Mean_NPOC + scale_cube_TSS + scale_cube_TotDr, data = scale_cube_variables)
+
+car::avPlots(mlm_imp)
+
+mlm_non_zero = lm(scale_cube_ERwc ~ scale_cube_Mean_TN + scale_cube_Temp + 
+                    scale_cube_Mean_NPOC + scale_cube_TSS + scale_cube_NO3_mg_per_L + 
+                    scale_cube_Peaks + scale_cube_Cl_mg_per_L + scale_cube_TotDr, data = scale_cube_variables)
+
+car::avPlot(mlm_non_zero, variable = "scale_cube_TotDr")
 
 # Scatter Plots of Data -----------------------------------------------
 
