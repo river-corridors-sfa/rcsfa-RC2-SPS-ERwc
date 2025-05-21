@@ -162,8 +162,8 @@ new_data <- all_data %>%
   rename(!!!new_names) %>% 
   column_to_rownames("Site_ID") %>%
   filter(ERwc < 0.5) %>% # removes S38 and S83
-  drop_na() # S68 doesn't have geospatial data
-
+  drop_na() %>% # S68 doesn't have geospatial data
+  mutate(ERwc = ifelse(ERwc >=0, 0, ERwc)) #try analyses with positive ERwc = 0
 
 # Data Visualization ------------------------------------------------------
 
@@ -210,6 +210,55 @@ cube_data %>%
 
 ## Pearson Correlation Matrix of Transformed Data ####
 
+## Figure with positive values retained 
+
+pos_data <- all_data %>% 
+  rename(!!!new_names) %>% 
+  column_to_rownames("Site_ID") %>%
+  filter(ERwc < 0.5) %>% # removes S38 and S83
+  drop_na()  # S68 doesn't have geospatial data
+
+pos_cube_data = pos_data %>% 
+  mutate(across(where(is.numeric), cube_root)) %>% 
+  rename_with(where(is.numeric), .fn = ~ paste0("cube_", .x)) 
+
+scale_pos_cube_data = as.data.frame(scale(pos_cube_data))%>% 
+  rename_with(where(is.numeric), .fn = ~ paste0("scale_", .x))
+
+# check that mean is 0 and sd is 1
+round(mean(scale_pos_cube_data$scale_cube_ERwc), 4)
+sd(scale_pos_cube_data$scale_cube_ERwc)
+
+# Matrix of Pearson correlation values
+scale_pos_cube_pearson <- cor(scale_pos_cube_data, method = "pearson")
+
+png(file = paste0("./Figures/FigureS5_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+
+pear_pos_data = scale_pos_cube_data %>% 
+  rename_all(~ sub("scale_cube_", "", .)) %>% 
+  rename("Temperature" = "Temp") %>% 
+  rename("Stream Order" = "StrOrd") %>% 
+  rename("Total Drainage" = "TotDr") %>% 
+  rename("DIC" = "Mean_DIC") %>% 
+  rename("DOC" = "Mean_NPOC") %>% 
+  rename("TDN" = "Mean_TN") %>% 
+  rename("NO3" = "NO3_mg_per_L") %>% 
+  rename("Cl" = "Cl_mg_per_L") %>% 
+  rename("SO4" = "SO4_mg_per_L") %>% 
+  rename("Norm. Transformations" = "NormTrans")
+
+
+pairs(pear_pos_data,
+      lower.panel = panel.smooth, 
+      upper.panel = pear.panel.cor, 
+      diag.panel = panel.hist,
+      labels = colnames(pear_pos_data),
+      cex.labels = 0.5) 
+
+dev.off()
+
+
+## Figure with positive values turned to 0's
 ## Scale data before it goes into correlation matrix (doesn't change pearson values - scaling here for consistency before LASSO)
 
 scale_cube_data = as.data.frame(scale(cube_data))%>% 
@@ -222,7 +271,7 @@ sd(scale_cube_data$scale_cube_ERwc)
 # Matrix of Pearson correlation values
 scale_cube_pearson <- cor(scale_cube_data, method = "pearson")
 
-png(file = paste0("./Figures/", as.character(Sys.Date()),"_Pairs_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
+png(file = paste0("./Figures/FigureS4_Scale_Cube_Pearson_Correlation_Matrix.png"), width = 12, height = 12, units = "in", res = 300)
 
 pear_data = scale_cube_data %>% 
   rename_all(~ sub("scale_cube_", "", .)) %>% 
@@ -360,18 +409,6 @@ sd(results_r2$r2_scores)
 ## With scale, cube, pearson > 0.7 removals, TN removed
   # NPOC, Temp, NO3, TSS, Peaks
 
-## Multiple regression for review
-
-mlm_imp = lm(scale_cube_ERwc ~ scale_cube_Mean_TN + scale_cube_Temp + 
-               scale_cube_Mean_NPOC + scale_cube_TSS + scale_cube_TotDr, data = scale_cube_variables)
-
-car::avPlots(mlm_imp)
-
-mlm_non_zero = lm(scale_cube_ERwc ~ scale_cube_Mean_TN + scale_cube_Temp + 
-                    scale_cube_Mean_NPOC + scale_cube_TSS + scale_cube_NO3_mg_per_L + 
-                    scale_cube_Peaks + scale_cube_Cl_mg_per_L + scale_cube_TotDr, data = scale_cube_variables)
-
-car::avPlot(mlm_non_zero, variable = "scale_cube_TotDr")
 
 # Scatter Plots of Data -----------------------------------------------
 
