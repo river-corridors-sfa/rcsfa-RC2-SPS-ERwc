@@ -40,9 +40,9 @@ erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.cs
   rename(Water_Column_Respiration_Literature = Corrected.Value)
 
 median(erwc_sps$Mean_ERwc) # our median: -0.579
-mean(erwc_sps$Mean_ERwc) # our mean: -0.817
-sd(erwc_sps$Mean_ERwc)
-sd(erwc_sps$Mean_ERwc)/sqrt(length((erwc_sps$Mean_ERwc))) # our SE: 0.19
+mean(erwc_sps$Mean_ERwc) # our mean: -0.843
+sd(erwc_sps$Mean_ERwc) # 1.23
+sd(erwc_sps$Mean_ERwc)/sqrt(length((erwc_sps$Mean_ERwc))) # our SE: 0.18
 
 # Density Plots -----------------------------------------------------------
 
