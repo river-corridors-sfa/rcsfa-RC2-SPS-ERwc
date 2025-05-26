@@ -28,16 +28,16 @@ getwd()
 erwc_sps = read.csv(file.path('./Data/ERwc_Mean.csv')) %>% 
   mutate(Mean_ERwc = round(Mean_ERwc, 3)) %>% 
   mutate(Mean_Temp = round(Mean_Temp, 3)) %>% 
-  filter(Mean_ERwc < 0.5) # remove positive respiration rates > 0.5
-
+  filter(Mean_ERwc < 0.5) %>%  # remove positive respiration rates > 0.5
+  mutate(Mean_ERwc = ifelse(Mean_ERwc > 0 , 0, Mean_ERwc)) # change positive respiration rates to 0
 # read in  ERtotal data
 ERriv = read.csv(file.path('./Data/','mean_ERtot_cleaned.csv'))
 
 # Keeps Devol Min/Max 
 #download .xlsx file from SI and add sheet 2 as .csv to Published_Data folder
 erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.csv"), skip = 1) %>% 
-  select(c(Paper, River, `Basin.Station`, Corrected_Value)) %>% 
-  rename(Water_Column_Respiration_Literature = Corrected_Value)
+  select(c(Paper, River, `Basin.Station`, Corrected.Value)) %>% 
+  rename(Water_Column_Respiration_Literature = Corrected.Value)
 
 median(erwc_sps$Mean_ERwc) # our median: -0.579
 mean(erwc_sps$Mean_ERwc) # our mean: -0.817
