@@ -35,10 +35,10 @@ setwd("../..")
 
 # ================================= User inputs ================================
 
-# download the metadata from https://data.ess-dive.lbl.gov/view/doi:10.15485/1898914 and use the file `v2_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv`
-metadata_file <- './Data/Multiple_linear_regression/v3_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv' # replace this path with the path of the file you downloaded
+# download the metadata from https://data.ess-dive.lbl.gov/view/doi:10.15485/1898914 and use the file `v3_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv`
+metadata_file <- './Data/Published_Data/v3_SFA_SpatialStudy_2021_SampleData/SPS_Sample_Field_Metadata.csv' # replace this path with the path of the file you downloaded
 
-data_file <- './Data/Multiple_linear_regression/ERwc_Mean.csv'
+data_file <- './Data/ERwc_Mean.csv'
 
 yrb_shp_dir <- './Data/Map_Layers/Yakima_River_Basin'
 
@@ -54,7 +54,9 @@ metadata <- read_csv(metadata_file) %>%
   dplyr::select(Site_ID, Latitude, Longitude)
 
 data <- read_csv(data_file) %>%
-  dplyr::select(Site_ID, Mean_ERwc )
+  dplyr::select(Site_ID, Mean_ERwc )%>% 
+  mutate(Mean_ERwc = case_when(Mean_ERwc >=0 ~ 0, 
+                         TRUE ~ Mean_ERwc)) # setting positive ERwc = 0
 
 merge <- data %>%
   left_join(metadata, by = 'Site_ID') %>%
@@ -76,7 +78,7 @@ sites <- st_as_sf(merge, coords = c('Longitude','Latitude'), crs = common_crs)
 
 YRB_flowlines <- get_nhdplus(AOI = YRB_boundary$geometry, streamorder = 3)
 
-elevation_raw <- get_elev_raster(YRB_boundary$geometry, z = 10)
+elevation_raw <- get_elev_raster(YRB_boundary, z = 10)
 
 elevation_crop <- mask(elevation_raw, YRB_boundary)
 
@@ -113,7 +115,7 @@ ER_wc_map <- ggplot()+
       fill = c("black", "white"),
       line_col = "grey20"))
 
-ggsave('./Figures/Archive_Intermediate_Files/SPS_ER_Water_Column_Map.pdf',
+ggsave('./Figures/Intermediate_Files/SPS_ER_Water_Column_Map.pdf',
        ER_wc_map,
        width = 8,
        height = 5
