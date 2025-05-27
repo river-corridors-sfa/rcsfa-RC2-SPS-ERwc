@@ -76,7 +76,7 @@ sites <- st_as_sf(merge, coords = c('Longitude','Latitude'), crs = common_crs)
 
 # ======================== pull NHD data and elevation =========================
 
-YRB_flowlines <- get_nhdplus(AOI = YRB_boundary$geometry, streamorder = 3)
+YRB_flowlines <- get_nhdplus(AOI = YRB_boundary, streamorder = 3)
 
 elevation_raw <- get_elev_raster(YRB_boundary, z = 10)
 
