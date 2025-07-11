@@ -34,10 +34,9 @@ erwc_sps = read.csv(file.path('./Data/ERwc_Mean.csv')) %>%
 ERriv = read.csv(file.path('./Data/','mean_ERtot_cleaned.csv'))
 
 # Keeps Devol Min/Max 
-#download .xlsx file from SI and add sheet 2 as .csv to Published_Data folder
-erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.csv"), skip = 1) %>% 
-  select(c(Paper, River, `Basin.Station`, Corrected.Value)) %>% 
-  rename(Water_Column_Respiration_Literature = Corrected.Value)
+erwc_lit = read.csv(file.path("./Data/Published_Data/","Table_S5_Calculations.csv")) %>% 
+  select(c(Paper, River, Basin_Station, Corrected_Value)) %>% 
+  rename(Water_Column_Respiration_Literature = Corrected_Value)
 
 median(erwc_sps$Mean_ERwc) # our median: -0.579
 mean(erwc_sps$Mean_ERwc) # our mean: -0.843
@@ -94,8 +93,8 @@ box_df = erwc_sps %>%
   rename(Water_Column_Respiration_Literature = Mean_ERwc) %>% 
   mutate(Paper = "Yakima River basin") %>% 
   mutate(River = "N/A") %>% 
-  mutate(`Basin.Station` = "N/A") %>% 
-  select(c(Paper, River, `Basin.Station`, Water_Column_Respiration_Literature)) %>% 
+  mutate(Basin_Station = "N/A") %>% 
+  select(c(Paper, River, Basin_Station, Water_Column_Respiration_Literature)) %>% 
   rbind(erwc_lit) %>% 
   mutate(group = ifelse(Paper == "Yakima River basin", "YRB", "Lit"))
 
