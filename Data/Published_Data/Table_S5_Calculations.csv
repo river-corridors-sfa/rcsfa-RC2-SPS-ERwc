@@ -1,4 +1,4 @@
-Paper,River,Basin_Station,Reported_Value,Reported_Units,Rate_Conversion,Depth,Depth_Units,Quotient,Equation,Conversion,Conversion_Units,Time_Conversion,Time_Conversion_Units,Corrected Value
+Paper,River,Basin_Station,Reported_Value,Reported_Units,Rate_Conversion,Depth,Depth_Units,Quotient,Equation,Conversion,Conversion_Units,Time_Conversion,Time_Conversion_Units,Corrected_Value
 Devol et al. (1995),Amazon,Marchanteria,0.5,umol O2/L/H,-1,-9999,N/A,-9999,N/A,0.032,mg O2/umol,24,H/day,-0.38
 Devol et al. (1995),Amazon,Marchanteria,0.1,umol O2/L/H,-1,-9999,N/A,-9999,N/A,0.032,mg O2/umol,24,H/day,-0.08
 Devol et al. (1995),Amazon,Marchanteria,1.6,umol O2/L/H,-1,-9999,N/A,-9999,N/A,0.032,mg O2/umol,24,H/day,-1.23
