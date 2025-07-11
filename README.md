@@ -1,8 +1,14 @@
 # rcsfa-RC2-SPS-ERwc
 
-#### 
-## Summary
+#### Data and Scripts Associated with the Manuscript “Water Column Respiration in the Yakima River Basin is Explained by Temperature, Nutrients and Suspended Solids”
+Maggi Laan, Stephanie G. Fulton, Morgan Barnes, Mikayla A. Borton, Xingyuan Chen, Yuliya Farris, Brieanne Forbes, Vanessa A. Garayburu-Caruso, Amy E. Goldman, Samantha Grieger, Robert O. Hall, Matthew H. Kaufman, Xinming Lin, Erin McCann, Sophia A. McKever, Allison Myers-Pigg, Opal Otenburg, Aaron Pelly, Huiying Ren, Lupita Renteria, Timothy D. Scheibe, Kyongho Son, Jerry D. Tagestad, Joshua M. Torgeson and James C. Stegen
 
+## Summary
+This data package is associated with the publication “Water Column Respiration in the Yakima River Basin is Explained by Temperature, Nutrients and Suspended Solids” submitted to EGU Biogeochemistry (Laan et al. 2025). In this research, water column respiration (ERwc) data, surface water chemistry data, organic matter (OM) chemistry data, and publicly available geospatial data were used in analysis to evaluate the variability in ERwc at 47 sites across the Yakima River basin in Washington, USA.
+
+In addition to this readme, this data package also includes a file-level metadata (FLMD) file that describes each file and a data dictionary (DD) that describes all column/row headers and variable definitions.
+
+The data package includes the data inputs, and outputs, and R scripts to reproduce all the analyses performed in the manuscript and create manuscript figures. The data package is comprised of three main folders (Code, Data, and Figures). The Code folder is comprised of four scripts and three analysis-specific subfolders that contain the R scripts to perform the analyses described in the publication and create publication figures. The Data folder is comprised of two “.csv” files and four subfolders that contain data input and output files. The Published_Data folder contains a readme that directs the user to download the appropriate files and add to this folder when using scripts.  The Figures folder includes figures from the manuscript in “.pdf” and “.png” formats and a folder with intermediate figure files. This data package is associated with a GitHub repository which can be found at https://github.com/river-corridors-sfa/rcsfa-RC2-SPS-ERwc.
 
 ## Manuscript Reference
 The manuscript (printprint) associated with this repo and Data Package can be cited as follows:  
@@ -11,4 +17,5 @@ The manuscript (printprint) associated with this repo and Data Package can be ci
 
 > 
 ## Contact
+James Stegen; james.stegen@pnnl.gov
 Vanessa Garayburu-Caruso; vanessa.garayburu-caruso@pnnl.gov
