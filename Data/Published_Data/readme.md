@@ -8,5 +8,3 @@ Download sample data: https://data.ess-dive.lbl.gov/view/doi%3A10.15485%2F189891
  - Grieger, S., Barnes, M., Borton, M. A., Chen, X., Chu, R., Farris, Y., Forbes, B., Fulton, S. G., Garayburu-Caruso, V. A., Goldman, A. E., Gonzalez, B. I., Kaufman, M. H., McKever, S. A., Myers-Pigg, A., Otenburg, O., Pelly, A., Renteria, L., Scheibe, T. D., Son, K., … Stegen, J. C. (2022). Spatial Study 2021: Sample-Based Surface Water Chemistry and Organic Matter Characterization across Watersheds in the Yakima River Basin, Washington, USA (v3).
 
 Download Appling 2018 data: https://www.sciencebase.gov/catalog/item/59eb9c0ae4b0026a55ffe389
-
-Table S5: download from SI 
