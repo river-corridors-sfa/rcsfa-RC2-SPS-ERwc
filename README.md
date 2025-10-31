@@ -12,7 +12,8 @@ The data package includes the data inputs, and outputs, and R scripts to reprodu
 
 ## Manuscript Reference
 The manuscript (printprint) associated with this repo and Data Package can be cited as follows:  
-> Laan, M. M., Fulton, S. G., Garayburu-Caruso, V. A., Barnes, M. E., Borton, M. A., Chen, X., Farris, Y., Forbes, B., Goldman, A. E., Grieger, S., Hall Jr., R. O., Kaufman, M. H., Lin, X., Zionce, E. L. M., McKever, S. A., Myers-Pigg, A., Otenburg, O., Pelly, A. C., Ren, H., Renteria, L., Scheibe, T. D., Son, K., Tagestad, J., Torgeson, J. M., and Stegen, J. C.: Water Column Respiration in the Yakima River Basin is Explained by Temperature, Nutrients and Suspended Solids, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2025-1109, 2025.
+> Laan, M. M., Fulton, S. G., Garayburu-Caruso, V. A., Barnes, M. E., Borton, M. A., Chen, X., Farris, Y., Forbes, B., Goldman, A. E., Grieger, S., Hall Jr., R. O., Kaufman, M. H., Lin, X., Zionce, E. L. M., McKever, S. A., Myers-Pigg, A., Otenburg, O., Pelly, A. C., Ren, H., … Stegen, J. C. (2025). Water column respiration in the Yakima River basin is explained by temperature, nutrients, and suspended solids. Biogeosciences, 22(20), 6137–6152. https://doi.org/10.5194/bg-22-6137-2025
+
 ## Data Reference
 
 > Laan M ; Fulton S G ; Barnes M ; Borton M A ; Chen X ; Farris Y ; Forbes B ; Garayburu-Caruso V A ; Goldman A E ; Grieger S ; Hall R O ; Kaufman M H ; Lin X ; McCann E ; McKever S A ; Myers-Pigg A ; Otenburg O ; Pelly A ; Ren H ; Renteria L ; Scheibe T D ; Son K ; Tagestad J D ; Torgeson J M ; Stegen J C (2024): Data and Scripts Associated with the Manuscript “Water Column Respiration in the Yakima River Basin is Explained by Temperature, Nutrients and Suspended Solids”. River Corridor Hydro-biogeochemistry from Molecular to Multi-Basin Scales SFA, ESS-DIVE repository. Dataset. doi:[10.15485/2283171](https://data.ess-dive.lbl.gov/datasets/doi:10.15485/2283171)
